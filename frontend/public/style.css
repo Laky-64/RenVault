@@ -1,0 +1,95 @@
+:root {
+    --bg-color: #26293a;
+    --section-bg-color: #212332;
+    --secondary-bg-color: #191a26;
+    --text-color: #fff;
+    --hint-color: #838697;
+    --link-color: #7d95de;
+    --button-color: #567bf1;
+    --button-text-color: #fff;
+    --header-bg-color: #282938;
+    --accent-text-color: #869eed;
+    --section-header-text-color: #98aef8;
+    --subtitle-text-color: #7f838f;
+    --destructive-text-color: #ee686f;
+    --section-separator-color: #0f1118;
+    --bottom-bar-bg-color: #191a26;
+    --hint-pass-selection: #ffffff66;
+
+    --tile-blue-color: #2f6eed;
+    --tile-green-color: #5cc04d;
+    --tile-yellow-color: #edc442;
+    --tile-teal-color: #61aad8;
+    --tile-red-color: #e14535;
+    --tile-orange-color: #e79034;
+
+    --section-border-radius: 20px;
+    --zone-border-radius: 15px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    cursor: default;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+* {
+    font-family: 'SFProText', serif;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    letter-spacing: -0.48px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+    font-family: 'SFProText';
+    src: url('fonts/SFProText-Regular.woff2') format('woff2'),
+    url('fonts/SFProText-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SFProText';
+    src: url('fonts/SFProText-Medium.woff2') format('woff2'),
+    url('fonts/SFProText-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SFProText';
+    src: url('fonts/SFProText-SemiBold.woff2') format('woff2'),
+    url('fonts/SFProText-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SFProText';
+    src: url('fonts/SFProText-Bold.woff2') format('woff2'),
+    url('fonts/SFProText-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'SFProRounded';
+    src: url('fonts/SFProRounded-Bold.woff2') format('woff2'),
+    url('fonts/SFProRounded-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}

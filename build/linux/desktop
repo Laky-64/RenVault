@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=RenVault
+Comment=An unofficial cross-platform Apple Passwords client for managing your credentials securely
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/renvault %u
+Terminal=false
+Type=Application
+Icon=renvault
+Categories=Utility;
+StartupWMClass=renvault
+
+ 

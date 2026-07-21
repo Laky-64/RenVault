@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.0"
+	},
+	"info": {
+		"0000": {
+			"ProductVersion": "0.1.0",
+			"CompanyName": "Lauren Iraci",
+			"FileDescription": "An unofficial cross-platform Apple Passwords client for managing your credentials securely",
+			"LegalCopyright": "© 2026, My Company",
+			"ProductName": "RenVault",
+			"Comments": "(c) 2026 Lauren Iraci"
+		}
+	}
+}

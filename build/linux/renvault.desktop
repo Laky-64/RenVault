@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=renvault
+Exec=renvault
+Icon=renvault
+Categories=Development;
+Terminal=false
+Keywords=wails
+Version=1.0
+StartupNotify=false
