@@ -21,7 +21,7 @@
     <!--suppress HtmlDeprecatedAttribute -->
     <img style="width: {width};" class="icon" src="{src}" alt="" onerror={() => failed = true}/>
 {:else}
-    <div style="width: {width};" class="icon empty">{password.name[0].toUpperCase()}</div>
+    <div style="width: {width};font-size: calc(calc({width} * 52) / 100);" class="icon empty">{password.name[0].toUpperCase()}</div>
 {/if}
 
 <style>
@@ -42,7 +42,6 @@
     .icon.empty {
         background: color-mix(in srgb, var(--text-color) 13%, transparent);
         color: color-mix(in srgb, var(--text-color) 45%, transparent);
-        font-size: 20px;
         font-weight: 500;
     }
 </style>
