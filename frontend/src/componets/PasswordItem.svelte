@@ -140,7 +140,7 @@
     .totp {
         display: flex;
         gap: 4px;
-        margin: 0;
+        margin: 0 0 0 8px;
         font-size: 15px;
         font-weight: 600;
         color: var(--subtitle-text-color);
