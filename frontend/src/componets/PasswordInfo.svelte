@@ -4,6 +4,7 @@
     import PasswordIcon from "./PasswordIcon.svelte";
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
     import type {Field} from "./PasswordInfoFields";
+    import {nav} from "../navigation.svelte";
 
     const {
         icon,
@@ -34,7 +35,7 @@
     ] : []);
 </script>
 
-<div class="container">
+<div class="container" class:stack={nav.narrow}>
     {#if password}
         <div class="password-info">
             <PasswordIcon password={password} width="50px"/>
@@ -60,6 +61,7 @@
         height: 100%;
         align-items: start;
         justify-content: center;
+        margin-inline: 8px;
     }
 
     .no-selection {
@@ -91,7 +93,6 @@
         align-items: center;
         width: 100%;
         max-width: 600px;
-        margin-left: 10px;
         border-radius: var(--zone-border-radius);
         background: var(--section-bg-color);
         padding-block: 10px;

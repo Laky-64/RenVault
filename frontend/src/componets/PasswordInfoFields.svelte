@@ -47,14 +47,18 @@
 
     .name {
         color: var(--text-color);
-        margin: 0;
+        margin: 0 15px 0 0;
         font-size: 15px;
+        flex-shrink: 0;
     }
 
     .value {
         color: var(--hint-color);
         margin: 0 0 0 auto;
         font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .masked {

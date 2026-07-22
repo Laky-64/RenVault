@@ -3,6 +3,7 @@
     import {untrack} from "svelte";
     import PasswordItem from "./PasswordItem.svelte";
     import VirtualList from "./VirtualList.svelte";
+    import {nav} from "../navigation.svelte";
 
     const {
         zone,
@@ -30,7 +31,7 @@
     });
 </script>
 
-<div class="container" style="--bar-height: {BAR_HEIGHT}px">
+<div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack={nav.narrow}>
     <VirtualList items={zone.passwords} resetKey={zone} bind:scrollOffset>
         {#snippet header()}
             <div class="large-title" bind:clientHeight={titleHeight}>
@@ -47,7 +48,7 @@
                         selectedPassword = entry;
                     }
                 }}
-                selected={entry == selectedPassword}
+                selected={entry == selectedPassword && !nav.narrow}
                 last={index === zone.passwords.length - 1}/>
         {/snippet}
     </VirtualList>
@@ -64,12 +65,15 @@
     .container {
         position: relative;
         flex: 1;
-        max-width: 350px;
         min-width: 0;
         height: 100%;
     }
 
-    .container::after {
+    .container:not(.stack) {
+        max-width: 350px;
+    }
+
+    .container:not(.stack)::after {
         content: '';
         position: absolute;
         right: 0;

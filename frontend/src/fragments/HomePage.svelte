@@ -3,6 +3,7 @@
     import ZoneContainer from "../componets/ZoneContainer.svelte";
     import PasswordList from "../componets/PasswordList.svelte";
     import PasswordInfo from "../componets/PasswordInfo.svelte";
+    import {currentPassword, currentZone, nav, openPassword, openZone} from "../navigation.svelte";
 
     const icon = (host: string) => `https://icons.duckduckgo.com/ip3/${host}.ico`;
     const DEMO = [
@@ -67,17 +68,19 @@
         }
     ];
 
-    let selectedZone: Zone = $state(zones[0]);
-    let selectedPassword: Password | null = $state(null);
+    const shownZone = $derived(currentZone() ?? zones[0]);
 </script>
 
-<div class="container">
-    <ZoneContainer zones={zones} on_selected={(zone) => {
-        selectedZone = zone;
-        selectedPassword = null;
-    }} />
-    <PasswordList zone={selectedZone} on_selected={(password) => selectedPassword = password} />
-    <PasswordInfo icon={selectedZone.icon} password={selectedPassword} />
+<div class="container" class:stack={nav.narrow}>
+    <div class="pane" style="transform: translateX({nav.offsetOf(0)}%)" inert={!nav.isActive(0)}>
+        <ZoneContainer zones={zones} on_selected={openZone}/>
+    </div>
+    <div class="pane" style="transform: translateX({nav.offsetOf(1)}%)" inert={!nav.isActive(1)}>
+        <PasswordList zone={shownZone} on_selected={openPassword}/>
+    </div>
+    <div class="pane" style="transform: translateX({nav.offsetOf(2)}%)" inert={!nav.isActive(2)}>
+        <PasswordInfo icon={shownZone.icon} password={currentPassword() ?? null}/>
+    </div>
 </div>
 
 <style>
@@ -86,7 +89,29 @@
         width: 100%;
         flex: 1;
         min-height: 0;
-        padding-inline: 8px;
+    }
 
+    .stack {
+        position: relative;
+        padding-inline: 0;
+    }
+
+    .pane {
+        display: contents;
+    }
+
+    .stack > .pane {
+        display: block;
+        position: absolute;
+        inset: 0;
+        transition: transform 350ms cubic-bezier(0.32, 0.72, 0, 1);
+        will-change: transform;
+        background: var(--secondary-bg-color);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .stack > .pane {
+            transition: none;
+        }
     }
 </style>
