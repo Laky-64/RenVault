@@ -4,6 +4,7 @@
     import PasswordIcon from "./PasswordIcon.svelte";
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
     import type {Field} from "./PasswordInfoFields";
+    import ElasticScroll from "./ElasticScroll.svelte";
     import {nav} from "../navigation.svelte";
 
     const {
@@ -33,14 +34,27 @@
             value: "20 mag 2026",
         }
     ] : []);
+
+    let scroller: ElasticScroll | undefined = $state();
+    let contentHeight = $state(0);
+    $effect(() => {
+        password;
+        scroller?.reset();
+    });
 </script>
 
 <div class="container" class:stack={nav.narrow}>
     {#if password}
-        <div class="password-info">
-            <PasswordIcon password={password} width="50px"/>
-            <p class="name">{password.name}</p>
-            <PasswordInfoFields fields={fields} />
+        <div class="scroller">
+            <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
+                <div class="stack" bind:clientHeight={contentHeight}>
+                    <div class="card">
+                        <PasswordIcon password={password} width="50px"/>
+                        <p class="name">{password.name}</p>
+                        <PasswordInfoFields fields={fields} />
+                    </div>
+                </div>
+            </ElasticScroll>
         </div>
     {:else}
         <div class="no-selection">
@@ -64,6 +78,37 @@
         margin-inline: 8px;
     }
 
+    .scroller {
+        width: 100%;
+        height: 100%;
+    }
+
+    .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px;
+        margin-inline: auto;
+        border-radius: var(--zone-border-radius);
+        background: var(--section-bg-color);
+        padding-block: 10px;
+        padding-inline: 15px;
+    }
+
+    .name {
+        font-size: 22px;
+        margin: 0 0 15px;
+        font-weight: bold;
+        color: var(--text-color);
+    }
+
     .no-selection {
         display: flex;
         flex-direction: column;
@@ -85,24 +130,5 @@
         color: var(--hint-pass-selection);
         margin: 8px 0 0;
         text-align: center;
-    }
-
-    .password-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 600px;
-        border-radius: var(--zone-border-radius);
-        background: var(--section-bg-color);
-        padding-block: 10px;
-        padding-inline: 15px;
-    }
-
-    .name {
-        font-size: 22px;
-        margin: 0 0 15px;
-        font-weight: bold;
-        color: var(--text-color);
     }
 </style>
