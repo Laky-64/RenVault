@@ -1,7 +1,7 @@
 <script lang="ts">
 import ZoneButton from "./ZoneButton.svelte";
 import type {Zone} from "./ZoneContainer";
-import {nav} from "../navigation.svelte";
+import {isCompact} from "../lib/navigation.svelte";
 
 const {
     zones,
@@ -12,11 +12,12 @@ const {
 } = $props();
 
 let selected = $state(0);
+const stack = $derived(isCompact());
 </script>
 
-<div class="container" class:stack={nav.narrow}>
+<div class="container" class:stack>
     {#each zones as zone, i}
-        <ZoneButton icon={zone.icon} text={zone.text} count={zone.passwords.length} accent="var(--tile-{zone.color}-color)" selected={selected === i && !nav.narrow} onclick={() => {
+        <ZoneButton icon={zone.icon} text={zone.text} count={zone.passwords.length} accent="var(--tile-{zone.color}-color)" selected={selected === i && !stack} onclick={() => {
             selected = i;
             if (on_selected) on_selected(zone);
         }}/>

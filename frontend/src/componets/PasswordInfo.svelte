@@ -5,7 +5,7 @@
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
     import type {Field} from "./PasswordInfoFields";
     import ElasticScroll from "./ElasticScroll.svelte";
-    import {nav} from "../navigation.svelte";
+    import {isCompact} from "../lib/navigation.svelte";
 
     const {
         icon,
@@ -36,14 +36,16 @@
     ] : []);
 
     let scroller: ElasticScroll | undefined = $state();
+    const stack = $derived(isCompact());
     let contentHeight = $state(0);
+
     $effect(() => {
         password;
         scroller?.reset();
     });
 </script>
 
-<div class="container" class:stack={nav.narrow}>
+<div class="container" class:stack>
     {#if password}
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>

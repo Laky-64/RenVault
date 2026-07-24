@@ -4,6 +4,7 @@
     import PasswordList from "../componets/PasswordList.svelte";
     import PasswordInfo from "../componets/PasswordInfo.svelte";
     import {currentPassword, currentZone, nav, openPassword, openZone} from "../navigation.svelte";
+    import {isCompact} from "../lib/navigation.svelte";
 
     const icon = (host: string) => `https://icons.duckduckgo.com/ip3/${host}.ico`;
     const DEMO = [
@@ -68,10 +69,11 @@
         }
     ];
 
+    const stack = $derived(isCompact());
     const shownZone = $derived(currentZone() ?? zones[0]);
 </script>
 
-<div class="container" class:stack={nav.narrow}>
+<div class="container" class:stack>
     <div class="pane" style="transform: translateX({nav.offsetOf(0)}%)" inert={!nav.isActive(0)}>
         <ZoneContainer zones={zones} on_selected={openZone}/>
     </div>

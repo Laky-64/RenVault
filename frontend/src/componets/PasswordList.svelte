@@ -3,7 +3,7 @@
     import {untrack} from "svelte";
     import PasswordItem from "./PasswordItem.svelte";
     import VirtualList from "./VirtualList.svelte";
-    import {nav} from "../navigation.svelte";
+    import {isCompact} from "../lib/navigation.svelte";
 
     const {
         zone,
@@ -19,6 +19,7 @@
     let titleHeight = $state(0);
     let stuck = $state(false);
     let selectedPassword: Password | null = $state(null);
+    const stack = $derived(isCompact());
 
     $effect(() => {
         const offset = scrollOffset;
@@ -31,7 +32,7 @@
     });
 </script>
 
-<div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack={nav.narrow}>
+<div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack>
     <VirtualList items={zone.passwords} resetKey={zone} bind:scrollOffset>
         {#snippet header()}
             <div class="large-title" bind:clientHeight={titleHeight}>
@@ -48,7 +49,7 @@
                         selectedPassword = entry;
                     }
                 }}
-                selected={entry == selectedPassword && !nav.narrow}
+                selected={entry == selectedPassword && !stack}
                 last={index === zone.passwords.length - 1}/>
         {/snippet}
     </VirtualList>
