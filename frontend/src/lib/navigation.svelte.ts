@@ -1,34 +1,42 @@
-export const NARROW_MAX = 800;
+export const COMPACT_MAX = 800;
 const PARALLAX = 0.3;
 
+let width = $state(typeof window === 'undefined' ? Number.POSITIVE_INFINITY : window.innerWidth);
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', () => (width = window.innerWidth));
+}
+
+export function isCompact(max: number = COMPACT_MAX): boolean {
+    return width <= max;
+}
+
 export interface NavigationOptions {
-    narrowMax?: number;
+    compactMax?: number;
     parallax?: number;
     stacked?: boolean;
 }
 
 export class Navigation<Level> {
     levels = $state<Level[]>([]);
-    narrow = $state(false);
-
-    private readonly parallax: number;
+    private readonly parallax: number = PARALLAX;
+    private readonly compactMax: number = COMPACT_MAX;
+    private readonly stacked: boolean = false;
 
     constructor(options: NavigationOptions = {}) {
         this.parallax = options.parallax ?? PARALLAX;
-        if (options.stacked) {
-            this.narrow = true;
-            return;
-        }
-        if (typeof window === 'undefined') return;
-        const query = window.matchMedia(`(max-width: ${options.narrowMax ?? NARROW_MAX}px)`);
-        this.narrow = query.matches;
-        query.addEventListener('change', (event) => (this.narrow = event.matches));
+        this.compactMax = options.compactMax ?? COMPACT_MAX;
+        this.stacked = options.stacked ?? false;
     }
+
+    compact = $derived(this.stacked || isCompact(this.compactMax));
 
     depth = $derived(this.levels.length);
 
+    // noinspection JSUnusedGlobalSymbols
     top = $derived<Level | undefined>(this.levels.at(-1));
 
+    // noinspection JSUnusedGlobalSymbols
     canGoBack = $derived(this.levels.length > 0);
 
     at(index: number): Level | undefined {
@@ -52,18 +60,19 @@ export class Navigation<Level> {
         this.levels[index] = level;
     }
 
+    // noinspection JSUnusedGlobalSymbols
     reset() {
         this.levels = [];
     }
 
     offsetOf(index: number): number {
-        if (!this.narrow) return 0;
+        if (!this.compact) return 0;
         const delta = index - this.depth;
         return delta >= 0 ? delta * 100 : delta * 100 * this.parallax;
     }
 
     isActive(index: number): boolean {
-        return !this.narrow || index === this.depth;
+        return !this.compact || index === this.depth;
     }
 }
 
