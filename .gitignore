@@ -10,3 +10,9 @@ build/ios/xcode/overlay.json
 build/ios/xcode/gen/
 build/android/overlay.json
 build/android/gen/
+frontend/bindings/
+frontend/public/puppertino/
+*.syso
+vault.enc
+device.json
+.DS_Store
