@@ -35,9 +35,11 @@ func main() {
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:     "RenVault",
 		Width:     1000,
-		Height:    618,
+		Height:    670,
 		Frameless: true,
 		URL:       "/",
+		MinWidth:  350,
+		MinHeight: 620,
 	})
 
 	err := app.Run()
