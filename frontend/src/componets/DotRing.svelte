@@ -119,14 +119,18 @@
             const t = still ? last : now - t0;
             const dpr = window.devicePixelRatio || 1;
             const backing = Math.round(side * dpr);
+            const scale = backing / side;
             if (el!.width !== backing) {
                 el!.width = backing;
                 el!.height = backing;
             }
-            ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-            ctx!.clearRect(0, 0, side, side);
+            ctx!.setTransform(1, 0, 0, 1, 0, 0);
+            ctx!.clearRect(0, 0, backing, backing);
+            ctx!.setTransform(scale, 0, 0, scale, 0, 0);
             ctx!.save();
             ctx!.translate(side / 2, side / 2);
+            const fit = (side / 2 - 1 / scale) / (side / 2);
+            ctx!.scale(fit, fit);
             if (spinDuration > 0 && !still) {
                 ctx!.rotate(((t % spinDuration) / spinDuration) * Math.PI * 2);
             }
