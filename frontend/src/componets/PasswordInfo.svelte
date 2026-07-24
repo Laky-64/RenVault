@@ -1,37 +1,40 @@
 <script lang="ts">
-    import {type Icon, pathFor} from "./ZoneIcon";
-    import type {Password} from "./ZoneContainer";
+    import {pathFor} from "./ZoneIcon";
+    import {type Password, type Zone, zoneText} from "./ZoneContainer";
     import PasswordIcon from "./PasswordIcon.svelte";
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
     import type {Field} from "./PasswordInfoFields";
     import ElasticScroll from "./ElasticScroll.svelte";
     import {isCompact} from "../lib/navigation.svelte";
+    import {formatDate} from "../lib/datetime";
+    import {m} from "../paraglide/messages";
 
     const {
-        icon,
+        zone,
         password,
     } : {
-        icon: Icon,
+        zone: Zone,
         password?: Password | null,
     } = $props();
 
+    const text = $derived(zoneText(zone));
     let fields: Field[] = $derived(password ? [
         {
-            name: 'Nome Utente',
+            name: m.field_username(),
             value: password.email,
         },
         {
-            name: 'Password',
+            name: m.field_password(),
             value: password.password,
             sensitive: true,
         },
         {
-            name: 'Sito Web',
+            name: m.field_website(),
             value: password.domains[0],
         },
         {
-            name: 'Modifica',
-            value: "20 mag 2026",
+            name: m.field_modified(),
+            value: formatDate(password.modified),
         }
     ] : []);
 
@@ -61,10 +64,10 @@
     {:else}
         <div class="no-selection">
             <svg xmlns="http://www.w3.org/2000/svg" height="50px" width="50px" viewBox="0 -960 960 960" fill="var(--hint-pass-selection)" style="pointer-events: none" aria-hidden="true">
-                <path d="{pathFor(icon, true)}"/>
+                <path d="{pathFor(zone.icon, true)}"/>
             </svg>
-            <p class="title">Nessuna password selezionata</p>
-            <p class="hint">Scegli una voce dall'elenco per vederne i dettagli</p>
+            <p class="title">{text.emptyTitle}</p>
+            <p class="desc">{text.emptyDescription}</p>
         </div>
     {/if}
 </div>
@@ -127,8 +130,8 @@
         text-align: center;
     }
 
-    .hint {
-        font-size: 15px;
+    .desc {
+        font-size: 14px;
         color: var(--hint-pass-selection);
         margin: 8px 0 0;
         text-align: center;

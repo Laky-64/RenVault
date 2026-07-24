@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Password, Zone} from "../componets/ZoneContainer";
+    import type {Zone} from "../componets/ZoneContainer";
     import ZoneContainer from "../componets/ZoneContainer.svelte";
     import PasswordList from "../componets/PasswordList.svelte";
     import PasswordInfo from "../componets/PasswordInfo.svelte";
@@ -27,46 +27,17 @@
         totp: DEMO[i % DEMO.length].totp,
         email: "stoats.foxes+" + i + "@example.com",
         password: "MEOW123!.",
-        domains: ["meow.com", "stoat.com"]
+        domains: ["meow.com", "stoat.com"],
+        modified: "2026-05-20T09:31:00Z"
     }));
 
     const zones: Zone[] = [
-        {
-            text: 'Tutto',
-            icon: 'all',
-            color: 'blue',
-            passwords: genPasswords(150),
-        },
-        {
-            text: 'Passkey',
-            icon: 'passkey',
-            color: 'green',
-            passwords: genPasswords(10),
-        },
-        {
-            text: 'Codici',
-            icon: 'codes',
-            color: 'yellow',
-            passwords: genPasswords(2),
-        },
-        {
-            text: 'Wi-Fi',
-            icon: 'wifi',
-            color: 'teal',
-            passwords: genPasswords(3),
-        },
-        {
-            text: 'Sicurezza',
-            icon: 'security',
-            color: 'red',
-            passwords: genPasswords(27),
-        },
-        {
-            text: 'Eliminate',
-            icon: 'deleted',
-            color: 'orange',
-            passwords: genPasswords(0),
-        }
+        {kind: 'all', icon: 'all', color: 'blue', passwords: genPasswords(150)},
+        {kind: 'passkeys', icon: 'passkey', color: 'green', passwords: genPasswords(10)},
+        {kind: 'codes', icon: 'codes', color: 'yellow', passwords: genPasswords(2)},
+        {kind: 'networks', icon: 'wifi', color: 'teal', passwords: genPasswords(3)},
+        {kind: 'security', icon: 'security', color: 'red', passwords: genPasswords(27)},
+        {kind: 'deleted', icon: 'deleted', color: 'orange', passwords: genPasswords(0)},
     ];
 
     const stack = $derived(isCompact());
@@ -81,7 +52,7 @@
         <PasswordList zone={shownZone} on_selected={openPassword}/>
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(2)}%)" inert={!nav.isActive(2)}>
-        <PasswordInfo icon={shownZone.icon} password={currentPassword() ?? null}/>
+        <PasswordInfo zone={shownZone} password={currentPassword() ?? null}/>
     </div>
 </div>
 

@@ -1,9 +1,10 @@
 <script lang="ts">
-    import type {Password, Zone} from "./ZoneContainer";
+    import {type Password, type Zone, zoneText} from "./ZoneContainer";
     import {untrack} from "svelte";
     import PasswordItem from "./PasswordItem.svelte";
     import VirtualList from "./VirtualList.svelte";
     import {isCompact} from "../lib/navigation.svelte";
+    import {m} from "../paraglide/messages";
 
     const {
         zone,
@@ -20,6 +21,7 @@
     let stuck = $state(false);
     let selectedPassword: Password | null = $state(null);
     const stack = $derived(isCompact());
+    const name = $derived(zoneText(zone).name);
 
     $effect(() => {
         const offset = scrollOffset;
@@ -36,8 +38,8 @@
     <VirtualList items={zone.passwords} resetKey={zone} bind:scrollOffset>
         {#snippet header()}
             <div class="large-title" bind:clientHeight={titleHeight}>
-                <h1>{zone.text}</h1>
-                <p>{zone.passwords.length} elementi</p>
+                <h1>{name}</h1>
+                <p>{m.zone_list_itemCount({count: zone.passwords.length})}</p>
             </div>
         {/snippet}
         {#snippet item(entry, index)}
@@ -56,8 +58,8 @@
     <div class="top-bar" class:stuck aria-hidden="true">
         <div class="bar-backdrop"></div>
         <div class="compact-title">
-            <span class="compact-name">{zone.text}</span>
-            <span class="compact-count">{zone.passwords.length} elementi</span>
+            <span class="compact-name">{name}</span>
+            <span class="compact-count">{m.zone_list_itemCount({count: zone.passwords.length})}</span>
         </div>
     </div>
 </div>

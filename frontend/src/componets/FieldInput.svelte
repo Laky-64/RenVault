@@ -1,4 +1,6 @@
 <script lang="ts">
+    import {m} from "../paraglide/messages";
+
     let {
         value = $bindable(''),
         placeholder,
@@ -50,7 +52,7 @@
             class="reveal"
             type="button"
             tabindex="-1"
-            aria-label={shown ? 'Hide Password' : 'Show Password'}
+            aria-label={shown ? m.auth_hidePassword() : m.auth_showPassword()}
             onclick={() => (shown = !shown)}
         >
             <svg viewBox="0 -960 960 960" width="20" height="20" fill="currentColor" aria-hidden="true">
