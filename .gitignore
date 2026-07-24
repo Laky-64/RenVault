@@ -11,6 +11,8 @@ build/ios/xcode/gen/
 build/android/overlay.json
 build/android/gen/
 frontend/bindings/
+frontend/src/paraglide/
+frontend/project.inlang/cache/
 frontend/public/puppertino/
 *.syso
 vault.enc

@@ -14,6 +14,7 @@
     "@wailsio/runtime": "latest"
   },
   "devDependencies": {
+    "@inlang/paraglide-js": "^2.22.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tsconfig/svelte": "^5.0.8",
     "svelte": "^5.46.4",

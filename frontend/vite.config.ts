@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import wails from "@wailsio/runtime/plugins/vite";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,5 +11,14 @@ export default defineConfig({
     strictPort: true,
     watch: { usePolling: true },
   },
-  plugins: [svelte(), wails("./bindings")],
+  plugins: [
+    svelte(),
+    wails("./bindings"),
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/paraglide",
+      emitTsDeclarations: true,
+      strategy: ["localStorage", "preferredLanguage", "baseLocale"],
+    }),
+  ],
 });
