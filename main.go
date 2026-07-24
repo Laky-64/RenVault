@@ -16,15 +16,16 @@ var assets embed.FS
 func main() {
 	iconService := icons.New()
 
+	appleVault := vault.NewService()
 	app := application.New(application.Options{
 		Name:        "RenVault",
 		Description: "An unofficial cross-platform Apple Passwords client for managing your credentials securely",
 		Services: []application.Service{
-			application.NewService(vault.NewService()),
+			application.NewService(appleVault),
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
-			Middleware: iconService.Middleware(),
+			Middleware: application.ChainMiddleware(iconService.Middleware(), appleVault.Middleware()),
 		},
 		Linux: application.LinuxOptions{},
 		Mac: application.MacOptions{

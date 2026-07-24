@@ -52,6 +52,10 @@ type payload struct {
 	Web         []keychain.WebPassword    `cbor:"web,omitempty"`
 	WiFi        []keychain.WiFiPassword   `cbor:"wifi,omitempty"`
 	SyncedAt    time.Time                 `cbor:"synced_at"`
+
+	ProfileName      string `cbor:"profile_name,omitempty"`
+	ProfilePhoto     []byte `cbor:"profile_photo,omitempty"`
+	ProfilePhotoType string `cbor:"profile_photo_type,omitempty"`
 }
 
 type vaultFile struct {

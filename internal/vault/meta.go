@@ -30,6 +30,11 @@ type WiFiMeta struct {
 	SSID string `json:"ssid"`
 }
 
+type ProfileMeta struct {
+	Name     string `json:"name"`
+	HasPhoto bool   `json:"hasPhoto"`
+}
+
 func hashID(prefix Kind, material ...string) string {
 	data := append([]string{string(prefix)}, material...)
 	sum := sha256.Sum256([]byte(strings.Join(data, "|")))

@@ -15,6 +15,7 @@ type Session struct {
 	client  *appleservices.Client
 	bottles []appleservices.BottleRef
 	peer    *appleservices.PeerKey
+	profile *appleservices.Profile
 }
 
 func NewSession(store appleservices.Store) *Session {
@@ -41,7 +42,13 @@ func (s *Session) Start(c appleservices.Credentials) (bool, error) {
 		return false, err
 	}
 	s.login = l
-	return l.NeedsTwoFactor(), nil
+	if l.NeedsTwoFactor() {
+		return true, nil
+	}
+	if err := s.loadProfileLocked(); err != nil {
+		return false, err
+	}
+	return false, nil
 }
 
 func (s *Session) RequestCode() error {
@@ -63,6 +70,9 @@ func (s *Session) SubmitCode(code string) error {
 		return err
 	}
 	s.client = nil
+	if err := s.loadProfileLocked(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -112,6 +122,37 @@ func (s *Session) RecoverBottle(index int, passcode []byte) error {
 	s.clearPeerLocked()
 	s.peer = &pk
 	return nil
+}
+
+func (s *Session) loadProfileLocked() error {
+	c, err := s.ensureClientLocked()
+	if err != nil {
+		return err
+	}
+	p, err := c.Profile()
+	if err != nil {
+		return err
+	}
+	s.profile = &p
+	return nil
+}
+
+func (s *Session) LoadProfile() (appleservices.Profile, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err := s.loadProfileLocked(); err != nil {
+		return appleservices.Profile{}, err
+	}
+	return *s.profile, nil
+}
+
+func (s *Session) Profile() (appleservices.Profile, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.profile == nil {
+		return appleservices.Profile{}, false
+	}
+	return *s.profile, true
 }
 
 func (s *Session) TakePeer() (appleservices.PeerKey, bool) {
@@ -185,6 +226,7 @@ func (s *Session) resetLoginLocked() {
 	s.login = nil
 	s.client = nil
 	s.bottles = nil
+	s.profile = nil
 	s.clearPeerLocked()
 }
 

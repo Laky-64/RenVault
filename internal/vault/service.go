@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/Laky-64/RenVault/internal/apple"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 type Service struct {
@@ -81,6 +82,14 @@ func (s *Service) FinishSetup(masterPassword string) error {
 
 func (s *Service) Sync() (bool, error) {
 	return s.v.Sync()
+}
+
+func (s *Service) ProfileInfo() ProfileMeta {
+	return s.v.ProfileInfo()
+}
+
+func (s *Service) Middleware() application.Middleware {
+	return s.v.Middleware
 }
 
 func (s *Service) SetAutoLockMinutes(m int) {

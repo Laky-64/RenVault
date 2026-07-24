@@ -2,6 +2,9 @@ package vault
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -257,6 +260,14 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 		zeroPayloadSecrets(p)
 		return err
 	}
+	pr, ok := v.sess.Profile()
+	if !ok {
+		zeroPayloadSecrets(p)
+		return apple.ErrNoProfile
+	}
+	p.ProfileName = pr.Name
+	p.ProfilePhoto = pr.Photo
+	p.ProfilePhotoType = pr.PhotoType
 	if sess, ok := v.store.take(); ok {
 		p.Session = sess
 	}
@@ -323,6 +334,17 @@ func (v *Vault) Sync() (bool, error) {
 		return false, err
 	}
 
+	prof, err := v.sess.LoadProfile()
+	if errors.Is(err, apple.ErrTwoFactorRequired) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	local.ProfileName = prof.Name
+	local.ProfilePhoto = prof.Photo
+	local.ProfilePhotoType = prof.PhotoType
+
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.p == nil || v.p != origP {
@@ -334,6 +356,68 @@ func (v *Vault) Sync() (bool, error) {
 	}
 	v.p.SyncedAt = time.Now().UTC()
 	return false, v.saveLocked()
+}
+
+func (v *Vault) ProfileInfo() ProfileMeta {
+	v.mu.Lock()
+	p := v.p
+	if p != nil {
+		m := ProfileMeta{Name: p.ProfileName, HasPhoto: len(p.ProfilePhoto) > 0}
+		v.mu.Unlock()
+		return m
+	}
+	v.mu.Unlock()
+	if pr, ok := v.sess.Profile(); ok {
+		return ProfileMeta{Name: pr.Name, HasPhoto: len(pr.Photo) > 0}
+	}
+	return ProfileMeta{}
+}
+
+func (v *Vault) photoBytes() ([]byte, string) {
+	v.mu.Lock()
+	p := v.p
+	if p != nil {
+		b, t := p.ProfilePhoto, p.ProfilePhotoType
+		v.mu.Unlock()
+		return cloneBytes(b), t
+	}
+	v.mu.Unlock()
+	if pr, ok := v.sess.Profile(); ok {
+		return cloneBytes(pr.Photo), pr.PhotoType
+	}
+	return nil, ""
+}
+
+func cloneBytes(b []byte) []byte {
+	if len(b) == 0 {
+		return nil
+	}
+	out := make([]byte, len(b))
+	copy(out, b)
+	return out
+}
+
+func (v *Vault) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/profile") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		photo, ptype := v.photoBytes()
+		if len(photo) == 0 {
+			http.Error(w, "no profile photo", http.StatusNotFound)
+			return
+		}
+		if ptype == "" {
+			ptype = http.DetectContentType(photo)
+		}
+		w.Header().Set("Content-Type", ptype)
+		w.Header().Set("Content-Length", fmt.Sprint(len(photo)))
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
+		_, _ = w.Write(photo)
+	})
 }
 
 func fetchCaches(src keychainSource, p *payload) error {
@@ -353,4 +437,7 @@ func fetchCaches(src keychainSource, p *payload) error {
 func copyCaches(dst, src *payload) {
 	dst.Web = src.Web
 	dst.WiFi = src.WiFi
+	dst.ProfileName = src.ProfileName
+	dst.ProfilePhoto = src.ProfilePhoto
+	dst.ProfilePhotoType = src.ProfilePhotoType
 }
