@@ -1,0 +1,64 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "auth_signInTitle": "Sign in with your Apple ID",
+  "auth_signInHint": "Sign in with an email or phone number to use RenVault",
+  "auth_emailPlaceholder": "Email or phone number",
+  "auth_passwordPlaceholder": "Password",
+  "auth_signInAction": "Sign in",
+  "auth_showPassword": "Show password",
+  "auth_hidePassword": "Hide password",
+  "auth_privacyNotice": "We use your Apple ID to securely sign you in and access your data. Apple may collect information for security purposes. Learn more in the",
+  "auth_privacyLink": "Apple ID Privacy Policy.",
+  "field_username": "User Name",
+  "field_password": "Password",
+  "field_website": "Website",
+  "field_modified": "Modified",
+  "code_inputLabel": "Verification code",
+  "busy_signingInTitle": "Signing In",
+  "busy_checkingCredentials": "Checking your credentials…",
+  "busy_openingVaultTitle": "RenVault",
+  "busy_openingVault": "Opening your vault…",
+  "busy_sendingCodeTo": "Sending a code to {device}…",
+  "failure_generic": "Something went wrong. Please check your connection and try again.",
+  "failure_badCredentials": "Your Apple Account or password is incorrect.",
+  "failure_accountLocked": "This account has been locked for security reasons.",
+  "zone_all_name": "All",
+  "zone_all_empty": "No Items Saved",
+  "zone_all_noSelection": "No Item Selected",
+  "zone_all_desc": "Passwords are securely stored for your websites and apps. Access your saved credentials anytime.",
+  "zone_passkeys_name": "Passkeys",
+  "zone_passkeys_empty": "No Passkeys Saved",
+  "zone_passkeys_noSelection": "No Passkey Selected",
+  "zone_passkeys_desc": "Passkeys provide the strongest security available for your accounts. When using a passkey, authenticate with your device's biometrics, PIN, or passcode to sign in.",
+  "zone_codes_name": "Codes",
+  "zone_codes_empty": "No Verification Codes Saved",
+  "zone_codes_noSelection": "No Code Selected",
+  "zone_codes_desc": "Verification codes provide an extra layer of security to help keep your accounts safe.",
+  "zone_networks_name": "Wi-Fi",
+  "zone_networks_empty": "No Wi-Fi Networks Saved",
+  "zone_networks_noSelection": "No Network Selected",
+  "zone_networks_desc": "Wi-Fi networks are securely stored for quick access. View and manage your saved networks.",
+  "zone_security_name": "Security",
+  "zone_security_empty": "No Security Recommendations",
+  "zone_security_noSelection": "No Recommendation Selected",
+  "zone_security_desc": "RenVault privately and securely monitors your passwords to alert you if any are easily guessed or appear in data leaks from website.",
+  "zone_deleted_name": "Deleted",
+  "zone_deleted_empty": "No Deleted Items",
+  "zone_deleted_noSelection": "No Item Selected",
+  "zone_deleted_desc": "Deleted items stay here before they are removed for good. Recover the ones you still need.",
+  "zone_list_itemCount": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} item",
+        "countPlural=*": "{count} items"
+      }
+    }
+  ]
+}
