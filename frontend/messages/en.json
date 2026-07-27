@@ -33,6 +33,11 @@
   "field_password": "Password",
   "field_website": "Website",
   "field_modified": "Modified",
+  "field_verificationCode": "Code",
+  "field_networkName": "Network Name",
+  "field_copied": "Copied",
+  "field_copyAction": "Copy {name}",
+  "item_wifiNetwork": "Wi-Fi Network",
   "code_inputLabel": "Verification code",
   "busy_signingInTitle": "Signing In",
   "busy_checkingCredentials": "Checking your credentials…",
@@ -72,6 +77,22 @@
   "zone_deleted_empty": "No Deleted Items",
   "zone_deleted_noSelection": "No Item Selected",
   "zone_deleted_desc": "Deleted items stay here before they are removed for good. Recover the ones you still need.",
+  "field_websiteMore": [
+    {
+      "declarations": [
+        "input domain",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{domain} and {count} other",
+        "countPlural=*": "{domain} and {count} others"
+      }
+    }
+  ],
   "auth_masterTooShort": [
     {
       "declarations": [
