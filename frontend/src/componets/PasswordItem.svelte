@@ -1,22 +1,24 @@
 <script lang="ts">
-    import {onMount} from "svelte";
-    import {fly} from "svelte/transition";
-    import type {Password} from "./ZoneContainer";
+    import {type Item, viewOf} from "../lib/items";
     import PasswordIcon from "./PasswordIcon.svelte";
+    import TotpDigits from "./TotpDigits.svelte";
+    import {totpSlot} from "../lib/totp.svelte";
 
     const {
-        password,
-        totpDigits = 6,
+        item,
+        loadCode,
         last = false,
         selected = false,
         onclick,
     } : {
-        password: Password;
-        totpDigits?: number;
+        item: Item;
+        loadCode?: (item: Item) => Promise<string>;
         last?: boolean;
         selected?: boolean;
         onclick?: () => void;
     } = $props();
+
+    const view = $derived(viewOf(item));
 
     function onKey(e: KeyboardEvent) {
         if ((e.key === "Enter" || e.key === " ") && onclick) {
@@ -32,32 +34,32 @@
         }
     }
 
-    const groups = $derived(
-        password.totp === undefined
-            ? []
-            : String(password.totp).padStart(totpDigits, '0').match(/.{1,3}/g) ?? [],
-    );
+    let code = $state('');
 
-    const FLY_DURATION = 300;
-    let mounted = $state(false);
-    onMount(() => {
-        mounted = true;
+    $effect(() => {
+        if (!loadCode) return;
+        totpSlot();
+        let alive = true;
+        loadCode(item)
+            .then(value => {
+                if (alive) code = value;
+            })
+            .catch(() => {
+                if (alive) code = '';
+            });
+        return () => (alive = false);
     });
 </script>
 <div class="row" role="button" tabindex="0" onclick={handleClick} onkeydown={onKey} class:selected>
-    <PasswordIcon password={password} />
+    <PasswordIcon icon={view.icon}/>
     <div class="info-container" class:last>
         <div class="desc-container">
-            <p class="name">{password.name}</p>
-            <p class="desc" class:selected>{password.email}</p>
+            <p class="name">{view.title}</p>
+            <p class="desc" class:selected>{view.subtitle}</p>
         </div>
-        {#if password.totp !== undefined}
-            <div class="totp-slot">
-                {#key password.totp}
-                    <p class="totp" in:fly={{ y: -8, duration: mounted ? FLY_DURATION : 0 }} out:fly={{ y: 8, duration: FLY_DURATION }}>
-                        {#each groups as group}<span>{group}</span>{/each}
-                    </p>
-                {/key}
+        {#if code}
+            <div class="totp">
+                <TotpDigits {code}/>
             </div>
         {/if}
     </div>
@@ -127,25 +129,11 @@
         color: var(--subtitle-text-color);
     }
 
-    .totp-slot {
-        display: grid;
-        flex-shrink: 0;
-        overflow: hidden;
-    }
-
-    .totp-slot > .totp {
-        grid-area: 1 / 1;
-    }
-
     .totp {
-        display: flex;
-        gap: 4px;
-        margin: 0 0 0 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--subtitle-text-color);
         flex-shrink: 0;
-        font-variant-numeric: tabular-nums;
+        margin-left: 8px;
+        font-size: 15px;
+        color: var(--subtitle-text-color);
     }
 
     .row:not(:active):not(.selected) > .info-container:not(.last)::after {

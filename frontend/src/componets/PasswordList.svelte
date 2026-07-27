@@ -1,5 +1,6 @@
 <script lang="ts">
-    import {type Password, type Zone, zoneText} from "./ZoneContainer";
+    import {type Zone, zoneText} from "./ZoneContainer";
+    import type {Item, SecretSource} from "../lib/items";
     import {untrack} from "svelte";
     import PasswordItem from "./PasswordItem.svelte";
     import VirtualList from "./VirtualList.svelte";
@@ -8,18 +9,27 @@
 
     const {
         zone,
+        secrets,
         on_selected,
     } : {
         zone: Zone;
-        on_selected?: (password: Password) => void;
+        secrets?: SecretSource;
+        on_selected?: (item: Item) => void;
     } = $props();
+
+    const previewCode = $derived.by(() => {
+        if (zone.kind !== 'codes' || !secrets) return undefined;
+        const source = secrets;
+        return async (item: Item) =>
+            item.kind === 'web' && item.hasTotp ? source.totp(item.id) : '';
+    });
 
     const BAR_HEIGHT = 60;
     const HYSTERESIS = 6;
     let scrollOffset = $state(0);
     let titleHeight = $state(0);
     let stuck = $state(false);
-    let selectedPassword: Password | null = $state(null);
+    let selectedItem: Item | null = $state(null);
     const stack = $derived(isCompact());
     const name = $derived(zoneText(zone).name);
 
@@ -35,31 +45,32 @@
 </script>
 
 <div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack>
-    <VirtualList items={zone.passwords} resetKey={zone} bind:scrollOffset>
+    <VirtualList items={zone.items} resetKey={zone} bind:scrollOffset>
         {#snippet header()}
             <div class="large-title" bind:clientHeight={titleHeight}>
                 <h1>{name}</h1>
-                <p>{m.zone_list_itemCount({count: zone.passwords.length})}</p>
+                <p>{m.zone_list_itemCount({count: zone.items.length})}</p>
             </div>
         {/snippet}
         {#snippet item(entry, index)}
             <PasswordItem
-                password={entry}
+                item={entry}
+                loadCode={previewCode}
                 onclick={() => {
                     if (on_selected) {
                         on_selected(entry);
-                        selectedPassword = entry;
+                        selectedItem = entry;
                     }
                 }}
-                selected={entry == selectedPassword && !stack}
-                last={index === zone.passwords.length - 1}/>
+                selected={entry == selectedItem && !stack}
+                last={index === zone.items.length - 1}/>
         {/snippet}
     </VirtualList>
     <div class="top-bar" class:stuck aria-hidden="true">
         <div class="bar-backdrop"></div>
         <div class="compact-title">
             <span class="compact-name">{name}</span>
-            <span class="compact-count">{m.zone_list_itemCount({count: zone.passwords.length})}</span>
+            <span class="compact-count">{m.zone_list_itemCount({count: zone.items.length})}</span>
         </div>
     </div>
 </div>

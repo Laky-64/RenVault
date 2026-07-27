@@ -1,62 +1,44 @@
 <script lang="ts">
     import {pathFor} from "./ZoneIcon";
-    import {type Password, type Zone, zoneText} from "./ZoneContainer";
+    import {type Zone, zoneText} from "./ZoneContainer";
     import PasswordIcon from "./PasswordIcon.svelte";
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
-    import type {Field} from "./PasswordInfoFields";
+    import {detailOf, type Item, type SecretSource, viewOf} from "../lib/items";
     import ElasticScroll from "./ElasticScroll.svelte";
     import {isCompact} from "../lib/navigation.svelte";
-    import {formatDate} from "../lib/datetime";
-    import {m} from "../paraglide/messages";
 
     const {
         zone,
-        password,
+        item,
+        secrets,
     } : {
         zone: Zone,
-        password?: Password | null,
+        item?: Item | null,
+        secrets: SecretSource,
     } = $props();
 
     const text = $derived(zoneText(zone));
-    let fields: Field[] = $derived(password ? [
-        {
-            name: m.field_username(),
-            value: password.email,
-        },
-        {
-            name: m.field_password(),
-            value: password.password,
-            sensitive: true,
-        },
-        {
-            name: m.field_website(),
-            value: password.domains[0],
-        },
-        {
-            name: m.field_modified(),
-            value: formatDate(password.modified),
-        }
-    ] : []);
-
+    const detail = $derived.by(() => (item ? detailOf(item, secrets) : null));
+    const view = $derived.by(() => (item ? viewOf(item) : null));
     let scroller: ElasticScroll | undefined = $state();
     const stack = $derived(isCompact());
     let contentHeight = $state(0);
 
     $effect(() => {
-        password;
+        item;
         scroller?.reset();
     });
 </script>
 
 <div class="container" class:stack>
-    {#if password}
+    {#if item && detail && view}
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
                 <div class="stack" bind:clientHeight={contentHeight}>
                     <div class="card">
-                        <PasswordIcon password={password} width="50px"/>
-                        <p class="name">{password.name}</p>
-                        <PasswordInfoFields fields={fields} />
+                        <PasswordIcon icon={view.icon} width="50px"/>
+                        <p class="name">{detail.title}</p>
+                        <PasswordInfoFields fields={detail.fields}/>
                     </div>
                 </div>
             </ElasticScroll>

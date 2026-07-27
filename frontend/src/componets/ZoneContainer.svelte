@@ -17,7 +17,7 @@ const stack = $derived(isCompact());
 
 <div class="container" class:stack>
     {#each zones as zone, i}
-        <ZoneButton icon={zone.icon} text={zoneText(zone).name} count={zone.passwords.length} accent="var(--tile-{zone.color}-color)" selected={selected === i && !stack} onclick={() => {
+        <ZoneButton icon={zone.icon} text={zoneText(zone).name} count={zone.items.length} accent="var(--tile-{zone.color}-color)" selected={selected === i && !stack} onclick={() => {
             selected = i;
             if (on_selected) on_selected(zone);
         }}/>

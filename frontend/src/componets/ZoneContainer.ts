@@ -1,4 +1,5 @@
 import type {Icon} from "./ZoneIcon";
+import type {Item} from "../lib/items";
 import {m} from "../paraglide/messages";
 
 export type ZoneColor = 'blue' | 'green' | 'yellow' | 'teal' | 'red' | 'orange'
@@ -8,18 +9,8 @@ export interface Zone {
     kind: ZoneKind;
     icon: Icon;
     color: ZoneColor;
-    passwords: Password[];
+    items: Item[];
     label?: string;
-}
-
-export interface Password {
-    name: string;
-    email: string;
-    password: string;
-    domains: string[];
-    icon: string;
-    totp?: number;
-    modified?: string;
 }
 
 export interface ZoneText {
@@ -76,7 +67,7 @@ export function zoneText(zone: Zone): ZoneText {
     const entry = CATALOG[zone.kind];
     return {
         name: zone.label ?? entry.name(),
-        emptyTitle: zone.passwords.length === 0 ? entry.empty() : entry.noSelection(),
+        emptyTitle: zone.items.length === 0 ? entry.empty() : entry.noSelection(),
         emptyDescription: entry.description(),
     };
 }

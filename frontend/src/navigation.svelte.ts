@@ -1,12 +1,13 @@
 import {Navigation} from "./lib/navigation.svelte";
-import type {Password, Zone} from "./componets/ZoneContainer";
+import type {Zone} from "./componets/ZoneContainer";
+import type {Item} from "./lib/items";
 
 export type Level =
     | {kind: 'zone'; zone: Zone}
-    | {kind: 'password'; password: Password};
+    | {kind: 'item'; item: Item};
 
 export const ZONE = 0;
-export const PASSWORD = 1;
+export const ITEM = 1;
 
 export const nav = new Navigation<Level>();
 
@@ -19,14 +20,14 @@ export function currentZone() {
     return levelAt(ZONE, 'zone')?.zone;
 }
 
-export function currentPassword() {
-    return levelAt(PASSWORD, 'password')?.password;
+export function currentItem() {
+    return levelAt(ITEM, 'item')?.item;
 }
 
 export function openZone(zone: Zone) {
     nav.replace(ZONE, {kind: 'zone', zone});
 }
 
-export function openPassword(password: Password) {
-    nav.replace(PASSWORD, {kind: 'password', password});
+export function openItem(item: Item) {
+    nav.replace(ITEM, {kind: 'item', item});
 }
