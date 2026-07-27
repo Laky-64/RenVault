@@ -24,11 +24,11 @@
         border: 2px solid var(--destructive-text-color);
     }
 
-    .card > :global(:last-child) {
+    .card > :global(:not(:first-child)) {
         position: relative;
     }
 
-    .card > :global(:last-child)::after {
+    .card > :global(:not(:first-child))::after {
         content: '';
         position: absolute;
         right: 20px;
