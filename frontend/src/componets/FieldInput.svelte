@@ -8,6 +8,7 @@
         autocomplete,
         disabled = false,
         reveal = false,
+        shown = $bindable(false),
         onEnter,
     }: {
         value?: string;
@@ -16,10 +17,9 @@
         autocomplete?: HTMLInputElement['autocomplete'];
         disabled?: boolean;
         reveal?: boolean;
+        shown?: boolean;
         onEnter?: () => void;
     } = $props();
-
-    let shown = $state(false);
     let field: HTMLInputElement | undefined = $state();
 
     // noinspection JSUnusedGlobalSymbols
