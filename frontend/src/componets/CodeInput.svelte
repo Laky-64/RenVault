@@ -4,6 +4,7 @@
 
     let {
         length = 6,
+        group = 3,
         value = $bindable(''),
         disabled = false,
         error = 0,
@@ -11,6 +12,7 @@
         onComplete,
     }: {
         length?: number;
+        group?: number;
         value?: string;
         disabled?: boolean;
         error?: number;
@@ -84,6 +86,7 @@
     {#each chars as char, i (i)}
         <div
             class="box"
+            class:split={group > 0 && group < length && i === group - 1}
             class:filled={char !== ''}
             class:active={focused && !disabled && i === active && !full}
             class:complete={full}
@@ -116,7 +119,9 @@
     .wrap {
         position: relative;
         display: flex;
-        gap: 10px;
+        justify-content: center;
+        width: 100%;
+        gap: clamp(5px, 2.2vw, 10px);
     }
 
     .wrap.disabled {
@@ -147,15 +152,21 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 46px;
-        height: 46px;
-        border-radius: 12px;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 46px;
+        aspect-ratio: 1;
+        border-radius: clamp(9px, 3vw, 12px);
         background: color-mix(in srgb, var(--text-color) 7%, transparent);
         border: 2px solid color-mix(in srgb, var(--text-color) 7%, transparent);
         transition:
             box-shadow 180ms ease,
             background 180ms ease,
             transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .box.split {
+        margin-right: clamp(8px, 3.4vw, 20px);
     }
 
     .box.filled {
@@ -172,7 +183,7 @@
     }
 
     .digit {
-        font-size: 24px;
+        font-size: clamp(17px, 5.4vw, 24px);
         font-weight: 600;
         color: var(--text-color);
         font-variant-numeric: tabular-nums;
