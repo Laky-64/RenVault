@@ -22,7 +22,8 @@ func (s *IconService) handler(next http.Handler) http.Handler {
 		png, err := s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", src))
 
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.Header().Set("Cache-Control", "private, max-age=1800")
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
 
