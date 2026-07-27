@@ -94,12 +94,16 @@ func (s *Session) Bottles() ([]BottleInfo, error) {
 	out := make([]BottleInfo, len(refs))
 	for i, r := range refs {
 		out[i] = BottleInfo{
-			Index:  i,
-			Name:   r.Device.Name,
-			Model:  r.Device.Model,
-			Class:  r.Device.Class,
-			Serial: r.Device.Serial,
-			Build:  r.Device.Build,
+			Index:      i,
+			Name:       r.Device.Name,
+			Model:      r.Device.Model,
+			ShortModel: r.Device.ShortModel,
+			Class:      r.Device.Class,
+			Serial:     r.Device.Serial,
+			Build:      r.Device.Build,
+			OS:         r.Device.OS,
+			OSVersion:  r.Device.OSVersion,
+			ImageURL:   r.Device.ImageURL,
 		}
 	}
 	return out, nil
