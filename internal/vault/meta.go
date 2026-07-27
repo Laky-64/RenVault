@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Laky-64/appleservices/keychain"
 )
@@ -17,17 +18,20 @@ const (
 )
 
 type WebMeta struct {
-	ID       string   `json:"id"`
-	Title    string   `json:"title"`
-	Username string   `json:"username"`
-	Domain   string   `json:"domain"`
-	Domains  []string `json:"domains"`
-	HasTOTP  bool     `json:"hasTotp"`
+	ID       string    `json:"id"`
+	Title    string    `json:"title"`
+	Username string    `json:"username"`
+	Domain   string    `json:"domain"`
+	Domains  []string  `json:"domains"`
+	Website  bool      `json:"website"`
+	HasTOTP  bool      `json:"hasTotp"`
+	Modified time.Time `json:"modified"`
 }
 
 type WiFiMeta struct {
-	ID   string `json:"id"`
-	SSID string `json:"ssid"`
+	ID       string    `json:"id"`
+	SSID     string    `json:"ssid"`
+	Modified time.Time `json:"modified"`
 }
 
 type ProfileMeta struct {
@@ -70,7 +74,9 @@ func webMetas(p payload) []WebMeta {
 			Username: w.Username,
 			Domain:   w.Domain,
 			Domains:  w.Domains,
+			Website:  w.Website,
 			HasTOTP:  w.TOTP != "",
+			Modified: w.Modified,
 		})
 	}
 	return out
@@ -79,7 +85,7 @@ func webMetas(p payload) []WebMeta {
 func wifiMetas(p payload) []WiFiMeta {
 	out := make([]WiFiMeta, 0, len(p.WiFi))
 	for _, w := range p.WiFi {
-		out = append(out, WiFiMeta{ID: wifiID(w), SSID: w.SSID})
+		out = append(out, WiFiMeta{ID: wifiID(w), SSID: w.SSID, Modified: w.Modified})
 	}
 	return out
 }
