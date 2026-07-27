@@ -10,10 +10,12 @@
     const {
         zone,
         secrets,
+        selected,
         on_selected,
     } : {
         zone: Zone;
         secrets?: SecretSource;
+        selected?: Item | null;
         on_selected?: (item: Item) => void;
     } = $props();
 
@@ -29,7 +31,6 @@
     let scrollOffset = $state(0);
     let titleHeight = $state(0);
     let stuck = $state(false);
-    let selectedItem: Item | null = $state(null);
     const stack = $derived(isCompact());
     const name = $derived(zoneText(zone).name);
 
@@ -56,13 +57,8 @@
             <PasswordItem
                 item={entry}
                 loadCode={previewCode}
-                onclick={() => {
-                    if (on_selected) {
-                        on_selected(entry);
-                        selectedItem = entry;
-                    }
-                }}
-                selected={entry == selectedItem && !stack}
+                onclick={() => on_selected?.(entry)}
+                selected={entry === selected && !stack}
                 last={index === zone.items.length - 1}/>
         {/snippet}
     </VirtualList>

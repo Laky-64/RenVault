@@ -50,7 +50,7 @@
         <ZoneContainer zones={zones} on_selected={openZone}/>
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(1)}%)" inert={!nav.isActive(1)}>
-        <PasswordList zone={shownZone} {secrets} on_selected={openItem}/>
+        <PasswordList zone={shownZone} {secrets} selected={currentItem() ?? null} on_selected={openItem}/>
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(2)}%)" inert={!nav.isActive(2)}>
         <PasswordInfo zone={shownZone} item={currentItem() ?? null} {secrets}/>
