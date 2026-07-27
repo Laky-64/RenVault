@@ -77,8 +77,7 @@ func decodeICO(data []byte) (image.Image, error) {
 			continue
 		}
 		if best == nil || better(entry, *best) {
-			e := entry
-			best = &e
+			best = new(entry)
 		}
 	}
 	if best == nil {

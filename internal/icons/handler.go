@@ -19,7 +19,7 @@ func (s *IconService) handler(next http.Handler) http.Handler {
 			return
 		}
 		src := r.URL.Query().Get("src")
-		png, err := s.tile(src)
+		png, err := s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", src))
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
