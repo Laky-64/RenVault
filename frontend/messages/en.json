@@ -9,6 +9,26 @@
   "auth_hidePassword": "Hide password",
   "auth_privacyNotice": "We use your Apple ID to securely sign you in and access your data. Apple may collect information for security purposes. Learn more in the",
   "auth_privacyLink": "Apple ID Privacy Policy.",
+  "auth_2faTitle": "Two-Factor Authentication",
+  "auth_2faHint": "A verification code has been sent to your trusted devices. Enter the code to continue.",
+  "auth_2faResendAction": "Resend Code",
+  "auth_deviceSelectionTitle": "Choose a Trusted Device",
+  "auth_deviceSelectionHint": "Select a trusted device to continue. You'll be asked to enter its passcode to verify your identity.",
+  "auth_devicePasscodeTitle": "Enter Device Passcode",
+  "auth_devicePasscodeHint": "Enter the passcode you use to unlock “{device}”. Your passcode is never sent to Apple.",
+  "auth_devicePasscodePlaceholder": "Passcode",
+  "auth_continueAction": "Continue",
+  "auth_masterSetupTitle": "Create a Master Password",
+  "auth_masterSetupHint": "This password encrypts your vault on this device. It is never sent anywhere and cannot be recovered, if you forget it, you will have to sign in again.",
+  "auth_masterPlaceholder": "Master password",
+  "auth_masterRepeatPlaceholder": "Confirm password",
+  "auth_masterMismatch": "The passwords do not match.",
+  "auth_unlockTitle": "Unlock RenVault",
+  "auth_unlockHint": "Enter your master password to decrypt your vault.",
+  "auth_unlockAction": "Unlock",
+  "strength_weak": "Weak",
+  "strength_fair": "Fair",
+  "strength_strong": "Strong",
   "field_username": "User Name",
   "field_password": "Password",
   "field_website": "Website",
@@ -18,10 +38,16 @@
   "busy_checkingCredentials": "Checking your credentials…",
   "busy_openingVaultTitle": "RenVault",
   "busy_openingVault": "Opening your vault…",
-  "busy_sendingCodeTo": "Sending a code to {device}…",
+  "busy_sendingCode": "Sending a new code…",
+  "busy_verifyingCode": "Verifying your code…",
+  "busy_verifyingPasscode": "Verifying your passcode…",
+  "busy_creatingVaultTitle": "Creating Your Vault",
+  "busy_creatingVault": "Encrypting your passwords…",
   "failure_generic": "Something went wrong. Please check your connection and try again.",
   "failure_badCredentials": "Your Apple Account or password is incorrect.",
   "failure_accountLocked": "This account has been locked for security reasons.",
+  "failure_wrongPasscode": "That passcode is incorrect. Apple limits how many times you can try.",
+  "failure_wrongMasterPassword": "That master password is incorrect.",
   "zone_all_name": "All",
   "zone_all_empty": "No Items Saved",
   "zone_all_noSelection": "No Item Selected",
@@ -46,6 +72,21 @@
   "zone_deleted_empty": "No Deleted Items",
   "zone_deleted_noSelection": "No Item Selected",
   "zone_deleted_desc": "Deleted items stay here before they are removed for good. Recover the ones you still need.",
+  "auth_masterTooShort": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Use at least {count} character.",
+        "countPlural=*": "Use at least {count} characters."
+      }
+    }
+  ],
   "zone_list_itemCount": [
     {
       "declarations": [

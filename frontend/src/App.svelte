@@ -32,7 +32,9 @@ let authenticated = $state(false);
                 <HomePage/>
             </div>
         {:else}
-            
+            <div class="screen" out:swap={{scale: 0.98}}>
+                <AuthFlow onDone={() => authenticated = true}/>
+            </div>
         {/if}
     </div>
 </main>
