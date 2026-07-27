@@ -13,6 +13,7 @@ const KNOWN: Record<number, () => string> = {
     [-20751]: m.failure_accountLocked,
 };
 
+const BAD_MASTER = /message authentication failed/i;
 const ESCROW = /\bescrow:.*?\b(?:http status code|status) (\d{3})\b/;
 const ESCROW_KNOWN: Record<number, () => string> = {
     409: m.failure_wrongPasscode,
@@ -51,6 +52,10 @@ export function describeFailure(cause: unknown): Failure {
     if (escrow) {
         const status = Number(escrow[1]);
         return {code: null, status, message: (ESCROW_KNOWN[status] ?? m.failure_generic)(), raw};
+    }
+
+    if (BAD_MASTER.test(raw)) {
+        return {code: null, status: null, message: m.failure_wrongMasterPassword(), raw};
     }
 
     return {code: null, status: null, message: m.failure_generic(), raw};
