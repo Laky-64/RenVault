@@ -22,10 +22,25 @@
     } = $props();
 
     let hovering = $state(false);
+    let pointerOver = false;
+    let keyFocus = false;
 
-    function hover(entering: boolean) {
-        hovering = entering;
-        onHover?.(entering);
+    function sync() {
+        const next = pointerOver || keyFocus;
+        if (next === hovering) return;
+        hovering = next;
+        onHover?.(next);
+    }
+
+    function pointer(entering: boolean) {
+        pointerOver = entering;
+        sync();
+    }
+
+    function focusChange(event: FocusEvent) {
+        const target = event.currentTarget as HTMLElement;
+        keyFocus = event.type === 'focus' && target.matches(':focus-visible');
+        sync();
     }
 
     let valueWidth = $state(0);
@@ -68,10 +83,10 @@
     type="button"
     aria-label={m.field_copyAction({name: label})}
     onclick={onCopy}
-    onmouseenter={() => hover(true)}
-    onmouseleave={() => hover(false)}
-    onfocus={() => hover(true)}
-    onblur={() => hover(false)}
+    onmouseenter={() => pointer(true)}
+    onmouseleave={() => pointer(false)}
+    onfocus={focusChange}
+    onblur={focusChange}
 >
     <span class="swap" class:swapping style={width ? `width: ${width}px` : ''}>
         <span class="face" class:on={!copied} bind:clientWidth={valueWidth}>
