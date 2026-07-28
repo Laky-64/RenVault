@@ -92,8 +92,6 @@ function websiteOf(item: WebItem): string {
     return m.field_websiteMore({domain: item.domain, count: others.length});
 }
 
-/** Go's zero time means "never recorded", and formatDate renders it as empty,
- *  so the row is left out rather than shown blank. */
 function pushModified(fields: DetailField[], modified: string): void {
     const shown = formatDate(modified);
     if (shown) fields.push({label: m.field_modified(), value: {shown}});
