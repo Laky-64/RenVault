@@ -34,7 +34,7 @@
   "field_website": "Website",
   "field_modified": "Modified",
   "field_verificationCode": "Code",
-  "field_networkName": "Network Name",
+  "field_networkName": "Name",
   "field_copied": "Copied",
   "field_copyAction": "Copy {name}",
   "item_wifiNetwork": "Wi-Fi Network",
