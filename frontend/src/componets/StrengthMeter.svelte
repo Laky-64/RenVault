@@ -54,8 +54,8 @@
             background-color 320ms ease;
     }
 
-    .fill[data-level="2"] { background: #d7a13b; }
-    .fill[data-level="3"] { background: #3ea05f; }
+    .fill[data-level="2"] { background: var(--strength-fair-color); }
+    .fill[data-level="3"] { background: var(--strength-strong-color); }
 
     .label-slot {
         position: relative;
@@ -84,8 +84,8 @@
         color: var(--destructive-text-color);
     }
 
-    .label[data-level="2"] { color: #d7a13b; }
-    .label[data-level="3"] { color: #3ea05f; }
+    .label[data-level="2"] { color: var(--strength-fair-color); }
+    .label[data-level="3"] { color: var(--strength-strong-color); }
 
     @media (prefers-reduced-motion: reduce) {
         .fill,

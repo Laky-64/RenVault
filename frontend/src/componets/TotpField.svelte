@@ -90,7 +90,7 @@
 
     .progress {
         fill: none;
-        stroke: #30d158;
+        stroke: var(--code-progress-color);
         stroke-width: 2.8;
         stroke-linecap: round;
     }
