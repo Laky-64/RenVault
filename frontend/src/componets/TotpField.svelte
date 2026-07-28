@@ -2,6 +2,7 @@
     import {onMount} from "svelte";
     import CopyValue from "./CopyValue.svelte";
     import TotpDigits from "./TotpDigits.svelte";
+    import {totpSlot} from "../lib/totp.svelte";
 
     const {
         label,
@@ -25,26 +26,24 @@
 
     const dash = $derived(RING * Math.max(0, Math.min(1, remaining / period)));
 
-    async function refresh() {
-        try {
-            code = await load();
-        } catch {
-            code = '';
-        }
-    }
+    $effect(() => {
+        totpSlot(period);
+        let alive = true;
+        load()
+            .then(value => {
+                if (alive) code = value;
+            })
+            .catch(() => {
+                if (alive) code = '';
+            });
+        return () => (alive = false);
+    });
 
     onMount(() => {
         let frame = 0;
-        let slot = -1;
 
         const tick = () => {
-            const now = Date.now() / 1000;
-            const current = Math.floor(now / period);
-            if (current !== slot) {
-                slot = current;
-                void refresh();
-            }
-            remaining = period - (now % period);
+            remaining = period - ((Date.now() / 1000) % period);
             frame = requestAnimationFrame(tick);
         };
         tick();
