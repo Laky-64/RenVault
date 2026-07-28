@@ -93,6 +93,7 @@
         font-size: 22px;
         margin: 0 0 15px;
         font-weight: bold;
+        text-align: center;
         color: var(--text-color);
     }
 
