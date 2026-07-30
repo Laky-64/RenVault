@@ -35,10 +35,16 @@
     }
 
     let code = $state('');
+    let source: Item | null = null;
+    const slot = $derived(totpSlot());
 
     $effect(() => {
         if (!loadCode) return;
-        totpSlot();
+        slot;
+        if (item !== source) {
+            source = item;
+            code = '';
+        }
         let alive = true;
         loadCode(item)
             .then(value => {
@@ -59,7 +65,7 @@
         </div>
         {#if code}
             <div class="totp">
-                <TotpDigits {code}/>
+                <TotpDigits {code} source={item}/>
             </div>
         {/if}
     </div>

@@ -26,8 +26,15 @@
 
     const dash = $derived(RING * Math.max(0, Math.min(1, remaining / period)));
 
+    let source: (() => Promise<string>) | null = null;
+    const slot = $derived(totpSlot(period));
+
     $effect(() => {
-        totpSlot(period);
+        slot;
+        if (load !== source) {
+            source = load;
+            code = '';
+        }
         let alive = true;
         load()
             .then(value => {
@@ -65,7 +72,7 @@
                     stroke-dasharray="{dash} {RING}"
                 />
             </svg>
-            <TotpDigits {code}/>
+            <TotpDigits {code} source={load}/>
         </span>
     {/snippet}
 </CopyValue>

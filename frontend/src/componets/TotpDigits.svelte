@@ -1,13 +1,14 @@
 <script lang="ts">
-    import {onMount} from "svelte";
     import {fly} from "svelte/transition";
 
     const {
         code = '',
         group = 3,
+        source,
     } : {
         code?: string;
         group?: number;
+        source?: unknown;
     } = $props();
 
     const FLY_DURATION = 300;
@@ -15,9 +16,15 @@
 
     const chars = $derived([...code]);
 
-    let mounted = $state(false);
-    onMount(() => {
-        mounted = true;
+    let animate = $state(false);
+
+    $effect(() => {
+        source;
+        animate = false;
+    });
+
+    $effect(() => {
+        if (code) animate = true;
     });
 </script>
 
@@ -27,8 +34,8 @@
             {#key code}
                 <span
                     class="digit"
-                    in:fly={{y: -8, duration: mounted ? FLY_DURATION : 0, delay: mounted ? i * FLY_STAGGER : 0}}
-                    out:fly={{y: 8, duration: FLY_DURATION, delay: i * FLY_STAGGER}}
+                    in:fly={{y: -8, duration: animate ? FLY_DURATION : 0, delay: animate ? i * FLY_STAGGER : 0}}
+                    out:fly={{y: 8, duration: animate ? FLY_DURATION : 0, delay: animate ? i * FLY_STAGGER : 0}}
                 >{char}</span>
             {/key}
         </span>
