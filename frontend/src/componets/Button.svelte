@@ -124,7 +124,6 @@
     div.tinted {
         font-size: 15px;
         font-weight: 600;
-        min-height: 46px;
         cursor: pointer;
     }
 

@@ -22,7 +22,7 @@
     <PasswordIcon {icon} width="50px"/>
     <p class="title">{m.security_changeTitle()}</p>
     <p class="desc">{m.security_changeDesc({domain})}</p>
-    <Button variant="primary" onclick={change}>{m.security_changeAction()}</Button>
+    <Button padding="10px 15px" variant="primary" onclick={change}>{m.security_changeAction()}</Button>
 </div>
 
 <style>
