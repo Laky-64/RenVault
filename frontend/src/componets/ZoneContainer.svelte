@@ -31,12 +31,12 @@ const stack = $derived(isCompact());
         align-items: start;
         padding: 13px;
         gap: 8px;
-        height: calc(100% - 8px);
+        height: calc(100% - 16px);
         flex: 1.0;
         overflow: hidden;
         transform: scale(1);
         transition: transform 250ms ease;
-        margin-bottom: 8px;
+        margin-block: 8px;
     }
 
     /*noinspection CssNonIntegerLengthInPixels*/
