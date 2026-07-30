@@ -28,6 +28,7 @@
     function sync() {
         const next = pointerOver || keyFocus;
         if (next === hovering) return;
+        floorWidth = next ? width : 0;
         hovering = next;
         onHover?.(next);
     }
@@ -46,6 +47,8 @@
     let valueWidth = $state(0);
     let confirmWidth = $state(0);
     const width = $derived(copied ? confirmWidth : valueWidth);
+    let floorWidth = $state(0);
+    const hitExtra = $derived(Math.max(0, floorWidth - width));
     let swapping = $state(false);
     let popping = $state(false);
     let settled = false;
@@ -88,6 +91,7 @@
     onfocus={focusChange}
     onblur={focusChange}
 >
+    <span class="hit" style="left: {-hitExtra}px" aria-hidden="true"></span>
     <span class="swap" class:swapping style={width ? `width: ${width}px` : ''}>
         <span class="face" class:on={!copied} bind:clientWidth={valueWidth}>
             {#if face}
@@ -108,6 +112,7 @@
 <style>
     .chip {
         display: flex;
+        position: relative;
         align-items: center;
         max-width: 100%;
         padding: 5px 10px;
@@ -147,6 +152,13 @@
 
     .chip:active:not(.held) {
         background: color-mix(in srgb, var(--text-color) 14%, transparent);
+    }
+
+    .hit {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
     }
 
     .swap {
