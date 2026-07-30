@@ -1,9 +1,11 @@
 package vault
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -199,6 +201,77 @@ func (v *Vault) GetTOTP(id string) (string, error) {
 		return "", errors.New("vault: entry has no TOTP")
 	}
 	return w.TOTPCode(time.Now())
+}
+
+type PwnedReport struct {
+	Checked   int       `json:"checked"`
+	Pwned     int       `json:"pwned"`
+	CheckedAt time.Time `json:"checkedAt"`
+}
+
+func (v *Vault) PwnedInfo() PwnedReport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return PwnedReport{}
+	}
+	checked := 0
+	for _, w := range v.p.Web {
+		if !w.IsDeleted && w.Password != "" {
+			checked++
+		}
+	}
+	return PwnedReport{Checked: checked, Pwned: len(v.p.Pwned), CheckedAt: v.p.PwnedAt}
+}
+
+func (v *Vault) CheckPwned() (PwnedReport, error) {
+	v.mu.Lock()
+	if v.p == nil || v.k == nil {
+		v.mu.Unlock()
+		return PwnedReport{}, errLocked
+	}
+	origP := v.p
+	v.resetTimerLocked()
+	byID := make(map[string]string, len(v.p.Web))
+	for _, w := range v.p.Web {
+		if w.IsDeleted || w.Password == "" {
+			continue
+		}
+		byID[webID(w)] = pwnedHash(w.Password)
+	}
+	v.mu.Unlock()
+
+	hashes := make([]string, 0, len(byID))
+	for _, h := range byID {
+		hashes = append(hashes, h)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), pwnedTimeout)
+	defer cancel()
+	hit, err := lookupPwned(ctx, hashes)
+	if err != nil {
+		return PwnedReport{}, err
+	}
+
+	pwned := make([]string, 0, len(hit))
+	for id, h := range byID {
+		if _, ok := hit[h]; ok {
+			pwned = append(pwned, id)
+		}
+	}
+	slices.Sort(pwned)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil || v.p != origP {
+		return PwnedReport{}, errLocked
+	}
+	v.resetTimerLocked()
+	v.p.Pwned = pwned
+	v.p.PwnedAt = time.Now().UTC()
+	if err := v.saveLocked(); err != nil {
+		return PwnedReport{}, err
+	}
+	return PwnedReport{Checked: len(byID), Pwned: len(pwned), CheckedAt: v.p.PwnedAt}, nil
 }
 
 type Assertion struct {
@@ -493,6 +566,20 @@ func fetchCaches(src keychainSource, p *payload) error {
 	return nil
 }
 
+func prunePwned(p *payload) {
+	if len(p.Pwned) == 0 {
+		return
+	}
+	live := make([]string, 0, len(p.Pwned))
+	for _, w := range p.Web {
+		if id := webID(w); slices.Contains(p.Pwned, id) {
+			live = append(live, id)
+		}
+	}
+	slices.Sort(live)
+	p.Pwned = live
+}
+
 func copyCaches(dst, src *payload) {
 	dst.Web = src.Web
 	dst.WiFi = src.WiFi
@@ -500,4 +587,5 @@ func copyCaches(dst, src *payload) {
 	dst.ProfileName = src.ProfileName
 	dst.ProfilePhoto = src.ProfilePhoto
 	dst.ProfilePhotoType = src.ProfilePhotoType
+	prunePwned(dst)
 }

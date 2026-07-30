@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,7 @@ type WebMeta struct {
 	Shared    bool             `json:"shared"`
 	Created   time.Time        `json:"created"`
 	Modified  time.Time        `json:"modified"`
+	Pwned     bool             `json:"pwned"`
 }
 
 type WiFiMeta struct {
@@ -168,8 +170,9 @@ func passkeyID(p passkeyEntry) string {
 func webMetas(p payload) []WebMeta {
 	out := make([]WebMeta, 0, len(p.Web))
 	for _, w := range p.Web {
+		id := webID(w)
 		out = append(out, WebMeta{
-			ID:        webID(w),
+			ID:        id,
 			Title:     w.Name,
 			Username:  w.Username,
 			Domain:    w.Domain,
@@ -182,6 +185,7 @@ func webMetas(p payload) []WebMeta {
 			Shared:    w.Shared,
 			Created:   w.Created,
 			Modified:  w.Modified,
+			Pwned:     slices.Contains(p.Pwned, id),
 		})
 	}
 	return out

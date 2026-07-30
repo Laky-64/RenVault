@@ -33,12 +33,14 @@
         {kind: 'passkeys', icon: 'passkey', color: 'green', items: passkey.filter(i => i.kind == 'passkey' && !i.isDeleted)},
         {kind: 'codes', icon: 'codes', color: 'yellow', items: web.filter(i => i.kind === 'web' && i.hasTotp && !i.isDeleted && !i.shared)},
         {kind: 'networks', icon: 'wifi', color: 'teal', items: wifi},
-        {kind: 'security', icon: 'security', color: 'red', items: []},
+        {kind: 'security', icon: 'security', color: 'red', items: web.filter(i => i.kind == 'web' && !i.isDeleted && !i.shared && i.pwned)},
         {kind: 'deleted', icon: 'deleted', color: 'orange', items: web.filter(i => i.kind == 'web' && i.isDeleted && !i.shared)},
     ]);
 
+    const PWNED_TTL = 24 * 60 * 60 * 1000;
+
     onMount(() => {
-        void load();
+        void load().then(() => refreshPwned());
     });
 
     async function load() {
@@ -48,6 +50,22 @@
             web = linked.web;
             wifi = (wifiMetas ?? []).map(wifiItem);
             passkey = linked.passkeys;
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        }
+    }
+
+    async function refreshPwned(force = false) {
+        try {
+            if (!force) {
+                const info = await Service.PwnedInfo();
+                const checkedAt = new Date(info.checkedAt).getTime();
+                if (Number.isFinite(checkedAt) && Date.now() - checkedAt < PWNED_TTL) {
+                    return;
+                }
+            }
+            await Service.CheckPwned();
+            await load();
         } catch (e) {
             console.error(describeFailure(e).raw);
         }

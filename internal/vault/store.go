@@ -54,6 +54,9 @@ type payload struct {
 	Passkey     []passkeyEntry            `cbor:"passkey,omitempty"`
 	SyncedAt    time.Time                 `cbor:"synced_at"`
 
+	Pwned   []string  `cbor:"pwned,omitempty"`
+	PwnedAt time.Time `cbor:"pwned_at,omitempty"`
+
 	ProfileName      string `cbor:"profile_name,omitempty"`
 	ProfilePhoto     []byte `cbor:"profile_photo,omitempty"`
 	ProfilePhotoType string `cbor:"profile_photo_type,omitempty"`

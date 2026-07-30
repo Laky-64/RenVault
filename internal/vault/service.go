@@ -48,6 +48,14 @@ func (s *Service) ListWiFi() []WiFiMeta {
 	return s.v.ListWiFi()
 }
 
+func (s *Service) CheckPwned() (PwnedReport, error) {
+	return s.v.CheckPwned()
+}
+
+func (s *Service) PwnedInfo() PwnedReport {
+	return s.v.PwnedInfo()
+}
+
 func (s *Service) ListPasskey() []PasskeyMeta {
 	return s.v.ListPasskey()
 }
