@@ -1,6 +1,7 @@
 <script lang="ts">
     const {
         padding,
+        radius = '1000px',
         accent,
         onclick,
         disabled = false,
@@ -9,10 +10,11 @@
         children
     } : {
         padding?: string,
+        radius?: string,
         onclick?: () => void,
         accent?: string,
         disabled?: boolean,
-        variant?: 'ghost' | 'primary' | 'tinted',
+        variant?: 'ghost' | 'plain' | 'primary' | 'tinted',
         block?: boolean,
         children: any
     } = $props();
@@ -38,7 +40,7 @@
 </script>
 
 <div
-    style="padding: {pad}; --accent-color: {tint}"
+    style="padding: {pad}; border-radius: {radius}; --accent-color: {tint}"
     role="button"
     tabindex={disabled ? -1 : 0}
     aria-disabled={disabled}
@@ -56,7 +58,6 @@
 
 <style>
     div {
-        border-radius: 1000px;
         transition: background 150ms ease, opacity 150ms ease, transform 150ms ease;
         display: flex;
         align-items: center;
@@ -101,6 +102,21 @@
     /*noinspection CssUnusedSymbol*/
     div.ghost:not(.hasAccent):not(.disabled):active {
         background: color-mix(in srgb, var(--text-color) 14%, transparent);
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    div.plain {
+        background: transparent;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    div.plain:not(.disabled):hover {
+        background: color-mix(in srgb, var(--text-color) 4%, transparent);
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    div.plain:not(.disabled):active {
+        background: color-mix(in srgb, var(--text-color) 8%, transparent);
     }
 
     /*noinspection CssUnusedSymbol*/
