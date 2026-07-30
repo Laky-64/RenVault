@@ -80,7 +80,7 @@
   "zone_deleted_name": "Deleted",
   "zone_deleted_empty": "No Deleted Items",
   "zone_deleted_noSelection": "No Item Selected",
-  "zone_deleted_desc": "Deleted items stay here before they are removed for good. Recover the ones you still need.",
+  "zone_deleted_desc": "Deleted items stay here for 30 days before they are removed for good. Recover the ones you still need.",
   "field_websiteMore": [
     {
       "declarations": [
