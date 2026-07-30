@@ -25,9 +25,7 @@
     const hasPasskey = $derived.by(() =>
         item?.kind === 'passkey' || (item?.kind === 'web' && item.passkey !== undefined));
     const compromised = $derived(
-        zone.kind === 'security' && item?.kind === 'web' ? item.domain : '');
-    const breached = $derived(
-        zone.kind !== 'security' && item?.kind === 'web' && item.pwned ? item.domain : '');
+         item?.kind === 'web' && item.pwned ? item.domain : '');
     let scroller: ElasticScroll | undefined = $state();
     const stack = $derived(isCompact());
     let contentHeight = $state(0);
@@ -43,7 +41,7 @@
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
                 <div class="stack" bind:clientHeight={contentHeight}>
-                    {#if compromised}
+                    {#if compromised && zone.kind === 'security'}
                         <SecurityNotice icon={view.icon} domain={compromised}/>
                         <div class="card">
                             <PasswordInfoFields fields={detail.fields}/>
@@ -58,8 +56,8 @@
                     {#if hasPasskey}
                         <DetailNote variant="passkey"/>
                     {/if}
-                    {#if breached}
-                        <DetailNote variant="compromised" domain={breached}/>
+                    {#if compromised && zone.kind !== 'security'}
+                        <DetailNote variant="compromised" domain={compromised}/>
                     {/if}
                 </div>
             </ElasticScroll>
