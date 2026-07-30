@@ -20,6 +20,9 @@ func zeroPayloadSecrets(p *payload) {
 		return
 	}
 	zero(p.Peer.PrivateKey)
+	for i := range p.Passkey {
+		zero(p.Passkey[i].PrivateKeyD)
+	}
 }
 
 type Vault struct {
@@ -155,6 +158,16 @@ func (v *Vault) ListWiFi() []WiFiMeta {
 	return wifiMetas(*v.p)
 }
 
+func (v *Vault) ListPasskey() []PasskeyMeta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return nil
+	}
+	v.resetTimerLocked()
+	return passkeyMetas(*v.p)
+}
+
 func (v *Vault) GetPassword(id string) (string, error) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
@@ -188,9 +201,42 @@ func (v *Vault) GetTOTP(id string) (string, error) {
 	return w.TOTPCode(time.Now())
 }
 
+type Assertion struct {
+	AuthenticatorData []byte `json:"authenticatorData"`
+	Signature         []byte `json:"signature"`
+	UserHandle        []byte `json:"userHandle"`
+}
+
+func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return Assertion{}, errLocked
+	}
+	v.resetTimerLocked()
+	e, ok := findPasskey(*v.p, id)
+	if !ok {
+		return Assertion{}, errors.New("vault: passkey not found")
+	}
+	pk, err := e.passkey()
+	if err != nil {
+		return Assertion{}, err
+	}
+	flags := byte(keychain.FlagUserPresent)
+	if userVerified {
+		flags |= keychain.FlagUserVerified
+	}
+	authData, sig, err := pk.Sign(clientDataHash, flags, signCount)
+	if err != nil {
+		return Assertion{}, err
+	}
+	return Assertion{AuthenticatorData: authData, Signature: sig, UserHandle: e.UserHandle}, nil
+}
+
 type keychainSource interface {
 	WebPasswords() ([]keychain.WebPassword, error)
 	WiFiPasswords() ([]keychain.WiFiPassword, error)
+	Passkeys() ([]keychain.Passkey, error)
 }
 
 var _ keychainSource = (*appleservices.KeychainVault)(nil)
@@ -429,14 +475,28 @@ func fetchCaches(src keychainSource, p *payload) error {
 	if err != nil {
 		return err
 	}
+	passkey, err := src.Passkeys()
+	if err != nil {
+		return err
+	}
+	entries := make([]passkeyEntry, 0, len(passkey))
+	for _, k := range passkey {
+		e, err := newPasskeyEntry(k)
+		if err != nil {
+			continue
+		}
+		entries = append(entries, e)
+	}
 	p.Web = web
 	p.WiFi = wifi
+	p.Passkey = entries
 	return nil
 }
 
 func copyCaches(dst, src *payload) {
 	dst.Web = src.Web
 	dst.WiFi = src.WiFi
+	dst.Passkey = src.Passkey
 	dst.ProfileName = src.ProfileName
 	dst.ProfilePhoto = src.ProfilePhoto
 	dst.ProfilePhotoType = src.ProfilePhotoType

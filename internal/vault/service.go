@@ -48,6 +48,14 @@ func (s *Service) ListWiFi() []WiFiMeta {
 	return s.v.ListWiFi()
 }
 
+func (s *Service) ListPasskey() []PasskeyMeta {
+	return s.v.ListPasskey()
+}
+
+func (s *Service) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error) {
+	return s.v.SignAssertion(id, clientDataHash, userVerified, signCount)
+}
+
 func (s *Service) GetPassword(id string) (string, error) {
 	return s.v.GetPassword(id)
 }

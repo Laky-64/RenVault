@@ -51,6 +51,7 @@ type payload struct {
 	Peer        appleservices.PeerKey     `cbor:"peer"`
 	Web         []keychain.WebPassword    `cbor:"web,omitempty"`
 	WiFi        []keychain.WiFiPassword   `cbor:"wifi,omitempty"`
+	Passkey     []passkeyEntry            `cbor:"passkey,omitempty"`
 	SyncedAt    time.Time                 `cbor:"synced_at"`
 
 	ProfileName      string `cbor:"profile_name,omitempty"`

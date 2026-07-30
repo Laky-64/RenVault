@@ -6,7 +6,16 @@
     import {currentItem, currentZone, nav, openItem, openZone} from "../navigation.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import {Service} from "../../bindings/github.com/Laky-64/RenVault/internal/vault";
-    import {type Item, type SecretSource, webItem, wifiItem} from "../lib/items";
+    import {
+        type PasskeyItem,
+        type SecretSource,
+        type WebItem,
+        type WiFiItem,
+        linkItems,
+        passkeyItem,
+        webItem,
+        wifiItem,
+    } from "../lib/items";
     import {describeFailure} from "../lib/failure";
     import {onMount} from "svelte";
 
@@ -15,16 +24,17 @@
         totp: (id) => Service.GetTOTP(id),
     };
 
-    let web: Item[] = $state([]);
-    let wifi: Item[] = $state([]);
+    let web: WebItem[] = $state([]);
+    let wifi: WiFiItem[] = $state([]);
+    let passkey: PasskeyItem[] = $state([]);
 
     const zones: Zone[] = $derived([
-        {kind: 'all', icon: 'all', color: 'blue', items: [...web]},
-        {kind: 'passkeys', icon: 'passkey', color: 'green', items: []},
-        {kind: 'codes', icon: 'codes', color: 'yellow', items: web.filter(i => i.kind === 'web' && i.hasTotp)},
+        {kind: 'all', icon: 'all', color: 'blue', items: web.filter(i => i.kind == 'web' && !i.isDeleted && !i.shared)},
+        {kind: 'passkeys', icon: 'passkey', color: 'green', items: passkey.filter(i => i.kind == 'passkey' && !i.isDeleted)},
+        {kind: 'codes', icon: 'codes', color: 'yellow', items: web.filter(i => i.kind === 'web' && i.hasTotp && !i.isDeleted && !i.shared)},
         {kind: 'networks', icon: 'wifi', color: 'teal', items: wifi},
         {kind: 'security', icon: 'security', color: 'red', items: []},
-        {kind: 'deleted', icon: 'deleted', color: 'orange', items: []},
+        {kind: 'deleted', icon: 'deleted', color: 'orange', items: web.filter(i => i.kind == 'web' && i.isDeleted && !i.shared)},
     ]);
 
     onMount(() => {
@@ -33,9 +43,11 @@
 
     async function load() {
         try {
-            const [webMetas, wifiMetas] = await Promise.all([Service.ListWeb(), Service.ListWiFi()]);
-            web = (webMetas ?? []).map(webItem);
+            const [webMetas, wifiMetas, passkeyMetas] = await Promise.all([Service.ListWeb(), Service.ListWiFi(), Service.ListPasskey()]);
+            const linked = linkItems((webMetas ?? []).map(webItem), (passkeyMetas ?? []).map(passkeyItem));
+            web = linked.web;
             wifi = (wifiMetas ?? []).map(wifiItem);
+            passkey = linked.passkeys;
         } catch (e) {
             console.error(describeFailure(e).raw);
         }

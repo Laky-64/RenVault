@@ -1,19 +1,25 @@
 import {m} from "../paraglide/messages";
 import {formatDate} from "./datetime";
-import type {WebMeta, WiFiMeta} from "../../bindings/github.com/Laky-64/RenVault/internal/vault";
+import type {PasskeyMeta, WebMeta, WiFiMeta} from "../../bindings/github.com/Laky-64/RenVault/internal/vault";
 
 // noinspection JSUnusedGlobalSymbols
-export type ItemKind = 'web' | 'wifi';
+export type ItemKind = 'web' | 'wifi' | 'passkey';
 
 export interface WebItem extends WebMeta {
     kind: 'web';
+    passkey?: PasskeyItem;
 }
 
 export interface WiFiItem extends WiFiMeta {
     kind: 'wifi';
 }
 
-export type Item = WebItem | WiFiItem;
+export interface PasskeyItem extends PasskeyMeta {
+    kind: 'passkey';
+    linked?: WebItem;
+}
+
+export type Item = WebItem | WiFiItem | PasskeyItem;
 
 export function webItem(meta: WebMeta): WebItem {
     return {...meta, kind: 'web'};
@@ -21,6 +27,53 @@ export function webItem(meta: WebMeta): WebItem {
 
 export function wifiItem(meta: WiFiMeta): WiFiItem {
     return {...meta, kind: 'wifi'};
+}
+
+export function passkeyItem(meta: PasskeyMeta): PasskeyItem {
+    return {...meta, kind: 'passkey'};
+}
+
+function normalized(value: string): string {
+    return value.trim().toLowerCase();
+}
+
+function hostOf(value: string): string {
+    return normalized(value).replace(/^www\./, '');
+}
+
+function hostsOf(item: WebItem): string[] {
+    return [item.domain, ...(item.domains ?? [])].map(hostOf).filter(Boolean);
+}
+
+function linkKey(host: string, username: string): string {
+    return `${host}\n${normalized(username)}`;
+}
+
+export function linkItems(web: WebItem[], passkeys: PasskeyItem[]): {web: WebItem[]; passkeys: PasskeyItem[]} {
+    const byHost = new Map<string, WebItem>();
+    for (const entry of web) {
+        if (entry.isDeleted) continue;
+        for (const host of hostsOf(entry)) {
+            const key = linkKey(host, entry.username);
+            if (!byHost.has(key)) byHost.set(key, entry);
+        }
+    }
+
+    const byWebId = new Map<string, PasskeyItem>();
+    const linkedPasskeys = passkeys.map(passkey => {
+        if (passkey.isDeleted) return passkey;
+        const match = byHost.get(linkKey(hostOf(passkey.relyingParty), passkey.username));
+        if (!match) return passkey;
+        if (!byWebId.has(match.id)) byWebId.set(match.id, passkey);
+        return {...passkey, linked: match};
+    });
+
+    const linkedWeb = web.map(entry => {
+        const match = byWebId.get(entry.id);
+        return match ? {...entry, passkey: match} : entry;
+    });
+
+    return {web: linkedWeb, passkeys: linkedPasskeys};
 }
 
 export type ItemIcon =
@@ -38,7 +91,7 @@ export function viewOf(item: Item): ItemView {
     switch (item.kind) {
         case 'web':
             return {
-                title: item.title || item.domain,
+                title: item.passkey?.title || item.title || item.domain,
                 subtitle: item.username,
                 icon: {source: 'favicon', domain: item.domain, fallback: item.title || item.domain},
                 hasTotp: item.hasTotp,
@@ -50,6 +103,13 @@ export function viewOf(item: Item): ItemView {
                 icon: {source: 'glyph', name: 'wifi'},
                 hasTotp: false,
             };
+        case 'passkey':
+            return {
+                title: item.title,
+                subtitle: item.username,
+                icon: {source: 'favicon', domain: item.relyingParty, fallback: item.title},
+                hasTotp: false,
+            }
     }
 }
 
@@ -97,6 +157,11 @@ function pushModified(fields: DetailField[], modified: string): void {
     if (shown) fields.push({label: m.field_modified(), value: {shown}});
 }
 
+function pushPasskeyCreated(fields: DetailField[], created: string): void {
+    const date = formatDate(created);
+    if (date) fields.push({label: m.field_passkey(), value: {shown: m.field_passkeyCreationDate({date})}});
+}
+
 export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
     switch (item.kind) {
         case 'web': {
@@ -104,6 +169,9 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
                 {label: m.field_username(), value: {shown: item.username}, copyable: true},
                 {label: m.field_password(), value: {secret: () => secrets.password(item.id)}, copyable: true},
             ];
+            if (item.passkey) {
+                pushPasskeyCreated(fields, item.passkey.created);
+            }
             if (item.website) {
                 fields.push({label: m.field_website(), value: {shown: websiteOf(item)}});
             }
@@ -115,7 +183,7 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
                 });
             }
             pushModified(fields, item.modified);
-            return {title: item.title || item.domain, fields};
+            return {title: item.passkey?.title || item.title || item.domain, fields};
         }
         case 'wifi': {
             const fields: DetailField[] = [
@@ -124,6 +192,36 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
             ];
             pushModified(fields, item.modified);
             return {title: item.ssid, fields};
+        }
+        case 'passkey': {
+            const linked = item.linked;
+            const fields: DetailField[] = [
+                {label: m.field_username(), value: {shown: item.username}, copyable: true},
+            ]
+            if (linked) {
+                fields.push({
+                    label: m.field_password(),
+                    value: {secret: () => secrets.password(linked.id)},
+                    copyable: true,
+                });
+            }
+            pushPasskeyCreated(fields, item.created);
+            if (linked) {
+                if (linked.website) {
+                    fields.push({label: m.field_website(), value: {shown: websiteOf(linked)}});
+                }
+                if (linked.hasTotp) {
+                    fields.push({
+                        label: m.field_verificationCode(),
+                        value: {code: () => secrets.totp(linked.id)},
+                        copyable: true,
+                    });
+                }
+                pushModified(fields, linked.modified);
+            } else {
+                pushModified(fields, item.modified);
+            }
+            return {title: item.title, fields};
         }
     }
 }

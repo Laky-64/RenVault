@@ -6,6 +6,7 @@
     import {detailOf, type Item, type SecretSource, viewOf} from "../lib/items";
     import ElasticScroll from "./ElasticScroll.svelte";
     import {isCompact} from "../lib/navigation.svelte";
+    import PasskeyNote from "./PasskeyNote.svelte";
 
     const {
         zone,
@@ -20,6 +21,8 @@
     const text = $derived(zoneText(zone));
     const detail = $derived.by(() => (item ? detailOf(item, secrets) : null));
     const view = $derived.by(() => (item ? viewOf(item) : null));
+    const hasPasskey = $derived.by(() =>
+        item?.kind === 'passkey' || (item?.kind === 'web' && item.passkey !== undefined));
     let scroller: ElasticScroll | undefined = $state();
     const stack = $derived(isCompact());
     let contentHeight = $state(0);
@@ -40,6 +43,9 @@
                         <p class="name">{detail.title}</p>
                         <PasswordInfoFields fields={detail.fields}/>
                     </div>
+                    {#if hasPasskey}
+                        <PasskeyNote/>
+                    {/if}
                 </div>
             </ElasticScroll>
         </div>
