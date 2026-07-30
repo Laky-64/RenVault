@@ -57,7 +57,7 @@ func (s *Session) RequestCode() error {
 	if s.login == nil {
 		return ErrNoLogin
 	}
-	return s.login.RequestCode()
+	return s.login.RequestCode(appleservices.TrustedDevice)
 }
 
 func (s *Session) SubmitCode(code string) error {
@@ -66,7 +66,7 @@ func (s *Session) SubmitCode(code string) error {
 	if s.login == nil {
 		return ErrNoLogin
 	}
-	if err := s.login.SubmitCode(code); err != nil {
+	if err := s.login.SubmitCode(appleservices.TrustedDevice, code); err != nil {
 		return err
 	}
 	s.client = nil

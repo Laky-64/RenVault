@@ -3,7 +3,7 @@ module github.com/Laky-64/RenVault
 go 1.26
 
 require (
-	github.com/Laky-64/appleservices v1.0.8
+	github.com/Laky-64/appleservices v1.0.10
 	github.com/Laky-64/http v1.0.8
 	github.com/adrg/xdg v0.5.3
 	github.com/fxamacker/cbor/v2 v2.9.2
