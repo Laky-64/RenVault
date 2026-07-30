@@ -26,6 +26,8 @@
             item.kind === 'web' && item.hasTotp ? source.totp(item.id) : '';
     });
 
+    const notice = $derived(zone.kind === 'security' ? m.item_compromised() : undefined);
+
     const BAR_HEIGHT = 60;
     const HYSTERESIS = 6;
     let scrollOffset = $state(0);
@@ -57,6 +59,7 @@
             <PasswordItem
                 item={entry}
                 loadCode={previewCode}
+                {notice}
                 onclick={() => on_selected?.(entry)}
                 selected={entry === selected && !stack}
                 last={index === zone.items.length - 1}/>

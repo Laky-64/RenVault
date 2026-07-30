@@ -6,7 +6,8 @@
     import {detailOf, type Item, type SecretSource, viewOf} from "../lib/items";
     import ElasticScroll from "./ElasticScroll.svelte";
     import {isCompact} from "../lib/navigation.svelte";
-    import PasskeyNote from "./PasskeyNote.svelte";
+    import DetailNote from "./DetailNote.svelte";
+    import SecurityNotice from "./SecurityNotice.svelte";
 
     const {
         zone,
@@ -23,6 +24,10 @@
     const view = $derived.by(() => (item ? viewOf(item) : null));
     const hasPasskey = $derived.by(() =>
         item?.kind === 'passkey' || (item?.kind === 'web' && item.passkey !== undefined));
+    const compromised = $derived(
+        zone.kind === 'security' && item?.kind === 'web' ? item.domain : '');
+    const breached = $derived(
+        zone.kind !== 'security' && item?.kind === 'web' && item.pwned ? item.domain : '');
     let scroller: ElasticScroll | undefined = $state();
     const stack = $derived(isCompact());
     let contentHeight = $state(0);
@@ -38,13 +43,23 @@
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
                 <div class="stack" bind:clientHeight={contentHeight}>
-                    <div class="card">
-                        <PasswordIcon icon={view.icon} width="50px"/>
-                        <p class="name">{detail.title}</p>
-                        <PasswordInfoFields fields={detail.fields}/>
-                    </div>
+                    {#if compromised}
+                        <SecurityNotice icon={view.icon} domain={compromised}/>
+                        <div class="card">
+                            <PasswordInfoFields fields={detail.fields}/>
+                        </div>
+                    {:else}
+                        <div class="card">
+                            <PasswordIcon icon={view.icon} width="50px"/>
+                            <p class="name">{detail.title}</p>
+                            <PasswordInfoFields fields={detail.fields}/>
+                        </div>
+                    {/if}
                     {#if hasPasskey}
-                        <PasskeyNote/>
+                        <DetailNote variant="passkey"/>
+                    {/if}
+                    {#if breached}
+                        <DetailNote variant="compromised" domain={breached}/>
                     {/if}
                 </div>
             </ElasticScroll>

@@ -19,6 +19,7 @@ func NewService() *Service {
 	_ = disableCoreDump()
 	v := New(base)
 	v.SetAutoLock(5 * time.Minute)
+	go changeURLIndex()
 	return &Service{v: v}
 }
 
@@ -46,6 +47,10 @@ func (s *Service) ListWeb() []WebMeta {
 
 func (s *Service) ListWiFi() []WiFiMeta {
 	return s.v.ListWiFi()
+}
+
+func (s *Service) ChangePasswordURL(domain string) string {
+	return changePasswordURL(domain)
 }
 
 func (s *Service) CheckPwned() (PwnedReport, error) {

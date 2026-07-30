@@ -7,12 +7,14 @@
     const {
         item,
         loadCode,
+        notice,
         last = false,
         selected = false,
         onclick,
     } : {
         item: Item;
         loadCode?: (item: Item) => Promise<string>;
+        notice?: string;
         last?: boolean;
         selected?: boolean;
         onclick?: () => void;
@@ -61,7 +63,7 @@
     <div class="info-container" class:last>
         <div class="desc-container">
             <p class="name">{view.title}</p>
-            <p class="desc" class:selected>{view.subtitle}</p>
+            <p class="desc" class:selected class:notice={notice !== undefined}>{notice ?? view.subtitle}</p>
         </div>
         {#if code}
             <div class="totp">
@@ -133,6 +135,10 @@
     .desc {
         font-size: 12px;
         color: var(--subtitle-text-color);
+    }
+
+    .desc.notice {
+        color: var(--destructive-text-color);
     }
 
     .totp {
