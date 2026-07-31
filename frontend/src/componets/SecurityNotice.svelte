@@ -2,6 +2,7 @@
     import {m} from "../paraglide/messages";
     import Button from "./Button.svelte";
     import PasswordIcon from "./PasswordIcon.svelte";
+    import Card from "./Card.svelte";
     import type {ItemIcon} from "../lib/items";
     import {openChangePassword} from "../lib/changepw";
 
@@ -18,26 +19,14 @@
     }
 </script>
 
-<div class="card">
+<Card padding="10px 15px 15px">
     <PasswordIcon {icon} width="50px"/>
     <p class="title">{m.security_changeTitle()}</p>
     <p class="desc">{m.security_changeDesc({domain})}</p>
     <Button padding="10px 15px" variant="primary" onclick={change}>{m.security_changeAction()}</Button>
-</div>
+</Card>
 
 <style>
-    .card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 600px;
-        margin-inline: auto;
-        border-radius: var(--zone-border-radius);
-        background: var(--section-bg-color);
-        padding-block: 10px 15px;
-        padding-inline: 15px;
-    }
 
     .title {
         font-size: 22px;

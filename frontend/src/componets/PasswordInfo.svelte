@@ -8,6 +8,7 @@
     import {isCompact} from "../lib/navigation.svelte";
     import DetailNote from "./DetailNote.svelte";
     import SecurityNotice from "./SecurityNotice.svelte";
+    import Card from "./Card.svelte";
     import {observeSize} from "../lib/dom";
 
     const {
@@ -44,15 +45,15 @@
                 <div class="stack" bind:clientHeight={contentHeight}>
                     {#if compromised && zone.kind === 'security'}
                         <SecurityNotice icon={view.icon} domain={compromised}/>
-                        <div class="card">
+                        <Card padding="10px 15px">
                             <PasswordInfoFields fields={detail.fields}/>
-                        </div>
+                        </Card>
                     {:else}
-                        <div class="card">
+                        <Card padding="10px 15px">
                             <PasswordIcon icon={view.icon} width="50px"/>
                             <p class="name">{detail.title}</p>
                             <PasswordInfoFields fields={detail.fields}/>
-                        </div>
+                        </Card>
                     {/if}
                     {#if hasPasskey}
                         <DetailNote variant="passkey"/>
@@ -94,19 +95,7 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-    }
-
-    .card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
-        max-width: 600px;
-        margin-inline: auto;
-        border-radius: var(--zone-border-radius);
-        background: var(--section-bg-color);
-        padding-block: 10px;
-        padding-inline: 15px;
+        padding-top: var(--inset);
     }
 
     .name {

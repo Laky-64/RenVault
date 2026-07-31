@@ -2,6 +2,7 @@
     import {Browser} from "@wailsio/runtime";
     import {m} from "../paraglide/messages";
     import Button from "./Button.svelte";
+    import Card from "./Card.svelte";
     import {pathFor} from "./ZoneIcon";
     import {openChangePassword} from "../lib/changepw";
 
@@ -35,7 +36,7 @@
         });
 </script>
 
-<div class="note">
+<Card>
     <div class="body">
         <svg class="seal" viewBox="0 -960 960 960" width="26" height="26" aria-hidden="true">
             <path d={note.path} fill={note.color} fill-rule="evenodd"/>
@@ -56,22 +57,14 @@
             <span class="action">{note.action}</span>
         </Button>
     </div>
-</div>
+</Card>
 
 <style>
-    .note {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        max-width: 600px;
-        margin-inline: auto;
-        border-radius: var(--zone-border-radius);
-        background: var(--section-bg-color);
-    }
 
     .body {
         display: flex;
         align-items: flex-start;
+        width: 100%;
         gap: 12px;
         padding: 15px;
     }
@@ -102,6 +95,7 @@
     .footer {
         display: flex;
         position: relative;
+        width: 100%;
         justify-content: flex-end;
     }
 
