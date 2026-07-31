@@ -150,7 +150,7 @@
     }
 
     div {
-        transition: background 150ms ease, opacity 150ms ease, transform 150ms ease;
+        transition: background 200ms ease, opacity 200ms ease, transform 200ms ease;
         position: relative;
         display: flex;
         overflow: hidden;
@@ -307,7 +307,7 @@
     /*noinspection CssUnusedSymbol*/
     div.primary:not(.disabled):active {
         background: color-mix(in srgb, var(--text-color) 22%, var(--accent-color));
-        transform: scale(0.98);
+        transform: scale(1.06);
     }
 
     /*noinspection CssUnusedSymbol*/
@@ -324,7 +324,7 @@
     /*noinspection CssUnusedSymbol*/
     div.tinted:not(.disabled):active {
         background: color-mix(in srgb, var(--accent-color) 32%, transparent);
-        transform: scale(0.98);
+        transform: scale(1.06);
     }
 
     @media (prefers-reduced-motion: reduce) {
