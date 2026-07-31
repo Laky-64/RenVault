@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {prefersReducedMotion} from "../lib/dom";
     import {fade} from "svelte/transition";
     import {m} from "../paraglide/messages";
     import {strengthOf} from "../lib/strength";
@@ -6,8 +7,7 @@
 
     let {value = ''}: {value?: string} = $props();
 
-    const reduced = typeof window !== 'undefined'
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = prefersReducedMotion();
 
     const FILL = [0, 34, 67, 100];
     const LABEL = [m.strength_weak, m.strength_fair, m.strength_strong];

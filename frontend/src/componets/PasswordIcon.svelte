@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {prefersReducedMotion} from "../lib/dom";
     import type {ItemIcon} from "../lib/items";
 
     const {
@@ -23,8 +24,7 @@
     let loadedSrc: string | undefined = $state();
     const loaded = $derived(src !== undefined && loadedSrc === src);
 
-    const reduced = typeof window !== 'undefined'
-        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = prefersReducedMotion();
 
     function reveal(forSrc: string | undefined) {
         if (forSrc === undefined) return;

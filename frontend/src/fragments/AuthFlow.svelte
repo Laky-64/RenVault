@@ -16,13 +16,14 @@
     import StrengthMeter from "../componets/StrengthMeter.svelte";
     import Fold from "../componets/Fold.svelte";
     import {MIN_PASSWORD} from "../lib/strength";
+    import {prefersReducedMotion} from "../lib/dom";
 
     const {onDone}: {onDone: () => void} = $props();
 
     type Step = {kind: 'two-factor'} | {kind: 'trusted-devices'} | {kind: 'device-passcode'} | {kind: 'master-setup'};
     const auth = new Navigation<Step>({stacked: true});
 
-    const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = prefersReducedMotion();
     const VEIL = reduced ? 0 : 220;
     const SHAKE = 420;
 

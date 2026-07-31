@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {prefersReducedMotion} from "../lib/dom";
     import type {Snippet} from "svelte";
 
     const {
@@ -108,8 +109,7 @@
         const list = dots;
         const side = size;
         const start = shimmerStart;
-        const still = typeof matchMedia !== "undefined"
-            && matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const still = prefersReducedMotion();
 
         const last = list.reduce((m, d) => Math.max(m, d.delay + d.duration), 0);
         let frame = 0;

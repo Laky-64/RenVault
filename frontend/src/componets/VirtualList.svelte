@@ -2,6 +2,7 @@
     import type {Snippet} from "svelte";
     import {SvelteMap} from "svelte/reactivity";
     import ElasticScroll from "./ElasticScroll.svelte";
+    import {observeSize} from "../lib/dom";
 
     let {
         items,
@@ -100,19 +101,6 @@
         }
     }
 
-    function measureRow(node: HTMLElement, index: number) {
-        applyRowHeight(index, node.getBoundingClientRect().height);
-        const observer = typeof ResizeObserver !== "undefined"
-            ? new ResizeObserver(([entry]) => applyRowHeight(index, entry.contentRect.height))
-            : undefined;
-        observer?.observe(node);
-        return {
-            destroy() {
-                observer?.disconnect();
-            },
-        };
-    }
-
     function applyHeaderHeight(height: number) {
         if (height <= 0) return;
         const previous = headerHeight;
@@ -123,18 +111,6 @@
         }
     }
 
-    function measureHeader(node: HTMLElement) {
-        applyHeaderHeight(node.getBoundingClientRect().height);
-        const observer = typeof ResizeObserver !== "undefined"
-            ? new ResizeObserver(([entry]) => applyHeaderHeight(entry.contentRect.height))
-            : undefined;
-        observer?.observe(node);
-        return {
-            destroy() {
-                observer?.disconnect();
-            },
-        };
-    }
 </script>
 
 <ElasticScroll
@@ -143,11 +119,11 @@
     bind:scrollOffset
     bind:viewportHeight
 >
-    <div class="header" use:measureHeader>
+    <div class="header" use:observeSize={node => applyHeaderHeight(node.getBoundingClientRect().height)}>
         {@render header?.()}
     </div>
     {#each visible as index (itemsVersion + ':' + index)}
-        <div class="row" style="top: {headerHeight + offsets[index]}px" use:measureRow={index}>
+        <div class="row" style="top: {headerHeight + offsets[index]}px" use:observeSize={node => applyRowHeight(index, node.getBoundingClientRect().height)}>
             {@render item(items[index], index)}
         </div>
     {/each}

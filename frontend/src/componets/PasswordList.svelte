@@ -6,6 +6,7 @@
     import VirtualList from "./VirtualList.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import {m} from "../paraglide/messages";
+    import {observeSize} from "../lib/dom";
 
     const {
         zone,
@@ -47,7 +48,7 @@
     });
 </script>
 
-<div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack>
+<div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack use:observeSize={node => on_bounds?.(node.offsetLeft, node.offsetWidth)}>
     <VirtualList items={zone.items} resetKey={zone} bind:scrollOffset>
         {#snippet header()}
             <div class="large-title" bind:clientHeight={titleHeight}>

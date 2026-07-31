@@ -8,6 +8,7 @@
     import {isCompact} from "../lib/navigation.svelte";
     import DetailNote from "./DetailNote.svelte";
     import SecurityNotice from "./SecurityNotice.svelte";
+    import {observeSize} from "../lib/dom";
 
     const {
         zone,
@@ -36,7 +37,7 @@
     });
 </script>
 
-<div class="container" class:stack>
+<div class="container" class:stack use:observeSize={node => on_bounds?.(node.offsetLeft, node.offsetWidth)}>
     {#if item && detail && view}
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
