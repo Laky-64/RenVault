@@ -23,20 +23,21 @@ const (
 )
 
 type WebMeta struct {
-	ID        string           `json:"id"`
-	Title     string           `json:"title"`
-	Username  string           `json:"username"`
-	Domain    string           `json:"domain"`
-	Domains   []string         `json:"domains"`
-	Website   bool             `json:"website"`
-	HasTOTP   bool             `json:"hasTotp"`
-	Note      string           `json:"note"`
-	IsDeleted bool             `json:"isDeleted"`
-	Groups    []keychain.Group `json:"groups"`
-	Shared    bool             `json:"shared"`
-	Created   time.Time        `json:"created"`
-	Modified  time.Time        `json:"modified"`
-	Pwned     bool             `json:"pwned"`
+	ID          string           `json:"id"`
+	Title       string           `json:"title"`
+	Username    string           `json:"username"`
+	Domain      string           `json:"domain"`
+	Domains     []string         `json:"domains"`
+	Website     bool             `json:"website"`
+	HasTOTP     bool             `json:"hasTotp"`
+	Note        string           `json:"note"`
+	IsDeleted   bool             `json:"isDeleted"`
+	Groups      []keychain.Group `json:"groups"`
+	Shared      bool             `json:"shared"`
+	Pwned       bool             `json:"pwned"`
+	HasPassword bool             `json:"hasPassword"`
+	Created     time.Time        `json:"created"`
+	Modified    time.Time        `json:"modified"`
 }
 
 type WiFiMeta struct {
@@ -172,20 +173,21 @@ func webMetas(p payload) []WebMeta {
 	for _, w := range p.Web {
 		id := webID(w)
 		out = append(out, WebMeta{
-			ID:        id,
-			Title:     w.Name,
-			Username:  w.Username,
-			Domain:    w.Domain,
-			Domains:   w.Domains,
-			Website:   w.Website,
-			HasTOTP:   w.TOTP != "",
-			Note:      w.Note,
-			IsDeleted: w.IsDeleted,
-			Groups:    w.Groups,
-			Shared:    w.Shared,
-			Created:   w.Created,
-			Modified:  w.Modified,
-			Pwned:     slices.Contains(p.Pwned, id),
+			ID:          id,
+			Title:       w.Name,
+			Username:    w.Username,
+			Domain:      w.Domain,
+			Domains:     w.Domains,
+			Website:     w.Website,
+			HasTOTP:     w.TOTP != "",
+			Note:        w.Note,
+			IsDeleted:   w.IsDeleted,
+			Groups:      w.Groups,
+			Shared:      w.Shared,
+			Pwned:       slices.Contains(p.Pwned, id),
+			HasPassword: len(w.Password) > 0,
+			Created:     w.Created,
+			Modified:    w.Modified,
 		})
 	}
 	return out

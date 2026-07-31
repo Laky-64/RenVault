@@ -167,8 +167,10 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
         case 'web': {
             const fields: DetailField[] = [
                 {label: m.field_username(), value: {shown: item.username}, copyable: true},
-                {label: m.field_password(), value: {secret: () => secrets.password(item.id)}, copyable: true},
             ];
+            if (item.hasPassword) {
+                fields.push({label: m.field_password(), value: {secret: () => secrets.password(item.id)}, copyable: true});
+            }
             if (item.passkey) {
                 pushPasskeyCreated(fields, item.passkey.created);
             }
