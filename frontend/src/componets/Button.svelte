@@ -8,6 +8,7 @@
         accent,
         onclick,
         disabled = false,
+        dim = true,
         variant = 'ghost',
         block = false,
         morph,
@@ -19,6 +20,7 @@
         onclick?: () => void,
         accent?: string,
         disabled?: boolean,
+        dim?: boolean,
         variant?: 'ghost' | 'plain' | 'glass' | 'primary' | 'tinted',
         block?: boolean,
         morph?: unknown,
@@ -89,6 +91,7 @@
     class:flashing={flashing.on}
     class:hasAccent
     class:disabled
+    class:dimmed={disabled && dim}
     class:block
 >
     {#if morph !== undefined}
@@ -164,8 +167,12 @@
     }
 
     div.disabled {
-        opacity: 0.4;
         cursor: default;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    div.dimmed {
+        opacity: 0.4;
     }
 
     /*noinspection CssUnusedSymbol*/
