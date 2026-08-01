@@ -123,8 +123,8 @@
 
     .morph.morphing {
         transition:
-            width 460ms cubic-bezier(0.34, 1.32, 0.5, 1),
-            height 460ms cubic-bezier(0.34, 1.32, 0.5, 1);
+            width 400ms cubic-bezier(0.34, 1.32, 0.5, 1),
+            height 400ms cubic-bezier(0.34, 1.32, 0.5, 1);
     }
 
     .face {
