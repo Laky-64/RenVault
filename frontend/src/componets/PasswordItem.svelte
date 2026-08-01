@@ -10,6 +10,8 @@
         notice,
         last = false,
         selected = false,
+        selectable = false,
+        checked = false,
         onclick,
     } : {
         item: Item;
@@ -17,8 +19,12 @@
         notice?: string;
         last?: boolean;
         selected?: boolean;
+        selectable?: boolean;
+        checked?: boolean;
         onclick?: () => void;
     } = $props();
+
+    const CHECK = 'M382-354 267-469q-12-12-28-12t-28 12q-12 12-12 28t12 28l143 143q12 12 28 12t28-12l286-286q12-12 12-28t-12-28q-12-12-28-12t-28 12L382-354Z';
 
     const view = $derived(viewOf(item));
 
@@ -58,7 +64,15 @@
         return () => (alive = false);
     });
 </script>
-<div class="row" role="button" tabindex="0" onclick={handleClick} onkeydown={onKey} class:selected>
+<div class="row" role="button" aria-pressed={selectable ? checked : undefined}
+     tabindex="0" onclick={handleClick} onkeydown={onKey} class:selected>
+    <div class="check" class:open={selectable}>
+        <span class="mark" class:checked>
+            <svg viewBox="0 -960 960 960" width="12" height="12" aria-hidden="true">
+                <path d={CHECK} fill="var(--button-text-color)"/>
+            </svg>
+        </span>
+    </div>
     <PasswordIcon icon={view.icon}/>
     <div class="info-container" class:last>
         <div class="desc-container">
@@ -81,6 +95,79 @@
         overflow: hidden;
         transition: transform 150ms ease, background 150ms ease;
         margin-inline: 15px;
+    }
+
+    .check {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: flex-start;
+        width: 0;
+        transition: width 260ms cubic-bezier(0.4, 0.05, 0.25, 1);
+    }
+
+    .check.open {
+        width: 28px;
+        transition: width 340ms cubic-bezier(0.32, 1.06, 0.5, 1);
+    }
+
+    .mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        box-sizing: border-box;
+        border: 1.5px solid color-mix(in srgb, var(--text-color) 30%, transparent);
+        background: transparent;
+        opacity: 0;
+        transform: translateX(-18px);
+        transition:
+            background 160ms ease,
+            border-color 160ms ease,
+            opacity 130ms ease,
+            transform 240ms cubic-bezier(0.4, 0.05, 0.25, 1);
+    }
+
+    .check.open .mark {
+        opacity: 1;
+        transform: none;
+        transition:
+            background 160ms ease,
+            border-color 160ms ease,
+            opacity 220ms ease 80ms,
+            transform 320ms cubic-bezier(0.32, 1.06, 0.5, 1) 80ms;
+    }
+
+    .mark > svg {
+        opacity: 0;
+        transform: scale(0.5);
+        transition: opacity 140ms ease, transform 200ms cubic-bezier(0.34, 1.6, 0.5, 1);
+    }
+
+    .mark.checked {
+        background: var(--button-color);
+        border-color: var(--button-color);
+        animation: pop 240ms cubic-bezier(0.34, 1.4, 0.5, 1);
+    }
+
+    @keyframes pop {
+        0% {
+            transform: scale(0.82);
+        }
+        60% {
+            transform: scale(1.12);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .mark.checked > svg {
+        opacity: 1;
+        transform: none;
     }
 
     .row:focus {
@@ -146,6 +233,18 @@
         margin-left: 8px;
         font-size: 15px;
         color: var(--subtitle-text-color);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .check,
+        .mark,
+        .mark > svg {
+            transition: none;
+        }
+
+        .mark.checked {
+            animation: none;
+        }
     }
 
     .row:not(:active):not(.selected) > .info-container:not(.last)::after {

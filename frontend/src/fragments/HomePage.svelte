@@ -1,12 +1,17 @@
 <script lang="ts">
     import type {Zone} from "../componets/ZoneContainer";
     import ZoneContainer from "../componets/ZoneContainer.svelte";
+    import NavBar from "../componets/NavBar.svelte";
+    import ActionBar from "../componets/ActionBar.svelte";
+    import {SvelteSet} from "svelte/reactivity";
+    import {type Bounds, LIST_MAX, ZONES_MAX} from "../lib/layout";
     import PasswordList from "../componets/PasswordList.svelte";
     import PasswordInfo from "../componets/PasswordInfo.svelte";
     import {currentItem, currentZone, nav, openItem, openZone} from "../navigation.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import {Service} from "../../bindings/github.com/Laky-64/RenVault/internal/vault";
     import {
+        type Item,
         type PasskeyItem,
         type SecretSource,
         type WebItem,
@@ -72,24 +77,94 @@
     }
 
     const stack = $derived(isCompact());
-    const shownZone = $derived(currentZone() ?? zones[0]);
+    const shownZone = $derived(zones.find(z => z.kind === currentZone()?.kind) ?? zones[0]);
+
+    let selecting = $state(false);
+    const picked = new SvelteSet<string>();
+    const allPicked = $derived(shownZone.items.length > 0 && picked.size === shownZone.items.length);
+
+    $effect(() => {
+        selecting;
+        shownZone.kind;
+        picked.clear();
+    });
+
+    function toggle(item: Item) {
+        if (picked.has(item.id)) picked.delete(item.id);
+        else picked.add(item.id);
+    }
+
+    function selectAll() {
+        if (allPicked) {
+            picked.clear();
+            return;
+        }
+        for (const entry of shownZone.items) picked.add(entry.id);
+    }
+
+    function deleteSelected() {
+    }
+
+    function orderItems() {
+    }
+
+    function addItem() {
+    }
+
+    let listStuck = $state(false);
+    let listBounds: Bounds = $state({left: 0, width: 0});
+    let detailBounds: Bounds = $state({left: 0, width: 0});
+    let editing = $state(false);
 </script>
 
-<div class="container" class:stack>
+<div class="container" class:stack
+     style="--zones-max: {ZONES_MAX}px; --list-max: {LIST_MAX}px">
     <div class="pane" style="transform: translateX({nav.offsetOf(0)}%)" inert={!nav.isActive(0)}>
-        <ZoneContainer zones={zones} on_selected={openZone}/>
+        <ZoneContainer zones={zones} selected={shownZone} on_selected={openZone}/>
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(1)}%)" inert={!nav.isActive(1)}>
-        <PasswordList zone={shownZone} {secrets} selected={currentItem() ?? null} on_selected={openItem}/>
+        <PasswordList
+            zone={shownZone}
+            {secrets}
+            selected={currentItem() ?? null}
+            on_selected={openItem}
+            {selecting}
+            checked={picked}
+            on_toggle={toggle}
+            bind:stuck={listStuck}
+            on_bounds={(left, width) => { listBounds = {left, width}; }}/>
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(2)}%)" inert={!nav.isActive(2)}>
-        <PasswordInfo zone={shownZone} item={currentItem() ?? null} {secrets}/>
+        <PasswordInfo
+            zone={shownZone}
+            item={currentItem() ?? null}
+            {secrets}
+            on_bounds={(left, width) => { detailBounds = {left, width}; }}/>
     </div>
+    <NavBar
+        zone={shownZone}
+        list={listBounds}
+        detail={detailBounds}
+        stuck={listStuck}
+        allSelected={allPicked}
+        selectedCount={picked.size}
+        bind:selecting
+        bind:editing
+        on_selectAll={selectAll}/>
+    <ActionBar
+        list={listBounds}
+        {selecting}
+        canDelete={picked.size > 0}
+        canAdd={shownZone.kind === 'all'}
+        on_order={orderItems}
+        on_delete={deleteSelected}
+        on_add={addItem}/>
 </div>
 
 <style>
     .container {
         display: flex;
+        position: relative;
         width: 100%;
         flex: 1;
         min-height: 0;

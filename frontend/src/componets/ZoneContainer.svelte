@@ -5,22 +5,19 @@ import {isCompact} from "../lib/navigation.svelte";
 
 const {
     zones,
+    selected,
     on_selected
 } : {
     zones: Zone[];
+    selected?: Zone | null;
     on_selected?: (zone: Zone) => void;
 } = $props();
-
-let selected = $state(0);
 const stack = $derived(isCompact());
 </script>
 
 <div class="container" class:stack>
-    {#each zones as zone, i}
-        <ZoneButton icon={zone.icon} text={zoneText(zone).name} count={zone.items.length} accent="var(--tile-{zone.color}-color)" selected={selected === i && !stack} onclick={() => {
-            selected = i;
-            if (on_selected) on_selected(zone);
-        }}/>
+    {#each zones as zone}
+        <ZoneButton icon={zone.icon} text={zoneText(zone).name} count={zone.items.length} accent="var(--tile-{zone.color}-color)" selected={zone.kind === selected?.kind && !stack} onclick={() => on_selected?.(zone)}/>
     {/each}
 </div>
 <style>
@@ -41,7 +38,7 @@ const stack = $derived(isCompact());
 
     /*noinspection CssNonIntegerLengthInPixels*/
     .container:not(.stack) {
-        max-width: 250px;
+        max-width: var(--zones-max, 250px);
         margin-left: 8px;
         border-radius: var(--section-border-radius);
         border: 1.5px oklch(from var(--subtitle-text-color) l c h / 40%) solid;

@@ -17,6 +17,7 @@
     import Fold from "../componets/Fold.svelte";
     import {MIN_PASSWORD} from "../lib/strength";
     import {prefersReducedMotion} from "../lib/dom";
+    import BackButton from "../componets/BackButton.svelte";
 
     const {onDone}: {onDone: () => void} = $props();
 
@@ -128,6 +129,16 @@
     }
 
     const chosen = $derived.by(() => trustedDevices?.[chosenDevice]);
+
+    const canGoBack = $derived(!busy
+        && auth.top?.kind === 'device-passcode'
+        && auth.levels.some(l => l.kind === 'trusted-devices'));
+
+    function goBack() {
+        passcode = '';
+        passcodeError = '';
+        auth.back();
+    }
 
     async function selectDevice(index: number) {
         chosenDevice = index;
@@ -515,6 +526,8 @@
             </div>
         </div>
     </div>
+
+    <BackButton shown={canGoBack} onclick={goBack}/>
 
     {#if busy}
         <div class="busy" role="status" aria-live="polite" transition:fade={{duration: VEIL}}>

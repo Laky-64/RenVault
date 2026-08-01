@@ -9,6 +9,7 @@
         header,
         item,
         overscan = 4,
+        tail = 0,
         resetKey,
         scrollOffset = $bindable(0),
     }: {
@@ -16,6 +17,7 @@
         header?: Snippet;
         item: Snippet<[T, number]>;
         overscan?: number;
+        tail?: number;
         resetKey?: unknown;
         scrollOffset?: number;
     } = $props();
@@ -81,7 +83,7 @@
         return ans;
     }
 
-    const contentHeight = $derived(headerHeight + offsets[items.length]);
+    const contentHeight = $derived(headerHeight + offsets[items.length] + tail);
 
     const startIndex = $derived(Math.max(0, indexAt(Math.max(0, scrollOffset - headerHeight)) - overscan));
     const endIndex = $derived(Math.min(items.length, indexAt(Math.max(0, scrollOffset - headerHeight) + viewportHeight) + 1 + overscan));

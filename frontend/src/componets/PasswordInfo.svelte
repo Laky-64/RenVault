@@ -9,16 +9,19 @@
     import DetailNote from "./DetailNote.svelte";
     import SecurityNotice from "./SecurityNotice.svelte";
     import Card from "./Card.svelte";
+    import {BAR_HEIGHT} from "../lib/layout";
     import {observeSize} from "../lib/dom";
 
     const {
         zone,
         item,
         secrets,
+        on_bounds,
     } : {
         zone: Zone,
         item?: Item | null,
         secrets: SecretSource,
+        on_bounds?: (left: number, width: number) => void,
     } = $props();
 
     const text = $derived(zoneText(zone));
@@ -42,7 +45,7 @@
     {#if item && detail && view}
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
-                <div class="stack" bind:clientHeight={contentHeight}>
+                <div class="stack" style="--inset: {BAR_HEIGHT}px" bind:clientHeight={contentHeight}>
                     {#if compromised && zone.kind === 'security'}
                         <SecurityNotice icon={view.icon} domain={compromised}/>
                         <Card padding="10px 15px">

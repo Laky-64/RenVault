@@ -41,6 +41,30 @@
   "field_passkeyCreationDate": "Creation Date: {date}",
   "passkey_noteDesc": "A passkey is a secure way to sign in to your accounts. Passkeys provide more security than traditional passwords.",
   "passkey_learnMore": "Learn More…",
+  "nav_back": "Back",
+  "list_select": "Select",
+  "list_selectAll": "Select All",
+  "list_selectedCount": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} selected",
+        "countPlural=*": "{count} selected"
+      }
+    }
+  ],
+  "list_deselectAll": "Deselect All",
+  "item_edit": "Edit",
+  "list_selectDone": "Done",
+  "list_order": "Order",
+  "list_add": "Add",
+  "list_delete": "Delete",
   "item_compromised": "Compromised Password",
   "security_changeTitle": "Change This Password Now",
   "security_changeDesc": "The password for “{domain}” was found in a data leak and may be compromised. Change it on the website to help protect your account.",

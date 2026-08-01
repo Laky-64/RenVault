@@ -6,18 +6,29 @@
     import VirtualList from "./VirtualList.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import {m} from "../paraglide/messages";
+    import {ACTION_HEIGHT, BAR_HEIGHT} from "../lib/layout";
     import {observeSize} from "../lib/dom";
 
-    const {
+    let {
         zone,
         secrets,
         selected,
         on_selected,
+        selecting = false,
+        checked,
+        on_toggle,
+        stuck = $bindable(false),
+        on_bounds,
     } : {
         zone: Zone;
         secrets?: SecretSource;
         selected?: Item | null;
         on_selected?: (item: Item) => void;
+        selecting?: boolean;
+        checked?: ReadonlySet<string>;
+        on_toggle?: (item: Item) => void;
+        stuck?: boolean;
+        on_bounds?: (left: number, width: number) => void;
     } = $props();
 
     const previewCode = $derived.by(() => {
@@ -29,18 +40,19 @@
 
     const notice = $derived(zone.kind === 'security' ? m.item_compromised() : undefined);
 
-    const BAR_HEIGHT = 60;
     const HYSTERESIS = 6;
     let scrollOffset = $state(0);
     let titleHeight = $state(0);
-    let stuck = $state(false);
     const stack = $derived(isCompact());
     const name = $derived(zoneText(zone).name);
+    const count = $derived(selecting
+        ? m.list_selectedCount({count: checked?.size ?? 0})
+        : m.zone_list_itemCount({count: zone.items.length}));
 
     $effect(() => {
         const offset = scrollOffset;
         const threshold = titleHeight - BAR_HEIGHT;
-        if (titleHeight === 0) return;
+        if (stack || titleHeight === 0) return;
         untrack(() => {
             if (!stuck && offset > threshold + HYSTERESIS) stuck = true;
             else if (stuck && offset < threshold - HYSTERESIS) stuck = false;
@@ -49,30 +61,29 @@
 </script>
 
 <div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack use:observeSize={node => on_bounds?.(node.offsetLeft, node.offsetWidth)}>
-    <VirtualList items={zone.items} resetKey={zone} bind:scrollOffset>
+    <VirtualList items={zone.items} resetKey={zone} tail={ACTION_HEIGHT} bind:scrollOffset>
         {#snippet header()}
-            <div class="large-title" bind:clientHeight={titleHeight}>
-                <h1>{name}</h1>
-                <p>{m.zone_list_itemCount({count: zone.items.length})}</p>
-            </div>
+            {#if stack}
+                <div class="bar-spacer"></div>
+            {:else}
+                <div class="large-title" bind:clientHeight={titleHeight}>
+                    <h1>{name}</h1>
+                    <p>{count}</p>
+                </div>
+            {/if}
         {/snippet}
         {#snippet item(entry, index)}
             <PasswordItem
                 item={entry}
                 loadCode={previewCode}
                 {notice}
-                onclick={() => on_selected?.(entry)}
-                selected={entry === selected && !stack}
+                onclick={() => (selecting ? on_toggle?.(entry) : on_selected?.(entry))}
+                selectable={selecting}
+                checked={checked?.has(entry.id) ?? false}
+                selected={entry === selected && !stack && !selecting}
                 last={index === zone.items.length - 1}/>
         {/snippet}
     </VirtualList>
-    <div class="top-bar" class:stuck aria-hidden="true">
-        <div class="bar-backdrop"></div>
-        <div class="compact-title">
-            <span class="compact-name">{name}</span>
-            <span class="compact-count">{m.zone_list_itemCount({count: zone.items.length})}</span>
-        </div>
-    </div>
 </div>
 
 <style>
@@ -84,7 +95,7 @@
     }
 
     .container:not(.stack) {
-        max-width: 350px;
+        max-width: var(--list-max, 350px);
     }
 
     .container:not(.stack)::after {
@@ -98,7 +109,7 @@
     }
 
     .large-title {
-        padding-top: 15px;
+        padding-top: var(--bar-height);
         padding-bottom: 15px;
         padding-inline: 15px;
     }
@@ -117,86 +128,8 @@
         color: var(--subtitle-text-color);
     }
 
-    .top-bar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
+    .bar-spacer {
         height: var(--bar-height);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
     }
 
-    .bar-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--bar-height);
-        opacity: 0;
-        transition: opacity 200ms ease;
-        background: linear-gradient(
-            to bottom,
-            var(--secondary-bg-color) 0%,
-            color-mix(in srgb, var(--secondary-bg-color) 95%, transparent) 30%,
-            color-mix(in srgb, var(--secondary-bg-color) 78%, transparent) 60%,
-            color-mix(in srgb, var(--secondary-bg-color) 0%, transparent) 90%
-        );
-    }
-
-    .stuck .bar-backdrop {
-        opacity: 1;
-    }
-
-    .compact-title {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        line-height: 1.15;
-    }
-
-    .compact-name,
-    .compact-count {
-        opacity: 0;
-        transform: translateY(9px);
-        filter: blur(4px);
-        margin-bottom: 2px;
-        transition:
-            opacity 260ms ease,
-            transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
-            filter 260ms ease;
-        will-change: opacity, transform, filter;
-    }
-
-    .compact-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: var(--text-color);
-        transition-delay: 50ms;
-    }
-
-    .compact-count {
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--subtitle-text-color);
-        transition-delay: 0ms;
-    }
-
-    .stuck .compact-name,
-    .stuck .compact-count {
-        opacity: 1;
-        transform: none;
-        filter: none;
-    }
-
-    .stuck .compact-name {
-        transition-delay: 0ms;
-    }
-
-    .stuck .compact-count {
-        transition-delay: 90ms;
-    }
 </style>
