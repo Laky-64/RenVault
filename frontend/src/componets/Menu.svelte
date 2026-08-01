@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {untrack} from "svelte";
+    import {type Snippet, untrack} from "svelte";
     import {type MenuPlacement, type MenuSection} from "../lib/menu";
     import {motionMs} from "../lib/motion";
     import {observeSize} from "../lib/dom";
@@ -10,6 +10,7 @@
         anchor,
         placement = 'top-start',
         sections,
+        seed: seedFace,
         on_select,
     } : {
         open?: boolean;
@@ -17,6 +18,7 @@
         anchor?: HTMLElement;
         placement?: MenuPlacement;
         sections: MenuSection[];
+        seed?: Snippet;
         on_select?: (id: string) => void;
     } = $props();
 
@@ -95,6 +97,9 @@
         role="menu"
         tabindex="-1"
     >
+        {#if seedFace}
+            <div class="seed" aria-hidden="true">{@render seedFace()}</div>
+        {/if}
         <div class="items" use:observeSize={node => (natural = {width: node.offsetWidth, height: node.offsetHeight})}>
             {#each sections as section, index}
                 {#if index > 0}
@@ -142,9 +147,6 @@
             0 6px 10px rgb(0 0 0 / 8%),
             inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
         color: var(--text-color);
-    }
-
-    .menu:not(:has(.row:active)) {
         transform: scale(1);
         transition:
             width 240ms cubic-bezier(0.2, 1.34, 0.36, 1),
@@ -153,17 +155,33 @@
             border-radius 160ms ease 60ms;
     }
 
-    .menu:has(.row:active) {
-        transform: scale(1.04);
-        transition: transform 250ms ease;
-    }
-
     /*noinspection CssUnusedSymbol*/
     .menu.grown {
         transition:
             height var(--open-ms) cubic-bezier(0.2, 1.34, 0.4, 1),
             width var(--open-ms) cubic-bezier(0.16, 1.36, 0.36, 1) 30ms,
+            transform 250ms ease,
             border-radius calc(var(--open-ms) * 0.35) ease-out;
+    }
+
+    .menu:has(.row:active) {
+        transform: scale(1.04);
+    }
+
+    .seed {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 1;
+        transition: opacity 130ms ease 90ms;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .grown > .seed {
+        opacity: 0;
+        transition: opacity 90ms ease;
     }
 
     .items {
@@ -218,7 +236,7 @@
         width: 100%;
         padding: 8px 10px;
         border: none;
-        border-radius: 12px;
+        border-radius: 1000px;
         background: transparent;
         color: var(--text-color);
         font-family: inherit;

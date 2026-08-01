@@ -1,19 +1,13 @@
 <script lang="ts">
 import TitleBar from "./componets/TitleBar.svelte";
 import {onMount} from "svelte";
-import {Events, WML} from "@wailsio/runtime";
+import {WML} from "@wailsio/runtime";
 import HomePage from "./fragments/HomePage.svelte";
 import type {TransitionConfig} from "svelte/transition";
 import AuthFlow from "./fragments/AuthFlow.svelte";
-import {nav} from "./navigation.svelte";
-import {LOCKED_EVENT} from "./lib/lock";
 
 onMount(() => {
     WML.Reload();
-    return Events.On(LOCKED_EVENT, () => {
-        authenticated = false;
-        nav.reset();
-    });
 });
 
 const DURATION = typeof location !== 'undefined' && location.search.includes('slow')

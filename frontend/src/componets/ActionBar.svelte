@@ -108,7 +108,13 @@
 </div>
 
 <Menu bind:open={orderOpen} bind:active={orderMorphing} anchor={orderAnchor}
-      placement="top-start" sections={sortSections} on_select={chooseSort}/>
+      placement="top-start" sections={sortSections} on_select={chooseSort}>
+    {#snippet seed()}
+        <svg viewBox="0 -960 960 960" width="22" height="22" aria-hidden="true">
+            <path d={ORDER} fill="var(--text-color)"/>
+        </svg>
+    {/snippet}
+</Menu>
 
 <style>
     .action-bar {
@@ -148,10 +154,8 @@
         margin-left: auto;
     }
 
-    /* Il pannello parte esattamente sopra al pulsante: tenerli entrambi
-       visibili sovrapporrebbe due strati di vetro. */
     .slot.swallowed {
-        visibility: hidden;
+        opacity: 0;
     }
 
     svg {
