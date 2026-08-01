@@ -224,7 +224,7 @@
     div.glass {
         --glass-blur: 20px;
         --glass-saturate: 180%;
-        background: color-mix(in srgb, var(--text-color) 10%, transparent);
+        background: color-mix(in srgb, var(--text-color) 8%, transparent);
         backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
         -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
         box-shadow:
