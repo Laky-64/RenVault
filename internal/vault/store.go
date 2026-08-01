@@ -60,6 +60,8 @@ type payload struct {
 	ProfileName      string `cbor:"profile_name,omitempty"`
 	ProfilePhoto     []byte `cbor:"profile_photo,omitempty"`
 	ProfilePhotoType string `cbor:"profile_photo_type,omitempty"`
+
+	Settings Settings `cbor:"settings,omitempty"`
 }
 
 type vaultFile struct {

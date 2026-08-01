@@ -46,8 +46,19 @@
     const PWNED_TTL = 24 * 60 * 60 * 1000;
 
     onMount(() => {
+        void loadSettings();
         void load().then(() => refreshPwned());
     });
+
+    async function loadSettings() {
+        try {
+            const settings = await Service.Settings();
+            sortField = settings.sortField as SortField;
+            sortAscending = settings.sortAscending;
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        }
+    }
 
     async function load() {
         try {
@@ -112,6 +123,8 @@
     function applySort(field: SortField, ascending: boolean) {
         sortField = field;
         sortAscending = ascending;
+        Service.SetSortPreference(field, ascending)
+            .catch(e => console.error(describeFailure(e).raw));
     }
 
     function addItem() {

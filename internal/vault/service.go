@@ -33,6 +33,14 @@ func NewService() *Service {
 	return &Service{v: v}
 }
 
+func (s *Service) Settings() Settings {
+	return s.v.Settings()
+}
+
+func (s *Service) SetSortPreference(field string, ascending bool) error {
+	return s.v.SetSort(field, ascending)
+}
+
 func (s *Service) AutoLockMinutes() int {
 	return int(s.v.AutoLock() / time.Minute)
 }
