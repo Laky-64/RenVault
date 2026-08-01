@@ -101,6 +101,7 @@
     .container:not(.stack)::after {
         content: '';
         position: absolute;
+        z-index: 6;
         right: 0;
         width: 1px;
         top: 0;
