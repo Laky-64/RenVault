@@ -88,6 +88,7 @@
     onclick={handleClick}
     onkeydown={onKey}
     class={variant}
+    class:glass-surface={variant === 'glass'}
     class:flashing={flashing.on}
     class:hasAccent
     class:disabled
@@ -222,15 +223,6 @@
 
     /*noinspection CssUnusedSymbol*/
     div.glass {
-        --glass-blur: 20px;
-        --glass-saturate: 180%;
-        background: color-mix(in srgb, var(--text-color) 8%, transparent);
-        backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-        box-shadow:
-            0 6px 10px rgb(0 0 0 / 8%),
-            inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
-        color: var(--text-color);
         cursor: pointer;
     }
 
@@ -282,13 +274,6 @@
         100% {
             backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
             -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-        }
-    }
-
-    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-        /*noinspection CssUnusedSymbol*/
-        div.glass {
-            background: color-mix(in srgb, var(--text-color) 14%, var(--section-bg-color));
         }
     }
 

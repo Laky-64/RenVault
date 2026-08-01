@@ -41,6 +41,33 @@ function hostOf(value: string): string {
     return normalized(value).replace(/^www\./, '');
 }
 
+const HOST = /^(?!-)[\p{L}\p{N}-]{1,63}(?<!-)(\.(?!-)[\p{L}\p{N}-]{1,63}(?<!-))*\.\p{L}{2,63}$/u;
+const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+
+export function isDomain(value: string): boolean {
+    if (value.length === 0 || value.length > 253) return false;
+    const parts = IPV4.exec(value);
+    if (parts) return parts.slice(1).every(n => Number(n) <= 255 && (n === '0' || !n.startsWith('0')));
+    return HOST.test(value);
+}
+
+export function bareHost(value: string): string {
+    return normalized(value)
+        .replace(/^[a-z][a-z0-9+.-]*:\/*/, '')
+        .replace(/^www\./, '')
+        .replace(/\/+$/, '');
+}
+
+export function domainOf(value: string): string {
+    let host = normalized(value)
+        .replace(/^[a-z][a-z0-9+.-]*:\/\//, '')
+        .replace(/^[^/@]*@/, '');
+    host = host.split(/[/?#\\]/, 1)[0]
+        .replace(/:\d+$/, '')
+        .replace(/^\.+|\.+$/g, '');
+    return hostOf(host);
+}
+
 function hostsOf(item: WebItem): string[] {
     return [item.domain, ...(item.domains ?? [])].map(hostOf).filter(Boolean);
 }

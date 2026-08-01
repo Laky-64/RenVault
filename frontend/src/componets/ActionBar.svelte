@@ -1,6 +1,7 @@
 <script lang="ts">
     import NavButton from "./NavButton.svelte";
     import Menu from "./Menu.svelte";
+    import PasswordEditor, {type Draft} from "./PasswordEditor.svelte";
     import {BACK_INSET, type Bounds} from "../lib/layout";
     import type {MenuSection} from "../lib/menu";
     import type {SortField} from "../lib/sort";
@@ -27,7 +28,7 @@
         sortAscending?: boolean;
         on_sort?: (field: SortField, ascending: boolean) => void;
         on_delete?: () => void;
-        on_add?: () => void;
+        on_add?: (draft: Draft) => void;
     } = $props();
 
     const ARROW_UP = 'M440-647 244-451q-12 12-28 11.5T188-452q-11-12-11.5-28t11.5-28l264-264q6-6 13-8.5t15-2.5q8 0 15 2.5t13 8.5l264 264q11 11 11 27.5T772-452q-12 12-28.5 12T715-452L520-647v447q0 17-11.5 28.5T480-160q-17 0-28.5-11.5T440-200v-447Z';
@@ -39,6 +40,9 @@
     let orderAnchor: HTMLElement | undefined = $state();
     let orderOpen = $state(false);
     let orderMorphing = $state(false);
+    let addAnchor: HTMLElement | undefined = $state();
+    let addOpen = $state(false);
+    let addMorphing = $state(false);
 
     const sortSections: MenuSection[] = $derived([
         [
@@ -92,12 +96,12 @@
                 </svg>
             </NavButton>
         </div>
-        <div class="slot push">
+        <div class="slot push" bind:this={addAnchor} class:swallowed={addMorphing}>
             <NavButton
                 shown={onList && canAdd && !selecting}
                 align="end"
                 padding="12px"
-                onclick={() => on_add?.()}
+                onclick={() => (addOpen = true)}
             >
                 <svg viewBox="0 -960 960 960" width="22" height="22" role="img" aria-label={m.list_add()}>
                     <path d={ADD} fill="var(--text-color)"/>
@@ -115,6 +119,14 @@
         </svg>
     {/snippet}
 </Menu>
+
+<PasswordEditor bind:open={addOpen} bind:active={addMorphing} anchor={addAnchor} on_save={on_add}>
+    {#snippet seed()}
+        <svg viewBox="0 -960 960 960" width="22" height="22" aria-hidden="true">
+            <path d={ADD} fill="var(--text-color)"/>
+        </svg>
+    {/snippet}
+</PasswordEditor>
 
 <style>
     .action-bar {

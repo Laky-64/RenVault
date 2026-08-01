@@ -3,6 +3,7 @@
     import ZoneContainer from "../componets/ZoneContainer.svelte";
     import NavBar from "../componets/NavBar.svelte";
     import ActionBar from "../componets/ActionBar.svelte";
+    import type {Draft} from "../componets/PasswordEditor.svelte";
     import {SvelteSet} from "svelte/reactivity";
     import {type Bounds, LIST_MAX, ZONES_MAX} from "../lib/layout";
     import PasswordList from "../componets/PasswordList.svelte";
@@ -127,7 +128,7 @@
             .catch(e => console.error(describeFailure(e).raw));
     }
 
-    function addItem() {
+    function addItem(draft: Draft) {
     }
 
     let listStuck = $state(false);

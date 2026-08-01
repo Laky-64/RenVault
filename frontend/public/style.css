@@ -45,6 +45,40 @@ html, body {
     overflow: hidden;
 }
 
+.glass-surface {
+    --glass-blur: 20px;
+    --glass-saturate: 180%;
+    background: color-mix(in srgb, var(--text-color) 8%, transparent);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    box-shadow:
+        0 6px 10px rgb(0 0 0 / 8%),
+        inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
+    color: var(--text-color);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-surface {
+        background: color-mix(in srgb, var(--text-color) 14%, var(--section-bg-color));
+    }
+}
+
+.panel-surface {
+    background: var(--section-bg-color);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow:
+        0 20px 50px rgb(0 0 0 / 45%),
+        inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
+    color: var(--text-color);
+}
+
+/*noinspection CssNonIntegerLengthInPixels*/
+.masked-text {
+    -webkit-text-stroke: 3.2px currentColor;
+    letter-spacing: 0.17em;
+}
+
 * {
     font-family: 'SFProText', serif;
     -webkit-tap-highlight-color: transparent;
