@@ -7,6 +7,11 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
+const (
+	LockedEvent     = "vault:locked"
+	defaultAutoLock = 5 * time.Minute
+)
+
 type Service struct {
 	v *Vault
 }
@@ -18,9 +23,18 @@ func NewService() *Service {
 	}
 	_ = disableCoreDump()
 	v := New(base)
-	v.SetAutoLock(5 * time.Minute)
+	v.SetAutoLock(defaultAutoLock)
+	v.SetOnLock(func() {
+		if app := application.Get(); app != nil {
+			app.Event.Emit(LockedEvent)
+		}
+	})
 	go changeURLIndex()
 	return &Service{v: v}
+}
+
+func (s *Service) AutoLockMinutes() int {
+	return int(s.v.AutoLock() / time.Minute)
 }
 
 func (s *Service) ServiceName() string { return "Vault" }

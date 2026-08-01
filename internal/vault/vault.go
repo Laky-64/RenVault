@@ -40,6 +40,7 @@ type Vault struct {
 	autoLock time.Duration
 	timer    *time.Timer
 	timerGen uint64
+	onLock   func()
 }
 
 func New(base string) *Vault {
@@ -88,11 +89,23 @@ func (v *Vault) UnlockWithPassword(masterPassword string) error {
 	return nil
 }
 
+func (v *Vault) SetOnLock(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onLock = fn
+}
+
 func (v *Vault) SetAutoLock(d time.Duration) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.autoLock = d
 	v.resetTimerLocked()
+}
+
+func (v *Vault) AutoLock() time.Duration {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return v.autoLock
 }
 
 func (v *Vault) resetTimerLocked() {
@@ -124,6 +137,7 @@ func (v *Vault) Lock() {
 }
 
 func (v *Vault) lockLocked() {
+	wasUnlocked := v.k != nil
 	if v.timer != nil {
 		v.timer.Stop()
 		v.timer = nil
@@ -138,6 +152,9 @@ func (v *Vault) lockLocked() {
 	v.pending = appleservices.Credentials{}
 	v.sess.Close()
 	v.store.clear()
+	if wasUnlocked && v.onLock != nil {
+		go v.onLock()
+	}
 }
 
 func (v *Vault) ListWeb() []WebMeta {
