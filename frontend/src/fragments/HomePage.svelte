@@ -21,6 +21,7 @@
         webItem,
         wifiItem,
     } from "../lib/items";
+    import {type SortField, sortItems} from "../lib/sort";
     import {describeFailure} from "../lib/failure";
     import {onMount} from "svelte";
 
@@ -77,7 +78,10 @@
     }
 
     const stack = $derived(isCompact());
-    const shownZone = $derived(zones.find(z => z.kind === currentZone()?.kind) ?? zones[0]);
+    let sortField: SortField = $state('title');
+    let sortAscending = $state(true);
+    const activeZone = $derived(zones.find(z => z.kind === currentZone()?.kind) ?? zones[0]);
+    const shownZone = $derived({...activeZone, items: sortItems(activeZone.items, sortField, sortAscending)});
 
     let selecting = $state(false);
     const picked = new SvelteSet<string>();
@@ -105,7 +109,9 @@
     function deleteSelected() {
     }
 
-    function orderItems() {
+    function applySort(field: SortField, ascending: boolean) {
+        sortField = field;
+        sortAscending = ascending;
     }
 
     function addItem() {
@@ -156,7 +162,9 @@
         {selecting}
         canDelete={picked.size > 0}
         canAdd={shownZone.kind === 'all'}
-        on_order={orderItems}
+        {sortField}
+        {sortAscending}
+        on_sort={applySort}
         on_delete={deleteSelected}
         on_add={addItem}/>
 </div>
