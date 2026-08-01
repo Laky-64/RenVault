@@ -115,6 +115,7 @@
         align-items: center;
         align-self: center;
         padding-inline: 50px;
+        max-width: 500px;
     }
 
     .title {
