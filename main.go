@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 
+	"github.com/Laky-64/RenVault/internal/appinfo"
 	"github.com/Laky-64/RenVault/internal/icons"
 	"github.com/Laky-64/RenVault/internal/vault"
 
@@ -18,10 +19,11 @@ func main() {
 
 	appleVault := vault.NewService()
 	app := application.New(application.Options{
-		Name:        "RenVault",
-		Description: "An unofficial cross-platform Apple Passwords client for managing your credentials securely",
+		Name:        appinfo.Name,
+		Description: appinfo.Description,
 		Services: []application.Service{
 			application.NewService(appleVault),
+			application.NewService(appinfo.NewService()),
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
@@ -34,7 +36,7 @@ func main() {
 	})
 
 	app.Window.NewWithOptions(application.WebviewWindowOptions{
-		Title:     "RenVault",
+		Title:     appinfo.Name,
 		Width:     1000,
 		Height:    670,
 		Frameless: true,

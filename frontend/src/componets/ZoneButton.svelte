@@ -65,7 +65,7 @@
 
     .container:active {
         background: color-mix(in srgb, var(--text-color) 20%, transparent);
-        box-shadow: 0 0 20px color-mix(in srgb, var(--text-color) 20%, transparent);
+        box-shadow: 0 0 15px color-mix(in srgb, var(--text-color) 20%, transparent);
     }
 
     .container.selected {
