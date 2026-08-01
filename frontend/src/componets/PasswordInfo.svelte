@@ -86,7 +86,7 @@
         height: 100%;
         align-items: start;
         justify-content: center;
-        margin-inline: 8px;
+        margin-inline: 12px;
     }
 
     .scroller {
