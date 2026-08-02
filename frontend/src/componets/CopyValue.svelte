@@ -1,5 +1,6 @@
 <script lang="ts">
     import {untrack, type Snippet} from "svelte";
+    import {observeSize} from "../lib/dom";
     import {m} from "../paraglide/messages";
 
     const SWAP_MS = 400;
@@ -44,6 +45,7 @@
         sync();
     }
 
+    let probeEl: HTMLElement | undefined = $state();
     let valueWidth = $state(0);
     let confirmWidth = $state(0);
     const width = $derived(copied ? confirmWidth : valueWidth);
@@ -71,6 +73,12 @@
 
     $effect(() => {
         text;
+        face;
+        if (probeEl) valueWidth = Math.ceil(probeEl.getBoundingClientRect().width);
+    });
+
+    $effect(() => {
+        text;
         if (!untrack(() => hovering)) return;
         swapping = true;
         const done = setTimeout(() => (swapping = false), SWAP_MS);
@@ -92,15 +100,31 @@
     onblur={focusChange}
 >
     <span class="hit" style="left: {-hitExtra}px" aria-hidden="true"></span>
-    <span class="swap" class:swapping style={width ? `width: ${width}px` : ''}>
-        <span class="face" class:on={!copied} bind:clientWidth={valueWidth}>
+    <span
+        class="swap"
+        class:swapping
+        style={width ? `width: ${width}px` : ''}
+    >
+        <span class="face clamped" class:on={!copied}>
             {#if face}
                 {@render face()}
             {:else}
                 <span class:masked>{text}</span>
             {/if}
         </span>
-        <span class="face" class:on={copied} bind:clientWidth={confirmWidth} aria-hidden={!copied}>
+        <span
+            class="probe"
+            aria-hidden="true"
+            bind:this={probeEl}
+            use:observeSize={node => (valueWidth = Math.ceil(node.getBoundingClientRect().width))}
+        >
+            {#if face}
+                {@render face()}
+            {:else}
+                <span class:masked>{text}</span>
+            {/if}
+        </span>
+        <span class="face" class:on={copied} use:observeSize={node => (confirmWidth = Math.ceil(node.getBoundingClientRect().width))} aria-hidden={!copied}>
             <svg viewBox="0 -960 960 960" width="15" height="15" fill="currentColor" aria-hidden="true">
                 <path d="M368-240q-33 0-56.5-23.5T288-320v-480q0-33 23.5-56.5T368-880h360q33 0 56.5 23.5T808-800v480q0 33-23.5 56.5T728-240H368ZM232-104q-33 0-56.5-23.5T152-184v-520q0-17 11.5-28.5T192-744q17 0 28.5 11.5T232-704v520h400q17 0 28.5 11.5T672-144q0 17-11.5 28.5T632-104H232Z"/>
             </svg>
@@ -115,6 +139,7 @@
         position: relative;
         align-items: center;
         max-width: 100%;
+        min-width: 0;
         padding: 5px 10px;
         margin: -5px -10px -5px auto;
         border: 0;
@@ -185,6 +210,39 @@
         white-space: nowrap;
         opacity: 0;
         transition: opacity 130ms ease;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .face.clamped {
+        right: auto;
+        left: 0;
+        max-width: 100%;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .swap.swapping > .face.clamped {
+        max-width: none;
+    }
+
+    .face.clamped > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .probe {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: max-content;
+        height: 100%;
+        white-space: nowrap;
+        visibility: hidden;
+        pointer-events: none;
     }
 
     .face.on {
