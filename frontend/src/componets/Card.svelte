@@ -3,14 +3,16 @@
 
     const {
         padding = '0',
+        radius = "var(--zone-border-radius)",
         children,
     } : {
         padding?: string;
+        radius?: string;
         children: Snippet;
     } = $props();
 </script>
 
-<div class="card" style="padding: {padding}">
+<div class="card" style="padding: {padding}; border-radius: {radius}">
     {@render children()}
 </div>
 
@@ -22,7 +24,7 @@
         width: 100%;
         max-width: 600px;
         margin-inline: auto;
-        border-radius: var(--zone-border-radius);
+        overflow: hidden;
         background: var(--section-bg-color);
     }
 </style>
