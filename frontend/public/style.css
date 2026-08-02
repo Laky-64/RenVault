@@ -48,7 +48,7 @@ html, body {
 .glass-surface {
     --glass-blur: 20px;
     --glass-saturate: 180%;
-    --surface-bg: color-mix(in srgb, color-mix(in srgb, var(--secondary-bg-color) 75%, var(--text-color)) 20%, transparent);
+    --surface-bg: color-mix(in srgb, color-mix(in srgb, var(--secondary-bg-color), var(--text-color) 15%) 30%, transparent);
     --surface-shadow:
         0 6px 10px rgb(0 0 0 / 8%),
         inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
