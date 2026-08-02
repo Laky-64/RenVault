@@ -52,6 +52,7 @@
         box-sizing: border-box;
         padding: 12px;
         box-shadow: 0 0 0 transparent;
+        cursor: pointer;
     }
 
     .container:focus {

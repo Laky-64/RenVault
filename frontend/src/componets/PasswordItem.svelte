@@ -95,6 +95,7 @@
         overflow: hidden;
         transition: transform 150ms ease, background 150ms ease;
         margin-inline: 15px;
+        cursor: pointer;
     }
 
     .check {

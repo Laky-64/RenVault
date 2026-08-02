@@ -161,6 +161,7 @@
         align-items: center;
         justify-content: center;
         --wails-draggable: no-drag;
+        cursor: pointer;
     }
 
     div.block {
@@ -212,18 +213,23 @@
     }
 
     /*noinspection CssUnusedSymbol*/
-    div.plain:not(.disabled):hover {
+    div.plain:not(.hasAccent):not(.disabled):hover {
         background: color-mix(in srgb, var(--text-color) 4%, transparent);
     }
 
     /*noinspection CssUnusedSymbol*/
-    div.plain:not(.disabled):active {
+    div.plain:not(.hasAccent):not(.disabled):active {
         background: color-mix(in srgb, var(--text-color) 8%, transparent);
     }
 
     /*noinspection CssUnusedSymbol*/
-    div.glass {
-        cursor: pointer;
+    div.plain.hasAccent:not(.disabled):hover {
+        background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    div.plain.hasAccent:not(.disabled):active {
+        background: color-mix(in srgb, var(--accent-color) 20%, transparent);
     }
 
     /*noinspection CssUnusedSymbol*/
@@ -282,7 +288,6 @@
     div.tinted {
         font-size: 15px;
         font-weight: 600;
-        cursor: pointer;
     }
 
     /*noinspection CssUnusedSymbol*/
