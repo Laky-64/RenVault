@@ -1,10 +1,18 @@
 <script lang="ts">
     import type {Snippet} from "svelte";
 
-    let {open = false, children}: {open?: boolean; children: Snippet} = $props();
+    let {
+        open = false,
+        bleed = false,
+        children,
+    }: {
+        open?: boolean;
+        bleed?: boolean;
+        children: Snippet;
+    } = $props();
 </script>
 
-<div class="fold" class:open>
+<div class="fold" class:open class:bleed inert={!open}>
     <div class="inner">
         {@render children()}
     </div>
@@ -13,6 +21,7 @@
 <style>
     .fold {
         display: grid;
+        width: 100%;
         grid-template-rows: 0fr;
         opacity: 0;
         transition:
@@ -25,9 +34,22 @@
         opacity: 1;
     }
 
+    /*noinspection CssUnusedSymbol*/
+    .fold.bleed {
+        width: calc(100% + 20px);
+        margin-inline: -10px;
+        margin-block: -5px;
+    }
+
     .inner {
         min-height: 0;
+        min-width: 0;
         overflow: hidden;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .fold.bleed > .inner {
+        padding: 5px 10px;
     }
 
     @media (prefers-reduced-motion: reduce) {
