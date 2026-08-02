@@ -1,4 +1,4 @@
-export const COMPACT_MAX = 950;
+export const COMPACT_MAX = 900;
 const PARALLAX = 0.3;
 
 let width = $state(typeof window === 'undefined' ? Number.POSITIVE_INFINITY : window.innerWidth);
