@@ -1,10 +1,18 @@
 <script lang="ts">
     import type {Snippet} from "svelte";
 
-    const {children, invalid = false}: {children: Snippet; invalid?: boolean} = $props();
+    const {
+        children,
+        invalid = false,
+        radius = '20px',
+    }: {
+        children: Snippet;
+        invalid?: boolean;
+        radius?: string;
+    } = $props();
 </script>
 
-<div class="card" class:invalid>
+<div class="card" class:invalid style="border-radius: {radius}">
     {@render children()}
 </div>
 
@@ -13,7 +21,6 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        border-radius: 20px;
         background: color-mix(in srgb, var(--text-color) 8%, transparent);
         overflow: hidden;
         border: 0 solid transparent;
