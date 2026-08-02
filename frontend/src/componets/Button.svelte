@@ -173,7 +173,7 @@
 
     /*noinspection CssUnusedSymbol*/
     div.dimmed {
-        opacity: 0.4;
+        opacity: 0.5;
     }
 
     /*noinspection CssUnusedSymbol*/
@@ -193,7 +193,7 @@
 
     /*noinspection CssUnusedSymbol*/
     div.ghost:not(.hasAccent) {
-        background: color-mix(in srgb, var(--text-color) 3%, transparent);
+        background: color-mix(in srgb, var(--text-color) 6%, transparent);
     }
 
     /*noinspection CssUnusedSymbol*/
