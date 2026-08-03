@@ -1,7 +1,7 @@
 <script lang="ts">
     import {type Snippet, untrack} from "svelte";
     import {motionMs} from "../lib/motion";
-    import {observeSize} from "../lib/dom";
+    import {observeSize, portal} from "../lib/dom";
     import {type Box, type ContentAnchor, type Placer, seedBox} from "../lib/morph";
 
     let {
@@ -10,10 +10,12 @@
         anchor,
         place,
         radius = 20,
-        scrim = false,
         contentAnchor = 'center',
+        fill = false,
         dismissable = true,
         pressScale = false,
+        fluid = false,
+        dim = false,
         surface = 'glass-surface',
         mode = 'box',
         openMs,
@@ -26,12 +28,14 @@
         anchor?: HTMLElement;
         place: Placer;
         radius?: number | string;
-        scrim?: boolean;
         contentAnchor?: ContentAnchor;
+        fill?: boolean;
         dismissable?: boolean;
         pressScale?: boolean;
+        fluid?: boolean;
+        dim?: boolean;
         surface?: string;
-        mode?: 'box' | 'zoom';
+        mode?: 'box' | 'zoom' | 'pop';
         openMs?: number;
         closeMs?: number;
         seed?: Snippet;
@@ -39,29 +43,55 @@
     } = $props();
 
     const zoom = $derived(mode === 'zoom');
+    const pop = $derived(mode === 'pop');
+    const selfSized = $derived(pop && !fill);
     const OPEN_MS = $derived(openMs ?? (zoom ? 190 : 300));
     const CLOSE_MS = $derived(closeMs ?? (zoom ? 240 : 280));
 
     let rect: DOMRect | undefined = $state();
+    let surfaceEl: HTMLElement | undefined = $state();
     let natural = $state({width: 0, height: 0});
     let grown = $state(false);
+    let settled = $state(false);
     let viewport = $state({width: 0, height: 0});
 
     function measure() {
-        if (!anchor) return;
-        rect = anchor.getBoundingClientRect();
+        rect = anchor
+            ? anchor.getBoundingClientRect()
+            : new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0);
         viewport = {width: window.innerWidth, height: window.innerHeight};
     }
 
     $effect(() => {
         if (!open) {
+            if (untrack(() => freeSized) && surfaceEl) {
+                const box = surfaceEl.getBoundingClientRect();
+                const style = surfaceEl.style;
+                style.inset = 'auto';
+                style.margin = '0';
+                style.left = `${box.left}px`;
+                style.top = `${box.top}px`;
+                style.width = `${box.width}px`;
+                style.height = `${box.height}px`;
+                void surfaceEl.offsetHeight;
+            }
             grown = false;
             const timer = setTimeout(() => untrack(() => (active = false)), motionMs(CLOSE_MS));
             return () => clearTimeout(timer);
         }
         untrack(() => (active = true));
         measure();
-        const frame = requestAnimationFrame(() => (grown = true));
+        let frame = 0;
+        let waited = 0;
+        const start = () => {
+            if (untrack(() => natural.width) > 0 || waited > 2) {
+                grown = true;
+                return;
+            }
+            waited++;
+            frame = requestAnimationFrame(start);
+        };
+        frame = requestAnimationFrame(start);
         const onResize = () => measure();
         const onKey = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && dismissable) open = false;
@@ -75,6 +105,15 @@
         };
     });
 
+    $effect(() => {
+        if (!grown) {
+            settled = false;
+            return;
+        }
+        const done = setTimeout(() => (settled = true), motionMs(OPEN_MS));
+        return () => clearTimeout(done);
+    });
+
     const target = $derived.by(() => {
         viewport;
         return rect ? place(natural, rect) : undefined;
@@ -86,10 +125,12 @@
     }
 
     const corner = $derived(typeof radius === 'number' ? `${radius}px` : radius);
+    const freeSized = $derived(settled && fluid && !pop && !fill && !zoom);
 
     const shape = $derived.by(() => {
+        if (selfSized || freeSized) return `inset: 0; border-radius: ${corner}`;
         if (!target || !rect) return '';
-        return grown
+        return grown || pop
             ? css(target, corner)
             : css(seedBox(rect, target), `${rect.height / 2}px`);
     });
@@ -107,17 +148,20 @@
 </script>
 
 {#if active}
-    {#if scrim}
-        <div class="scrim" class:lit={grown}></div>
-    {/if}
+    <div class="layer" use:portal>
     {#if open && dismissable}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div class="catcher" onpointerdown={() => (open = false)}></div>
     {/if}
     <div
-        class="surface {grown ? surface : 'glass-surface'}"
+        bind:this={surfaceEl}
+        class="surface {grown || pop ? surface : 'glass-surface'}"
         class:grown
         class:zoom
+        class:pop
+        class:dim
+        class:settled={settled && !pop}
+        class:self={selfSized || freeSized}
         class:press={pressScale}
         style="{shape}; --open-ms: {motionMs(OPEN_MS)}ms; --close-ms: {motionMs(CLOSE_MS)}ms;
                --seed-scale: {seedScale}"
@@ -127,39 +171,37 @@
         {/if}
         <div
             class="content {zoom ? 'center' : contentAnchor}"
+            class:fill
             style={contentSize}
             use:observeSize={node => (natural = {width: node.offsetWidth, height: node.offsetHeight})}
         >
             {@render children()}
         </div>
     </div>
+    </div>
 {/if}
 
 <style>
-    .scrim,
+    .layer {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        pointer-events: none;
+    }
+
     .catcher {
         position: fixed;
         inset: 0;
         z-index: 40;
-    }
-
-    .scrim {
-        background: rgb(0 0 0 / 45%);
-        opacity: 0;
-        transition: opacity var(--close-ms, 280ms) ease;
-        pointer-events: none;
-    }
-
-    /*noinspection CssUnusedSymbol*/
-    .scrim.lit {
-        opacity: 1;
-        transition: opacity var(--open-ms, 300ms) ease;
+        pointer-events: auto;
     }
 
     .surface {
+
         position: fixed;
         z-index: 41;
         overflow: hidden;
+        pointer-events: auto;
         color: var(--text-color);
         transform: scale(1);
         transition:
@@ -191,6 +233,16 @@
     }
 
     /*noinspection CssUnusedSymbol*/
+    .surface.dim {
+        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 0%);
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.dim.grown {
+        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 45%);
+    }
+
+    /*noinspection CssUnusedSymbol*/
     .surface.zoom {
         transition:
             width var(--close-ms) cubic-bezier(0.2, 1.34, 0.36, 1),
@@ -216,6 +268,68 @@
             border-radius calc(var(--open-ms) * 0.5) ease-out,
             background-color calc(var(--open-ms) * 0.5) ease,
             box-shadow calc(var(--open-ms) * 0.5) ease;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.grown.settled {
+        transition:
+            border-radius calc(var(--open-ms) * 0.35) ease-out,
+            background-color calc(var(--open-ms) * 0.5) ease,
+            box-shadow calc(var(--open-ms) * 0.5) ease;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.pop {
+        transform: scale(1.12);
+        opacity: 0;
+        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 0%);
+        transition:
+            transform calc(var(--close-ms) * 0.85) cubic-bezier(0.4, 0, 0.75, 0.3),
+            box-shadow calc(var(--close-ms) * 0.7) ease,
+            opacity calc(var(--close-ms) * 0.35) ease calc(var(--close-ms) * 0.65);
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.pop.grown {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 45%);
+        transition:
+            transform var(--open-ms) cubic-bezier(0.16, 0.9, 0.3, 1),
+            box-shadow calc(var(--open-ms) * 0.4) ease,
+            opacity 0s;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.pop > .content,
+    .surface.pop.grown > .content {
+        opacity: 1;
+        filter: none;
+        transition: none;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.self {
+        width: max-content;
+        height: max-content;
+        max-width: calc(100vw - 48px);
+        max-height: calc(100vh - 48px);
+        margin: auto;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.self > .content {
+        position: static;
+        width: auto;
+        transform: none;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .surface.self:not(.pop) {
+        transform: none;
     }
 
     /*noinspection CssUnusedSymbol*/
@@ -278,6 +392,12 @@
     }
 
     /*noinspection CssUnusedSymbol*/
+    .content.fill {
+        width: 100%;
+        height: 100%;
+    }
+
+    /*noinspection CssUnusedSymbol*/
     .content.center {
         left: 50%;
         top: 50%;
@@ -313,10 +433,10 @@
         .surface.grown,
         .surface.zoom,
         .surface.zoom.grown,
+        .surface.pop,
+        .surface.pop.grown,
         .content,
-        .grown > .content,
-        .scrim,
-        .scrim.lit {
+        .grown > .content {
             transition: none;
         }
     }
