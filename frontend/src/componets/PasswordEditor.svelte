@@ -1,14 +1,12 @@
 <script lang="ts">
-    import MorphSurface from "./MorphSurface.svelte";
+    import MorphDialog from "./MorphDialog.svelte";
     import PasswordIcon from "./PasswordIcon.svelte";
     import Button from "./Button.svelte";
     import RevealToggle from "./RevealToggle.svelte";
-    import {centred, sheet} from "../lib/morph";
     import {bareHost, domainOf, isDomain} from "../lib/items";
     import {generatePassword} from "../lib/password";
-    import {BAR_HEIGHT} from "../lib/layout";
-    import {isCompact} from "../lib/navigation.svelte";
     import {m} from "../paraglide/messages";
+    import {CHECK, CLOSE} from "../lib/icons";
 
     export interface Draft {
         title: string;
@@ -31,12 +29,6 @@
         seed?: import('svelte').Snippet;
         on_save?: (draft: Draft) => void;
     } = $props();
-
-    const CLOSE = 'M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z';
-    const CHECK = 'm382-354 339-339q12-12 28-12t28 12q12 12 12 28.5T777-636L410-268q-12 12-28 12t-28-12L182-440q-12-12-11.5-28.5T183-497q12-12 28.5-12t28.5 12l142 143Z';
-
-    const stack = $derived(isCompact());
-    const place = $derived(stack ? sheet(BAR_HEIGHT + 20) : centred());
 
     let draft: Draft = $state({title: '', username: '', password: '', website: '', notes: ''});
     let secretShown = $state(false);
@@ -68,65 +60,54 @@
     }
 </script>
 
-<MorphSurface
-    bind:open
-    bind:active
-    {anchor}
-    {place}
-    {seed}
-    scrim
-    surface="panel-surface"
-    mode={stack ? 'zoom' : 'box'}
-    openMs={stack ? undefined : 400}
-    closeMs={stack ? undefined : 350}
-    radius={stack ? '22px 22px 0 0' : 22}
-    contentAnchor={stack ? 'top-start' : 'center'}
->
-    <div class="editor" class:stack role="dialog" aria-modal="true" aria-label={m.editor_newPassword()}>
-        <div class="bar">
-            <Button variant="glass" padding="8px" radius="999px" onclick={() => (open = false)}>
-                <svg viewBox="0 -960 960 960" width="20" height="20" role="img" aria-label={m.editor_cancel()}>
-                    <path d={CLOSE} fill="var(--text-color)"/>
-                </svg>
-            </Button>
-            <p class="heading">{m.editor_newPassword()}</p>
-            <Button variant="glass" accent="var(--button-color)" padding="8px" radius="999px"
-                    disabled={!canSave} onclick={save}>
-                <svg viewBox="0 -960 960 960" width="20" height="20" role="img" aria-label={m.editor_save()}>
-                    <path d={CHECK} fill="var(--button-text-color)"/>
-                </svg>
-            </Button>
-        </div>
+<MorphDialog bind:open bind:active {anchor} {seed}>
+    {#snippet children(stack: boolean)}
+        <div class="editor" class:stack role="dialog" aria-modal="true" aria-label={m.editor_newPassword()}>
+            <div class="bar">
+                <Button variant="glass" padding="8px" radius="999px" onclick={() => (open = false)}>
+                    <svg viewBox="0 -960 960 960" width="20" height="20" role="img" aria-label={m.editor_cancel()}>
+                        <path d={CLOSE} fill="var(--text-color)"/>
+                    </svg>
+                </Button>
+                <p class="heading">{m.editor_newPassword()}</p>
+                <Button variant="glass" accent="var(--button-color)" padding="8px" radius="999px"
+                        disabled={!canSave} onclick={save}>
+                    <svg viewBox="0 -960 960 960" width="20" height="20" role="img" aria-label={m.editor_save()}>
+                        <path d={CHECK} fill="var(--button-text-color)"/>
+                    </svg>
+                </Button>
+            </div>
 
-        <div class="card">
-            <PasswordIcon icon={{source: 'favicon', domain, fallback: draft.title || '?'}} width="50px"/>
-            <input class="title" bind:value={draft.title} placeholder={m.editor_title()}
-                   autocomplete="off" spellcheck="false"/>
+            <div class="card">
+                <PasswordIcon icon={{source: 'favicon', domain, fallback: draft.title || '?'}} width="50px"/>
+                <input class="title" bind:value={draft.title} placeholder={m.editor_title()}
+                       autocomplete="off" spellcheck="false"/>
 
-            <div class="fields">
-                <label class="field">
-                    <span class="name">{m.field_username()}</span>
-                    <input bind:value={draft.username} placeholder={m.editor_usernameHint()}
-                           autocomplete="off" spellcheck="false"/>
-                </label>
-                <label class="field">
-                    <span class="name">{m.field_password()}</span>
-                    <input class:masked-text={masked} type={secretShown ? 'text' : 'password'}
-                           bind:value={draft.password} autocomplete="new-password"/>
-                    <RevealToggle bind:shown={secretShown} padding="0 0 0 10px"/>
-                </label>
-                <label class="field">
-                    <span class="name">{m.field_website()}</span>
-                    <input bind:value={draft.website} placeholder={m.editor_websiteHint()}
-                           autocomplete="off" spellcheck="false" onblur={tidyWebsite}/>
-                </label>
-                <label class="field notes">
-                    <textarea bind:value={draft.notes} rows="3" placeholder={m.editor_notes()}></textarea>
-                </label>
+                <div class="fields">
+                    <label class="field">
+                        <span class="name">{m.field_username()}</span>
+                        <input bind:value={draft.username} placeholder={m.editor_usernameHint()}
+                               autocomplete="off" spellcheck="false"/>
+                    </label>
+                    <label class="field">
+                        <span class="name">{m.field_password()}</span>
+                        <input class:masked-text={masked} type={secretShown ? 'text' : 'password'}
+                               bind:value={draft.password} autocomplete="new-password"/>
+                        <RevealToggle bind:shown={secretShown} padding="0 0 0 10px"/>
+                    </label>
+                    <label class="field">
+                        <span class="name">{m.field_website()}</span>
+                        <input bind:value={draft.website} placeholder={m.editor_websiteHint()}
+                               autocomplete="off" spellcheck="false" onblur={tidyWebsite}/>
+                    </label>
+                    <label class="field notes">
+                        <textarea bind:value={draft.notes} rows="3" placeholder={m.editor_notes()}></textarea>
+                    </label>
+                </div>
             </div>
         </div>
-    </div>
-</MorphSurface>
+    {/snippet}
+</MorphDialog>
 
 <style>
     .editor {
@@ -202,7 +183,7 @@
         right: 0;
         bottom: 0;
         height: 1px;
-        background: color-mix(in srgb, var(--text-color) 12%, transparent);
+        background: var(--hairline-color);
     }
 
     .name {
