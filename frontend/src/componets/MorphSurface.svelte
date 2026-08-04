@@ -363,6 +363,7 @@
         align-items: center;
         justify-content: center;
         opacity: 1;
+        pointer-events: none;
         transition: opacity 130ms ease 90ms;
     }
 
