@@ -89,8 +89,9 @@ export function linkItems(web: WebItem[], passkeys: PasskeyItem[]): {web: WebIte
     const byWebId = new Map<string, PasskeyItem>();
     const linkedPasskeys = passkeys.map(passkey => {
         if (passkey.isDeleted) return passkey;
-        const match = byHost.get(linkKey(hostOf(passkey.relyingParty), passkey.username));
+        let match = byHost.get(linkKey(hostOf(passkey.relyingParty), passkey.username));
         if (!match) return passkey;
+        match.passkey = passkey;
         if (!byWebId.has(match.id)) byWebId.set(match.id, passkey);
         return {...passkey, linked: match};
     });
