@@ -12,6 +12,15 @@ export function observeSize(node: HTMLElement, report: (node: HTMLElement) => vo
     };
 }
 
+export function portal(node: HTMLElement) {
+    document.body.appendChild(node);
+    return {
+        destroy() {
+            node.remove();
+        },
+    };
+}
+
 export function prefersReducedMotion(): boolean {
     return typeof window !== 'undefined'
         && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
