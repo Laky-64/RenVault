@@ -3,6 +3,7 @@
     import PasswordIcon from "./PasswordIcon.svelte";
     import TotpDigits from "./TotpDigits.svelte";
     import {totpSlot} from "../lib/totp.svelte";
+    import {CHECK_MARK} from "../lib/icons";
 
     const {
         item,
@@ -23,8 +24,6 @@
         checked?: boolean;
         onclick?: () => void;
     } = $props();
-
-    const CHECK = 'M382-354 267-469q-12-12-28-12t-28 12q-12 12-12 28t12 28l143 143q12 12 28 12t28-12l286-286q12-12 12-28t-12-28q-12-12-28-12t-28 12L382-354Z';
 
     const view = $derived(viewOf(item));
 
@@ -69,7 +68,7 @@
     <div class="check" class:open={selectable}>
         <span class="mark" class:checked>
             <svg viewBox="0 -960 960 960" width="12" height="12" aria-hidden="true">
-                <path d={CHECK} fill="var(--button-text-color)"/>
+                <path d={CHECK_MARK} fill="var(--button-text-color)"/>
             </svg>
         </span>
     </div>

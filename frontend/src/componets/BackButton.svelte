@@ -1,6 +1,7 @@
 <script lang="ts">
     import {m} from "../paraglide/messages";
     import NavButton from "./NavButton.svelte";
+    import {CHEVRON, CLOSE} from "../lib/icons";
 
     const {
         shown = false,
@@ -11,9 +12,6 @@
         mode?: 'back' | 'select-all' | 'deselect-all' | 'cancel';
         onclick: () => void;
     } = $props();
-
-    const CHEVRON = 'm382-480 294 294q15 15 14.5 35T675-116q-15 15-35 15t-35-15L297-423q-12-12-18-27t-6-30q0-15 6-30t18-27l308-308q15-15 35.5-14.5T676-844q15 15 15 35t-15 35L382-480Z';
-    const CLOSE = 'M480-424 284-228q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536-480l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480-424Z';
 
     const label = $derived.by(() => {
         if (mode === 'select-all') return m.list_selectAll();

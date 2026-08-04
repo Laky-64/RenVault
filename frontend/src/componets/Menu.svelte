@@ -3,6 +3,7 @@
     import MorphSurface from "./MorphSurface.svelte";
     import {type MenuPlacement, type MenuSection} from "../lib/menu";
     import {type ContentAnchor, nearAnchor} from "../lib/morph";
+    import {CHECK} from "../lib/icons";
 
     let {
         open = $bindable(false),
@@ -44,8 +45,7 @@
                         onclick={() => pick(item.id)}>
                     <span class="check" class:on={item.checked}>
                         <svg viewBox="0 -960 960 960" width="14" height="14" aria-hidden="true">
-                            <path d="m382-354 339-339q12-12 28-12t28 12q12 12 12 28.5T777-636L410-268q-12 12-28 12t-28-12L182-440q-12-12-11.5-28.5T183-497q12-12 28.5-12t28.5 12l142 143Z"
-                                  fill="var(--text-color)"/>
+                            <path d={CHECK} fill="var(--text-color)"/>
                         </svg>
                     </span>
                     {#if item.icon}
