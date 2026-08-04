@@ -54,6 +54,10 @@
     let swapping = $state(false);
     let popping = $state(false);
     let settled = false;
+    
+    function measure() {
+        if (probeEl) valueWidth = Math.ceil(probeEl.getBoundingClientRect().width);
+    }
 
     $effect(() => {
         copied;
@@ -64,7 +68,10 @@
         swapping = true;
         popping = false;
         const frame = requestAnimationFrame(() => (popping = untrack(() => copied)));
-        const done = setTimeout(() => (swapping = false), SWAP_MS);
+        const done = setTimeout(() => {
+            measure();
+            swapping = false;
+        }, SWAP_MS);
         return () => {
             cancelAnimationFrame(frame);
             clearTimeout(done);
@@ -74,14 +81,17 @@
     $effect(() => {
         text;
         face;
-        if (probeEl) valueWidth = Math.ceil(probeEl.getBoundingClientRect().width);
+        measure();
     });
 
     $effect(() => {
         text;
         if (!untrack(() => hovering)) return;
         swapping = true;
-        const done = setTimeout(() => (swapping = false), SWAP_MS);
+        const done = setTimeout(() => {
+            measure();
+            swapping = false;
+        }, SWAP_MS);
         return () => clearTimeout(done);
     });
 </script>
@@ -116,7 +126,7 @@
             class="probe"
             aria-hidden="true"
             bind:this={probeEl}
-            use:observeSize={node => (valueWidth = Math.ceil(node.getBoundingClientRect().width))}
+            use:observeSize={() => measure()}
         >
             {#if face}
                 {@render face()}
