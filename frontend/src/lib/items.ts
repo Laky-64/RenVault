@@ -169,6 +169,7 @@ export interface DetailField {
     label: string;
     value: FieldValue;
     copyable?: boolean;
+    wrap?: boolean;
 }
 
 export interface ItemDetail {
@@ -197,6 +198,10 @@ function websiteOf(item: WebItem): string {
     const others = (item.domains ?? []).filter(d => d && d !== item.domain);
     if (others.length === 0) return item.domain;
     return m.field_websiteMore({domain: item.domain, count: others.length});
+}
+
+function pushNote(fields: DetailField[], note: string): void {
+    if (note.trim()) fields.push({label: m.field_notes(), value: {shown: note}, wrap: true});
 }
 
 function pushModified(fields: DetailField[], modified: string): void {
@@ -232,6 +237,7 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
                 });
             }
             pushModified(fields, item.modified);
+            pushNote(fields, item.note);
             return {title: labelOf(item), fields};
         }
         case 'wifi': {
@@ -267,6 +273,7 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
                     });
                 }
                 pushModified(fields, linked.modified);
+                pushNote(fields, linked.note);
             } else {
                 pushModified(fields, item.modified);
             }

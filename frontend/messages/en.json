@@ -33,6 +33,7 @@
   "field_password": "Password",
   "field_website": "Website",
   "field_modified": "Modified",
+  "field_notes": "Notes",
   "field_verificationCode": "Code",
   "field_networkName": "Name",
   "field_copied": "Copied",

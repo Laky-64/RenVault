@@ -76,7 +76,7 @@
         {@const secret = secretOf(field)}
         {@const totp = codeOf(field)}
         {@const shown = secret ? revealed[field.label] : plainOf(field)}
-        <div class="field">
+        <div class="field" class:wrap={field.wrap}>
             <p class="name">{field.label}</p>
 
             {#if totp}
@@ -98,7 +98,7 @@
             {:else if secret && shown === undefined}
                 <p class="value masked" aria-hidden="true">{MASK}</p>
             {:else}
-                <p class="value">{shown}</p>
+                <p class="value" class:wrapped={field.wrap}>{shown}</p>
             {/if}
         </div>
     {/each}
@@ -144,6 +144,20 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .field.wrap {
+        align-items: flex-start;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .value.wrapped {
+        min-width: 0;
+        text-align: right;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
     }
 
     .masked {
