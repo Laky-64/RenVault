@@ -106,6 +106,14 @@ export function linkItems(web: WebItem[], passkeys: PasskeyItem[]): {web: WebIte
 
 export const DELETED_DAYS = 30;
 
+export function labelOf(item: WebItem): string {
+    return item.passkey?.title || item.title || (item.website ? item.domain : '') || item.username;
+}
+
+export function siteOf(item: WebItem): string {
+    return item.website ? item.domain : '';
+}
+
 export function editableOf(item: Item | null | undefined): WebItem | null {
     if (!item) return null;
     if (item.kind === 'web') return item.isDeleted ? null : item;
@@ -126,13 +134,15 @@ export interface ItemView {
 
 export function viewOf(item: Item): ItemView {
     switch (item.kind) {
-        case 'web':
+        case 'web': {
+            const label = labelOf(item);
             return {
-                title: item.passkey?.title || item.title || item.domain,
-                subtitle: item.username,
-                icon: {source: 'favicon', domain: item.domain, fallback: item.title || item.domain},
+                title: label,
+                subtitle: label === item.username ? '' : item.username,
+                icon: {source: 'favicon', domain: siteOf(item), fallback: label},
                 hasTotp: item.hasTotp,
             };
+        }
         case 'wifi':
             return {
                 title: item.ssid,
@@ -222,7 +232,7 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
                 });
             }
             pushModified(fields, item.modified);
-            return {title: item.passkey?.title || item.title || item.domain, fields};
+            return {title: labelOf(item), fields};
         }
         case 'wifi': {
             const fields: DetailField[] = [

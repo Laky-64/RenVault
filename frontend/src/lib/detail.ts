@@ -1,4 +1,4 @@
-import {bareHost, domainOf, isDomain, type WebItem} from "./items";
+import {bareHost, domainOf, isDomain, labelOf, type WebItem} from "./items";
 
 export interface Draft {
     title: string;
@@ -15,7 +15,7 @@ export function draftOf(item: WebItem): Draft {
     const hosts = item.website ? [item.domain, ...(item.domains ?? [])].filter(Boolean) : [];
     return {
         title: '',
-        titleHint: item.passkey?.title || item.title || (item.website ? item.domain : ''),
+        titleHint: labelOf(item),
         username: item.username,
         password: '',
         websites: [...new Set(hosts)],

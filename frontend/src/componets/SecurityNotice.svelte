@@ -8,10 +8,12 @@
 
     const {
         icon,
-        domain,
+        label,
+        domain = '',
     } : {
         icon: ItemIcon;
-        domain: string;
+        label: string;
+        domain?: string;
     } = $props();
 
     function change() {
@@ -22,8 +24,10 @@
 <Card padding="10px 15px 15px">
     <PasswordIcon {icon} width="50px"/>
     <p class="title">{m.security_changeTitle()}</p>
-    <p class="desc">{m.security_changeDesc({domain})}</p>
-    <Button padding="10px 15px" variant="primary" onclick={change}>{m.security_changeAction()}</Button>
+    <p class="desc">{m.security_changeDesc({domain: label})}</p>
+    {#if domain}
+        <Button padding="10px 15px" variant="primary" onclick={change}>{m.security_changeAction()}</Button>
+    {/if}
 </Card>
 
 <style>

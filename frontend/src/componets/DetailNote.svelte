@@ -9,9 +9,11 @@
 
     const {
         variant,
+        label = '',
         domain = '',
     } : {
         variant: 'passkey' | 'compromised';
+        label?: string;
         domain?: string;
     } = $props();
 
@@ -30,8 +32,8 @@
             path: pathFor('security', true),
             color: 'var(--destructive-text-color)',
             title: m.item_compromised(),
-            description: m.security_changeDesc({domain}),
-            action: m.security_changeAction(),
+            description: m.security_changeDesc({domain: label}),
+            action: domain ? m.security_changeAction() : '',
             run: () => void openChangePassword(domain),
         });
 </script>
@@ -46,7 +48,9 @@
             <p class="desc">{note.description}</p>
         </div>
     </div>
-    <CardAction text={note.action} onclick={note.run} padding="12px 19px" inset="20px"/>
+    {#if note.action}
+        <CardAction text={note.action} onclick={note.run} padding="12px 19px" inset="20px"/>
+    {/if}
 </Card>
 
 <style>

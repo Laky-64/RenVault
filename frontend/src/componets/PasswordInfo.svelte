@@ -5,7 +5,7 @@
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
     import PasswordBody from "./PasswordBody.svelte";
     import type {Draft} from "../lib/detail";
-    import {DELETED_DAYS, detailOf, editableOf, type Item, type SecretSource, viewOf} from "../lib/items";
+    import {DELETED_DAYS, detailOf, editableOf, type Item, labelOf, type SecretSource, siteOf, viewOf} from "../lib/items";
     import {daysLeft} from "../lib/datetime";
     import {m} from "../paraglide/messages";
     import ElasticScroll from "./ElasticScroll.svelte";
@@ -45,10 +45,11 @@
     const view = $derived.by(() => (item ? viewOf(item) : null));
     const hasPasskey = $derived.by(() =>
         item?.kind === 'passkey' || (item?.kind === 'web' && item.passkey !== undefined));
-    const compromised = $derived(
-         item?.kind === 'web' && item.pwned ? item.domain : '');
+    const pwned = $derived(item?.kind === 'web' && item.pwned);
+    const pwnedLabel = $derived(item?.kind === 'web' && item.pwned ? labelOf(item) : '');
+    const pwnedSite = $derived(item?.kind === 'web' && item.pwned ? siteOf(item) : '');
     const target = $derived(editableOf(item));
-    const notice = $derived(compromised !== '' && zone.kind === 'security' && !editing);
+    const notice = $derived(pwned && zone.kind === 'security' && !editing);
     const deleted = $derived(item !== null && item !== undefined && item.kind !== 'wifi' && item.isDeleted);
     const left = $derived(deleted && item?.kind !== 'wifi' ? daysLeft(item?.deleted, DELETED_DAYS) : 0);
     let purgeOpen = $state(false);
@@ -68,7 +69,7 @@
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
                 <div class="stack" style="--inset: {BAR_HEIGHT}px" bind:clientHeight={contentHeight}>
                     {#if notice}
-                        <SecurityNotice icon={view.icon} domain={compromised}/>
+                        <SecurityNotice icon={view.icon} label={pwnedLabel} domain={pwnedSite}/>
                         <Card padding="10px 15px">
                             <PasswordInfoFields fields={detail.fields}/>
                         </Card>
@@ -100,8 +101,8 @@
                     {#if hasPasskey && !editing}
                         <DetailNote variant="passkey"/>
                     {/if}
-                    {#if compromised && zone.kind !== 'security' && !editing}
-                        <DetailNote variant="compromised" domain={compromised}/>
+                    {#if pwned && zone.kind !== 'security' && !editing}
+                        <DetailNote variant="compromised" label={pwnedLabel} domain={pwnedSite}/>
                     {/if}
                 </div>
             </ElasticScroll>
