@@ -5,14 +5,18 @@
         children,
         invalid = false,
         radius = '20px',
+        left = '20px',
+        right = '20px',
     }: {
         children: Snippet;
         invalid?: boolean;
         radius?: string;
+        left?: string;
+        right?: string;
     } = $props();
 </script>
 
-<div class="card" class:invalid style="border-radius: {radius}">
+<div class="card" class:invalid style="border-radius: {radius};--left-margin: 56px;--right-margin: {right};">
     {@render children()}
 </div>
 
@@ -38,10 +42,10 @@
     .card > :global(:not(:first-child))::after {
         content: '';
         position: absolute;
-        right: 20px;
-        left: 20px;
+        left: var(--left-margin);
+        right: var(--right-margin);
         top: 0;
         height: 1px;
-        background: color-mix(in srgb, var(--text-color) 10%, transparent);
+        background: var(--hairline-color);
     }
 </style>
