@@ -16,7 +16,7 @@
     } = $props();
 </script>
 
-<div class="card" class:invalid style="border-radius: {radius};--left-margin: 56px;--right-margin: {right};">
+<div class="card" class:invalid style="border-radius: {radius};--left-margin: {left};--right-margin: {right};">
     {@render children()}
 </div>
 

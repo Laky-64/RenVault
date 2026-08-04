@@ -38,6 +38,7 @@ type WebMeta struct {
 	HasPassword bool             `json:"hasPassword"`
 	Created     time.Time        `json:"created"`
 	Modified    time.Time        `json:"modified"`
+	Deleted     time.Time        `json:"deleted"`
 }
 
 type WiFiMeta struct {
@@ -57,6 +58,7 @@ type PasskeyMeta struct {
 	IsDeleted    bool      `json:"isDeleted"`
 	Created      time.Time `json:"created"`
 	Modified     time.Time `json:"modified"`
+	Deleted      time.Time `json:"deleted"`
 }
 
 type passkeyEntry struct {
@@ -188,6 +190,7 @@ func webMetas(p payload) []WebMeta {
 			HasPassword: len(w.Password) > 0,
 			Created:     w.Created,
 			Modified:    w.Modified,
+			Deleted:     w.DeletedAt,
 		})
 	}
 	return out
@@ -219,6 +222,7 @@ func passkeyMetas(p payload) []PasskeyMeta {
 			IsDeleted:    k.IsDeleted,
 			Created:      k.Created,
 			Modified:     k.Modified,
+			Deleted:      k.DeletedAt,
 		})
 	}
 	return out

@@ -17,11 +17,13 @@
         type SecretSource,
         type WebItem,
         type WiFiItem,
+        editableOf,
         linkItems,
         passkeyItem,
         webItem,
         wifiItem,
     } from "../lib/items";
+    import {canSave, type Draft as EditDraft, draftOf, titleOf} from "../lib/detail";
     import {type SortField, sortItems} from "../lib/sort";
     import {describeFailure} from "../lib/failure";
     import {onMount} from "svelte";
@@ -135,6 +137,54 @@
     let listBounds: Bounds = $state({left: 0, width: 0});
     let detailBounds: Bounds = $state({left: 0, width: 0});
     let editing = $state(false);
+    let draft: EditDraft = $state({
+        title: '', titleHint: '', username: '', password: '', websites: [], note: '',
+        totpKey: null, totpRemoved: false,
+    });
+
+    $effect(() => {
+        if (!editing) return;
+        const item = editableOf(currentItem());
+        if (!item) return;
+
+        draft = draftOf(item);
+        if (!item.hasPassword) return;
+
+        let alive = true;
+        secrets.password(item.id)
+            .then(password => { if (alive) draft.password = password; })
+            .catch(e => console.error(describeFailure(e).raw));
+        return () => { alive = false; };
+    });
+
+    const draftOk = $derived(canSave(draft));
+
+    function saveEdit() {
+        if (!draftOk) return;
+        editing = false;
+        const item = editableOf(currentItem());
+        if (!item) return;
+    }
+
+    function cancelEdit() {
+        editing = false;
+    }
+
+    function deleteItem() {
+        editing = false;
+        const item = editableOf(currentItem());
+        if (!item) return;
+    }
+
+    function recoverItem() {
+        const item = currentItem();
+        if (!item) return;
+    }
+
+    function purgeItem() {
+        const item = currentItem();
+        if (!item) return;
+    }
 </script>
 
 <div class="container" class:stack
@@ -159,6 +209,11 @@
             zone={shownZone}
             item={currentItem() ?? null}
             {secrets}
+            {editing}
+            bind:draft
+            on_delete={deleteItem}
+            on_recover={recoverItem}
+            on_purge={purgeItem}
             on_bounds={(left, width) => { detailBounds = {left, width}; }}/>
     </div>
     <NavBar
@@ -170,7 +225,10 @@
         selectedCount={picked.size}
         bind:selecting
         bind:editing
-        on_selectAll={selectAll}/>
+        canSave={draftOk}
+        on_selectAll={selectAll}
+        on_editSave={saveEdit}
+        on_editCancel={cancelEdit}/>
     <ActionBar
         list={listBounds}
         {selecting}

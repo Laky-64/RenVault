@@ -4,6 +4,7 @@
     import SelectButton from "./SelectButton.svelte";
     import {BACK_INSET, BAR_HEIGHT, type Bounds} from "../lib/layout";
     import {currentItem, nav} from "../navigation.svelte";
+    import {editableOf} from "../lib/items";
     import {isCompact} from "../lib/navigation.svelte";
     import {CROSS_MS, motionMs} from "../lib/motion";
     import {fade} from "svelte/transition";
@@ -18,7 +19,10 @@
         selectedCount = 0,
         selecting = $bindable(false),
         editing = $bindable(false),
+        canSave = true,
         on_selectAll,
+        on_editSave,
+        on_editCancel,
     } : {
         zone: Zone;
         list: Bounds;
@@ -28,7 +32,10 @@
         selectedCount?: number;
         selecting?: boolean;
         editing?: boolean;
+        canSave?: boolean;
         on_selectAll?: () => void;
+        on_editSave?: () => void;
+        on_editCancel?: () => void;
     } = $props();
 
     const stack = $derived(isCompact());
@@ -40,6 +47,26 @@
         ? m.list_selectedCount({count: selectedCount})
         : m.zone_list_itemCount({count: zone.items.length}));
     const hasItem = $derived(currentItem() !== undefined);
+    const canEdit = $derived(zone.kind !== 'deleted' && editableOf(currentItem()) !== null);
+    const editingHere = $derived(editing && onDetail);
+    const blocked = $derived(editing && !canSave);
+
+    function backMode() {
+        if (editingHere) return 'cancel' as const;
+        if (selectingList) return allSelected ? 'deselect-all' as const : 'select-all' as const;
+        return 'back' as const;
+    }
+
+    function onBack() {
+        if (editingHere) on_editCancel?.();
+        else if (selectingList) on_selectAll?.();
+        else nav.back();
+    }
+
+    function onEdit() {
+        if (!editing) editing = true;
+        else if (canSave) on_editSave?.();
+    }
 
     const crossfade = {duration: motionMs(CROSS_MS)};
 
@@ -63,8 +90,8 @@
         <div class="slot">
             <BackButton
                 shown={selectingList || (stack && nav.depth > 0)}
-                mode={selectingList ? (allSelected ? 'deselect-all' : 'select-all') : 'back'}
-                onclick={() => (selectingList ? on_selectAll?.() : nav.back())}/>
+                mode={backMode()}
+                onclick={onBack}/>
         </div>
         <div class="compact-title" aria-hidden="true">
             {#if onList}
@@ -76,20 +103,28 @@
         </div>
         <div class="slot">
             <SelectButton
-                shown={onList || onDetail}
+                shown={onList || (onDetail && canEdit)}
                 label={onList ? m.list_select() : m.item_edit()}
                 active={onList ? selecting : editing}
-                onclick={() => (onList ? (selecting = !selecting) : (editing = !editing))}/>
+                disabled={!onList && blocked}
+                onclick={() => (onList ? (selecting = !selecting) : onEdit())}/>
         </div>
     </div>
     {#if !stack}
         <div class="bar detail" style="--bar-left: {detail.left}px; --bar-width: {detail.width}px">
+            <div class="slot">
+                <BackButton
+                    shown={hasItem && editing}
+                    mode="cancel"
+                    onclick={() => on_editCancel?.()}/>
+            </div>
             <div class="slot push">
                 <SelectButton
-                    shown={hasItem}
+                    shown={hasItem && canEdit}
                     label={m.item_edit()}
                     active={editing}
-                    onclick={() => (editing = !editing)}/>
+                    disabled={blocked}
+                    onclick={onEdit}/>
             </div>
         </div>
     {/if}

@@ -104,6 +104,8 @@ export function linkItems(web: WebItem[], passkeys: PasskeyItem[]): {web: WebIte
     return {web: linkedWeb, passkeys: linkedPasskeys};
 }
 
+export const DELETED_DAYS = 30;
+
 export function editableOf(item: Item | null | undefined): WebItem | null {
     if (!item) return null;
     if (item.kind === 'web') return item.isDeleted ? null : item;

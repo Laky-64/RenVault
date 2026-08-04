@@ -138,7 +138,8 @@
 
     .value {
         color: var(--hint-color);
-        margin: 0 0 0 auto;
+        margin: 0 -2px 0 auto;
+        padding-right: 2px;
         font-size: 15px;
         overflow: hidden;
         text-overflow: ellipsis;

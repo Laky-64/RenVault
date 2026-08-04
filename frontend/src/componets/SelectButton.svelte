@@ -7,11 +7,13 @@
         shown = true,
         label,
         active = false,
+        disabled = false,
         onclick,
     } : {
         shown?: boolean;
         label: string;
         active?: boolean;
+        disabled?: boolean;
         onclick: () => void;
     } = $props();
 
@@ -24,6 +26,7 @@
     accent={active ? 'var(--button-color)' : ''}
     morph={`${label}:${active}`}
     flash={active}
+    {disabled}
     {onclick}
 >
     <svg viewBox="0 -960 960 960" width="20" height="20" role="img" aria-label={m.list_selectDone()}>

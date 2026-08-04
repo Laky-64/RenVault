@@ -212,7 +212,7 @@
         unlock = '';
         try {
             await Service.UnlockWithPassword(entered);
-            onDone(); // keep the veil up: App.svelte swaps the screen underneath
+            onDone();
             return;
         } catch (e) {
             unlockError = describeFailure(e).message;

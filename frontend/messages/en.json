@@ -15,7 +15,7 @@
   "auth_deviceSelectionTitle": "Choose a Trusted Device",
   "auth_deviceSelectionHint": "Select a trusted device to continue. You'll be asked to enter its passcode to verify your identity.",
   "auth_devicePasscodeTitle": "Enter Device Passcode",
-  "auth_devicePasscodeHint": "Enter the passcode you use to unlock “{device}”. Your passcode is never sent to Apple.",
+  "auth_devicePasscodeHint": "Enter the passcode you use to unlock \"{device}\". Your passcode is never sent to Apple.",
   "auth_devicePasscodePlaceholder": "Passcode",
   "auth_continueAction": "Continue",
   "auth_masterSetupTitle": "Create a Master Password",
@@ -77,10 +77,30 @@
   "editor_notes": "Notes",
   "editor_cancel": "Cancel",
   "editor_save": "Save",
+  "edit_delete": "Delete Password",
+  "edit_setUpCode": "Set Up Verification Code",
+  "edit_deleteCode": "Delete Verification Code",
+  "edit_noCode": "None",
+  "edit_noWebsite": "None",
+  "edit_saveForCode": "Save to View Code",
+  "delete_title": "Delete Password",
+  "delete_confirm": "Delete Password",
+  "delete_softDesc": "The password will be moved to Deleted. After 30 days, it will be permanently deleted.",
+  "delete_hardDesc": "If you delete it, the password will be removed from the Passwords app on all your devices. This action cannot be undone.",
+  "deleted_recover": "Recover",
+  "deleted_delete": "Delete",
+  "websites_title": "Websites",
+  "websites_desc": "AutoFill will suggest the password for \"{title}\" on these websites.",
+  "websites_add": "Add Website",
+  "websites_remove": "Remove Website",
+  "totp_title": "Set Up Verification Code",
+  "totp_desc": "If \"{domain}\" supports verification codes, visit the website to get a setup key and enter it here.",
+  "totp_key": "Setup Key",
+  "totp_use": "Use Setup Key",
   "list_delete": "Delete",
   "item_compromised": "Compromised Password",
   "security_changeTitle": "Change This Password Now",
-  "security_changeDesc": "The password for “{domain}” was found in a data leak and may be compromised. Change it on the website to help protect your account.",
+  "security_changeDesc": "The password for \"{domain}\" was found in a data leak and may be compromised. Change it on the website to help protect your account.",
   "security_changeAction": "Change Password",
   "item_wifiNetwork": "Wi-Fi Network",
   "code_inputLabel": "Verification code",
@@ -122,6 +142,21 @@
   "zone_deleted_empty": "No Deleted Items",
   "zone_deleted_noSelection": "No Item Selected",
   "zone_deleted_desc": "Deleted items stay here for 30 days before they are removed for good. Recover the ones you still need.",
+  "deleted_countdown": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "The password will be permanently deleted in {count} day unless it is recovered.",
+        "countPlural=*": "The password will be permanently deleted in {count} days unless it is recovered."
+      }
+    }
+  ],
   "field_websiteMore": [
     {
       "declarations": [

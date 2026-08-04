@@ -3,25 +3,41 @@
     import {type Zone, zoneText} from "./ZoneContainer";
     import PasswordIcon from "./PasswordIcon.svelte";
     import PasswordInfoFields from "./PasswordInfoFields.svelte";
-    import {detailOf, type Item, type SecretSource, viewOf} from "../lib/items";
+    import PasswordBody from "./PasswordBody.svelte";
+    import type {Draft} from "../lib/detail";
+    import {DELETED_DAYS, detailOf, editableOf, type Item, type SecretSource, viewOf} from "../lib/items";
+    import {daysLeft} from "../lib/datetime";
+    import {m} from "../paraglide/messages";
     import ElasticScroll from "./ElasticScroll.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import DetailNote from "./DetailNote.svelte";
     import SecurityNotice from "./SecurityNotice.svelte";
     import Card from "./Card.svelte";
+    import CardAction from "./CardAction.svelte";
+    import ConfirmDialog from "./ConfirmDialog.svelte";
     import {BAR_HEIGHT} from "../lib/layout";
     import {observeSize} from "../lib/dom";
 
-    const {
+    let {
         zone,
         item,
         secrets,
+        editing = false,
+        draft = $bindable(),
         on_bounds,
+        on_delete,
+        on_recover,
+        on_purge,
     } : {
         zone: Zone,
         item?: Item | null,
         secrets: SecretSource,
+        editing?: boolean,
+        draft: Draft,
         on_bounds?: (left: number, width: number) => void,
+        on_delete?: () => void,
+        on_recover?: () => void,
+        on_purge?: () => void,
     } = $props();
 
     const text = $derived(zoneText(zone));
@@ -31,6 +47,11 @@
         item?.kind === 'passkey' || (item?.kind === 'web' && item.passkey !== undefined));
     const compromised = $derived(
          item?.kind === 'web' && item.pwned ? item.domain : '');
+    const target = $derived(editableOf(item));
+    const notice = $derived(compromised !== '' && zone.kind === 'security' && !editing);
+    const deleted = $derived(item !== null && item !== undefined && item.kind !== 'wifi' && item.isDeleted);
+    const left = $derived(deleted && item?.kind !== 'wifi' ? daysLeft(item?.deleted, DELETED_DAYS) : 0);
+    let purgeOpen = $state(false);
     let scroller: ElasticScroll | undefined = $state();
     const stack = $derived(isCompact());
     let contentHeight = $state(0);
@@ -46,11 +67,19 @@
         <div class="scroller">
             <ElasticScroll bind:this={scroller} contentHeight={contentHeight}>
                 <div class="stack" style="--inset: {BAR_HEIGHT}px" bind:clientHeight={contentHeight}>
-                    {#if compromised && zone.kind === 'security'}
+                    {#if notice}
                         <SecurityNotice icon={view.icon} domain={compromised}/>
                         <Card padding="10px 15px">
                             <PasswordInfoFields fields={detail.fields}/>
                         </Card>
+                    {:else if target}
+                        <PasswordBody
+                            item={target}
+                            {detail}
+                            {view}
+                            {editing}
+                            bind:draft
+                            {on_delete}/>
                     {:else}
                         <Card padding="10px 15px">
                             <PasswordIcon icon={view.icon} width="50px"/>
@@ -58,10 +87,20 @@
                             <PasswordInfoFields fields={detail.fields}/>
                         </Card>
                     {/if}
-                    {#if hasPasskey}
+                    {#if deleted}
+                        <p class="countdown">{m.deleted_countdown({count: left})}</p>
+                        <Card>
+                            <CardAction text={m.deleted_recover()} edge="bottom"
+                                        onclick={() => on_recover?.()}/>
+                            <CardAction text={m.deleted_delete()} danger edge="none"
+                                        radius="0 0 var(--zone-border-radius) var(--zone-border-radius)"
+                                        onclick={() => (purgeOpen = true)}/>
+                        </Card>
+                    {/if}
+                    {#if hasPasskey && !editing}
                         <DetailNote variant="passkey"/>
                     {/if}
-                    {#if compromised && zone.kind !== 'security'}
+                    {#if compromised && zone.kind !== 'security' && !editing}
                         <DetailNote variant="compromised" domain={compromised}/>
                     {/if}
                 </div>
@@ -77,6 +116,14 @@
         </div>
     {/if}
 </div>
+
+<ConfirmDialog
+    bind:open={purgeOpen}
+    title={m.delete_title()}
+    desc={m.delete_hardDesc()}
+    confirm={m.delete_confirm()}
+    danger
+    on_confirm={() => on_purge?.()}/>
 
 <style>
     .container {
@@ -98,7 +145,16 @@
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding-top: var(--inset);
+        padding-block: var(--inset);
+    }
+
+    .countdown {
+        margin: 0;
+        padding-inline: 15px;
+        font-size: 13px;
+        line-height: 1.35;
+        text-align: center;
+        color: var(--hint-color);
     }
 
     .name {
