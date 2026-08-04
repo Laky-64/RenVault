@@ -255,6 +255,6 @@
         right: 0;
         bottom: 0;
         height: 1px;
-        background: color-mix(in srgb, var(--text-color) 12%, transparent);
+        background: var(--hairline-color);
     }
 </style>

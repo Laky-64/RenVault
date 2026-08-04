@@ -106,7 +106,7 @@
         width: 1px;
         top: 0;
         bottom: 0;
-        background: color-mix(in srgb, var(--text-color) 12%, transparent);
+        background: var(--hairline-color);
     }
 
     .large-title {

@@ -30,6 +30,8 @@
 
     --section-border-radius: 20px;
     --zone-border-radius: 15px;
+
+    --hairline-color: color-mix(in srgb, var(--text-color) 12%, transparent);
 }
 
 html, body {
