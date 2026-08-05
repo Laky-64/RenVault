@@ -22,10 +22,17 @@
         if (open) key = '';
     });
 
-    const ready = $derived(key.length > 0);
+    const ready = $derived(usable(key));
+
+    function usable(raw: string) {
+        const value = raw.trim();
+        if (!value) return false;
+        if (/^otpauth:\/\//i.test(value)) return /[?&]secret=[a-z2-7]+/i.test(value);
+        return /^[a-z2-7]+$/i.test(value.replace(/[\s-]/g, '').replace(/=+$/, ''));
+    }
 
     function use() {
-        on_key?.(key);
+        on_key?.(key.trim());
         open = false;
     }
 </script>
