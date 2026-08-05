@@ -133,9 +133,11 @@
     const picked = new SvelteSet<string>();
     const allPicked = $derived(shownZone.items.length > 0 && picked.size === shownZone.items.length);
 
+    const zoneKind = $derived(shownZone.kind);
+
     $effect(() => {
         selecting;
-        shownZone.kind;
+        zoneKind;
         picked.clear();
     });
 
