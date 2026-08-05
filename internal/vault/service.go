@@ -113,12 +113,20 @@ func (s *Service) DeletePassword(id string) error {
 	return s.v.DeletePassword(id)
 }
 
+func (s *Service) DeletePasswords(ids []string) error {
+	return s.v.DeletePasswords(ids)
+}
+
 func (s *Service) RestorePassword(id string) error {
 	return s.v.RestorePassword(id)
 }
 
 func (s *Service) PurgePassword(id string) error {
 	return s.v.PurgePassword(id)
+}
+
+func (s *Service) PurgePasswords(ids []string) error {
+	return s.v.PurgePasswords(ids)
 }
 
 func (s *Service) GetPassword(id string) (string, error) {

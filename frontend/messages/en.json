@@ -84,10 +84,66 @@
   "edit_noCode": "None",
   "edit_noWebsite": "None",
   "edit_saveForCode": "Save to View Code",
-  "delete_title": "Delete Password",
-  "delete_confirm": "Delete Password",
-  "delete_softDesc": "The password will be moved to Deleted. After 30 days, it will be permanently deleted.",
-  "delete_hardDesc": "If you delete it, the password will be removed from the Passwords app on all your devices. This action cannot be undone.",
+  "delete_title": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Delete Password",
+        "countPlural=*": "Delete {count} Passwords"
+      }
+    }
+  ],
+  "delete_confirm": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Delete Password",
+        "countPlural=*": "Delete {count} Passwords"
+      }
+    }
+  ],
+  "delete_softDesc": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "The password will be moved to Deleted. After 30 days, it will be permanently deleted.",
+        "countPlural=*": "The passwords will be moved to Deleted. After 30 days, they will be permanently deleted."
+      }
+    }
+  ],
+  "delete_hardDesc": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "If you delete it, the password will be removed from the Passwords app on all your devices. This action cannot be undone.",
+        "countPlural=*": "If you delete them, the passwords will be removed from the Passwords app on all your devices. This action cannot be undone."
+      }
+    }
+  ],
   "deleted_recover": "Recover",
   "deleted_delete": "Delete",
   "websites_title": "Websites",

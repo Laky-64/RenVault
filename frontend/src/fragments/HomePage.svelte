@@ -3,6 +3,8 @@
     import ZoneContainer from "../componets/ZoneContainer.svelte";
     import NavBar from "../componets/NavBar.svelte";
     import ActionBar from "../componets/ActionBar.svelte";
+    import ConfirmDialog from "../componets/ConfirmDialog.svelte";
+    import {m} from "../paraglide/messages";
     import type {Draft} from "../componets/PasswordEditor.svelte";
     import {SvelteSet} from "svelte/reactivity";
     import {type Bounds, LIST_MAX, ZONES_MAX} from "../lib/layout";
@@ -132,6 +134,9 @@
     let selecting = $state(false);
     const picked = new SvelteSet<string>();
     const allPicked = $derived(shownZone.items.length > 0 && picked.size === shownZone.items.length);
+    const purging = $derived(shownZone.kind === 'deleted');
+    const pickedWeb = $derived(shownZone.items.filter(i => i.kind === 'web' && picked.has(i.id)));
+    let confirmDelete = $state(false);
 
     const zoneKind = $derived(shownZone.kind);
 
@@ -154,7 +159,16 @@
         for (const entry of shownZone.items) picked.add(entry.id);
     }
 
-    function deleteSelected() {
+    async function deleteSelected() {
+        const ids = pickedWeb.map(entry => entry.id);
+        if (ids.length === 0) return;
+        try {
+            await (purging ? Service.PurgePasswords(ids) : Service.DeletePasswords(ids));
+            selecting = false;
+            await load();
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        }
     }
 
     function applySort(field: SortField, ascending: boolean) {
@@ -306,14 +320,22 @@
     <ActionBar
         list={listBounds}
         {selecting}
-        canDelete={picked.size > 0}
+        canDelete={pickedWeb.length > 0}
         canAdd={shownZone.kind === 'all'}
         {sortField}
         {sortAscending}
         on_sort={applySort}
-        on_delete={deleteSelected}
+        on_delete={() => (confirmDelete = true)}
         on_add={addItem}/>
 </div>
+
+<ConfirmDialog
+    bind:open={confirmDelete}
+    title={m.delete_title({count: pickedWeb.length})}
+    desc={purging ? m.delete_hardDesc({count: pickedWeb.length}) : m.delete_softDesc({count: pickedWeb.length})}
+    confirm={m.delete_confirm({count: pickedWeb.length})}
+    danger
+    on_confirm={deleteSelected}/>
 
 <style>
     .container {

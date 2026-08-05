@@ -120,9 +120,9 @@
 
 <ConfirmDialog
     bind:open={purgeOpen}
-    title={m.delete_title()}
-    desc={m.delete_hardDesc()}
-    confirm={m.delete_confirm()}
+    title={m.delete_title({count: 1})}
+    desc={m.delete_hardDesc({count: 1})}
+    confirm={m.delete_confirm({count: 1})}
     danger
     on_confirm={() => on_purge?.()}/>
 

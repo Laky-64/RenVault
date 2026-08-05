@@ -191,24 +191,43 @@ func domainsAfterRename(domains []string, from, to string) []string {
 
 func (v *Vault) DeletePassword(id string) error {
 	return v.mutate(func(p *payload) error {
-		i := webIndex(p, id)
-		if i < 0 {
-			return errNotFound
-		}
-		w := p.Web[i]
-		if w.IsDeleted {
-			return nil
-		}
-		if findOp(p, opAdd, w.Domain, w.Username, v.inflight) >= 0 {
-			dropOps(p, w.Domain, w.Username, v.inflight)
-			p.Web = slices.Delete(p.Web, i, i+1)
-			return nil
-		}
-		pushOp(p, outboxOp{Kind: opDelete, Domain: w.Domain, Username: w.Username})
-		p.Web[i].IsDeleted = true
-		p.Web[i].DeletedAt = time.Now().UTC()
-		return nil
+		return v.deleteWeb(p, id)
 	})
+}
+
+func (v *Vault) DeletePasswords(ids []string) error {
+	return v.mutate(func(p *payload) error {
+		return v.eachWeb(p, ids, v.deleteWeb)
+	})
+}
+
+func (v *Vault) eachWeb(p *payload, ids []string, run func(*payload, string) error) error {
+	for _, id := range ids {
+		if err := run(p, id); err != nil && !errors.Is(err, errNotFound) {
+			return err
+		}
+	}
+	return nil
+}
+
+func (v *Vault) deleteWeb(p *payload, id string) error {
+	i := webIndex(p, id)
+	if i < 0 {
+		return errNotFound
+	}
+	w := p.Web[i]
+	if w.IsDeleted {
+		return nil
+	}
+	if findOp(p, opAdd, w.Domain, w.Username, v.inflight) >= 0 {
+		dropOps(p, w.Domain, w.Username, v.inflight)
+		p.Web = slices.Delete(p.Web, i, i+1)
+		return nil
+	}
+	pushOp(p, outboxOp{Kind: opDelete, Domain: w.Domain, Username: w.Username})
+	p.Web[i].IsDeleted = true
+	p.Web[i].DeletedAt = time.Now().UTC()
+	return nil
 }
 
 func (v *Vault) RestorePassword(id string) error {
@@ -234,17 +253,27 @@ func (v *Vault) RestorePassword(id string) error {
 
 func (v *Vault) PurgePassword(id string) error {
 	return v.mutate(func(p *payload) error {
-		i := webIndex(p, id)
-		if i < 0 {
-			return errNotFound
-		}
-		w := p.Web[i]
-		if !w.IsDeleted {
-			return errNotFound
-		}
-		pushOp(p, outboxOp{Kind: opPurge, Domain: w.Domain, Username: w.Username})
-		p.Web = slices.Delete(p.Web, i, i+1)
-		p.Pwned = slices.DeleteFunc(p.Pwned, func(s string) bool { return s == webKey(w) })
-		return nil
+		return v.purgeWeb(p, id)
 	})
+}
+
+func (v *Vault) PurgePasswords(ids []string) error {
+	return v.mutate(func(p *payload) error {
+		return v.eachWeb(p, ids, v.purgeWeb)
+	})
+}
+
+func (v *Vault) purgeWeb(p *payload, id string) error {
+	i := webIndex(p, id)
+	if i < 0 {
+		return errNotFound
+	}
+	w := p.Web[i]
+	if !w.IsDeleted {
+		return errNotFound
+	}
+	pushOp(p, outboxOp{Kind: opPurge, Domain: w.Domain, Username: w.Username})
+	p.Web = slices.Delete(p.Web, i, i+1)
+	p.Pwned = slices.DeleteFunc(p.Pwned, func(s string) bool { return s == webKey(w) })
+	return nil
 }

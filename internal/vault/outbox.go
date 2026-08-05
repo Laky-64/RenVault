@@ -68,7 +68,7 @@ func pushEdit(p *payload, op outboxOp, inflight uint64) {
 		return
 	}
 	prev := &p.Outbox[last]
-	if prev.Seq == inflight || prev.Domain != op.Domain || prev.Username != op.Username {
+	if prev.Seq <= inflight || prev.Domain != op.Domain || prev.Username != op.Username {
 		pushOp(p, op)
 		return
 	}
@@ -113,43 +113,59 @@ func mergeAdd(prev *outboxOp, op outboxOp) {
 	prev.Password = op.Password
 }
 
-func findOp(p *payload, kind opKind, domain, username string, skip uint64) int {
+func findOp(p *payload, kind opKind, domain, username string, inflight uint64) int {
 	for i, op := range p.Outbox {
-		if op.Seq != skip && op.Kind == kind && op.Domain == domain && op.Username == username {
+		if op.Seq > inflight && op.Kind == kind && op.Domain == domain && op.Username == username {
 			return i
 		}
 	}
 	return -1
 }
 
-func dropOps(p *payload, domain, username string, skip uint64) {
+func dropOps(p *payload, domain, username string, inflight uint64) {
 	p.Outbox = slices.DeleteFunc(p.Outbox, func(op outboxOp) bool {
-		return op.Seq != skip && op.Domain == domain && op.Username == username
+		return op.Seq > inflight && op.Domain == domain && op.Username == username
 	})
 }
 
-func (v *Vault) pendingOp() (outboxOp, bool) {
+const maxBatch = 25
+
+func batchable(kind opKind) bool {
+	return kind == opDelete || kind == opPurge
+}
+
+func (v *Vault) pendingBatch() ([]outboxOp, bool) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.p == nil || len(v.p.Outbox) == 0 {
-		return outboxOp{}, false
+		return nil, false
 	}
-	op := v.p.Outbox[0]
-	v.inflight = op.Seq
-	return op, true
+	n := 1
+	if batchable(v.p.Outbox[0].Kind) {
+		for n < len(v.p.Outbox) && n < maxBatch && v.p.Outbox[n].Kind == v.p.Outbox[0].Kind {
+			n++
+		}
+	}
+	batch := slices.Clone(v.p.Outbox[:n])
+	v.inflight = batch[n-1].Seq
+	return batch, true
 }
 
-func (v *Vault) settleOp(seq uint64) error {
+func (v *Vault) settleOps(batch []outboxOp) error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.inflight = 0
 	if v.p == nil || v.k == nil {
 		return errLocked
 	}
-	if len(v.p.Outbox) == 0 || v.p.Outbox[0].Seq != seq {
+	n := 0
+	for n < len(batch) && n < len(v.p.Outbox) && v.p.Outbox[n].Seq == batch[n].Seq {
+		n++
+	}
+	if n == 0 {
 		return nil
 	}
-	v.p.Outbox = slices.Delete(v.p.Outbox, 0, 1)
+	v.p.Outbox = slices.Delete(v.p.Outbox, 0, n)
 	return v.saveLocked()
 }
 
@@ -189,14 +205,14 @@ func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
 		dropped bool
 	)
 	for {
-		op, ok := v.pendingOp()
+		batch, ok := v.pendingBatch()
 		if !ok {
 			if !dropped {
 				v.clearFailure()
 			}
 			return changed, nil
 		}
-		if !fetched || touched[op.key()] {
+		if !fetched || staleFor(touched, batch) {
 			fresh, err := src.Items()
 			if err != nil {
 				v.releaseOp()
@@ -207,27 +223,85 @@ func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
 			fetched = true
 			clear(touched)
 		}
-		if err := runOp(src, items, web, op); err != nil {
-			v.releaseOp()
-			if retryable(err) {
+		errs := runBatch(src, items, web, batch)
+		for _, op := range batch {
+			markTouched(touched, op)
+		}
+		done := 0
+		for done < len(batch) && errs[done] == nil {
+			done++
+		}
+		if done > 0 {
+			if err := v.settleOps(batch[:done]); err != nil {
 				return changed, err
 			}
-			v.recordFailure(op, err)
-			if serr := v.settleOp(op.Seq); serr != nil {
-				return changed, serr
-			}
 			changed = true
-			dropped = true
+		}
+		if done == len(batch) {
 			continue
 		}
-		touched[op.key()] = true
-		if op.Rewrite {
-			touched[op.NewDomain+"\x00"+op.NewUsername] = true
+		v.releaseOp()
+		if retryable(errs[done]) {
+			return changed, errs[done]
 		}
-		if err := v.settleOp(op.Seq); err != nil {
+		v.recordFailure(batch[done], errs[done])
+		if err := v.settleOps(batch[done : done+1]); err != nil {
 			return changed, err
 		}
 		changed = true
+		dropped = true
+	}
+}
+
+func staleFor(touched map[string]bool, batch []outboxOp) bool {
+	for _, op := range batch {
+		if touched[op.key()] {
+			return true
+		}
+	}
+	return false
+}
+
+func markTouched(touched map[string]bool, op outboxOp) {
+	touched[op.key()] = true
+	if op.Rewrite {
+		touched[op.NewDomain+"\x00"+op.NewUsername] = true
+	}
+}
+
+type bulkFunc func([]keychain.WebPassword) []appleservices.BulkResult[keychain.WebPassword]
+
+func runBatch(src *appleservices.KeychainVault, items []keychain.Item, web []keychain.WebPassword, batch []outboxOp) []error {
+	errs := make([]error, len(batch))
+	switch batch[0].Kind {
+	case opDelete:
+		runBulk(func(ps []keychain.WebPassword) []appleservices.BulkResult[keychain.WebPassword] {
+			return src.DeleteWebPasswordsIn(items, ps)
+		}, web, batch, false, errs)
+	case opPurge:
+		runBulk(src.PurgeWebPasswords, web, batch, true, errs)
+	default:
+		errs[0] = runOp(src, items, web, batch[0])
+	}
+	return errs
+}
+
+func runBulk(bulk bulkFunc, web []keychain.WebPassword, batch []outboxOp, deleted bool, errs []error) {
+	var entries []keychain.WebPassword
+	var owner []int
+	for i, op := range batch {
+		w, ok := matchWeb(web, op, deleted)
+		if !ok {
+			continue
+		}
+		entries = append(entries, w)
+		owner = append(owner, i)
+	}
+	if len(entries) == 0 {
+		return
+	}
+	for j, r := range bulk(entries) {
+		errs[owner[j]] = r.Err
 	}
 }
 
@@ -242,20 +316,15 @@ func runOp(src *appleservices.KeychainVault, items []keychain.Item, web []keycha
 		return src.AddWebPassword(op.Domain, op.Username, op.Password, op.Note)
 	}
 
-	deleted := op.Kind == opRestore || op.Kind == opPurge
-	w, ok := matchWeb(web, op, deleted)
+	w, ok := matchWeb(web, op, op.Kind == opRestore)
 	if !ok {
 		return nil
 	}
 	switch op.Kind {
 	case opEdit:
 		return runEdit(src, items, op, w)
-	case opDelete:
-		return src.DeleteWebPassword(w)
 	case opRestore:
 		return src.RestoreWebPassword(w)
-	case opPurge:
-		return src.PurgeWebPassword(w)
 	}
 	return fmt.Errorf("vault: unknown pending operation %q", op.Kind)
 }
