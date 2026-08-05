@@ -35,6 +35,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/wailsapp/wails/v3 v3.0.0-alpha2.119 h1:+y9H2QxqxSiaq3i4h3e77k1/nFW0uGhcWWl1bz/DFFg=
 github.com/wailsapp/wails/v3 v3.0.0-alpha2.119/go.mod h1:74WH2FScMsgucZvHHvv7eOefDXCm/CjuIxqhhZgPhKg=
+github.com/wailsapp/wails/v3 v3.0.0-beta.3 h1:BrcZunEBVucncRx+xgkk9TzlXU4qc0ygJuEhKAAGaeA=
+github.com/wailsapp/wails/v3 v3.0.0-beta.3/go.mod h1:BzATbK71VFikMMMCo434wAi0QcaI03P+xeaWgDvQvjw=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 golang.org/x/crypto v0.54.0 h1:YLIA59K4fiNzHzjnZt2tUJQjQtUWfWbeHBqKtk3eScw=
