@@ -168,7 +168,7 @@ func (v *Vault) EditPassword(id, website, username, password, note, totpURL stri
 			e.Password = password
 		}
 		e.Modified = time.Now().UTC()
-		repointPwned(p, id, webID(*e))
+		repointPwned(p, webKey(w), webKey(*e))
 		return nil
 	})
 }
@@ -244,7 +244,7 @@ func (v *Vault) PurgePassword(id string) error {
 		}
 		pushOp(p, outboxOp{Kind: opPurge, Domain: w.Domain, Username: w.Username})
 		p.Web = slices.Delete(p.Web, i, i+1)
-		p.Pwned = slices.DeleteFunc(p.Pwned, func(s string) bool { return s == id })
+		p.Pwned = slices.DeleteFunc(p.Pwned, func(s string) bool { return s == webKey(w) })
 		return nil
 	})
 }

@@ -139,6 +139,10 @@ func hashID(prefix Kind, material ...string) string {
 	return string(prefix) + ":" + hex.EncodeToString(sum[:])
 }
 
+func webKey(w keychain.WebPassword) string {
+	return w.Domain + "\x00" + w.Username
+}
+
 func webID(w keychain.WebPassword) string {
 	return hashID(
 		KindWeb,
@@ -146,7 +150,6 @@ func webID(w keychain.WebPassword) string {
 		w.Username,
 		w.Name,
 		strconv.FormatInt(w.Created.UnixNano(), 10),
-		strconv.FormatInt(w.Modified.UnixNano(), 10),
 	)
 }
 
@@ -173,9 +176,8 @@ func passkeyID(p passkeyEntry) string {
 func webMetas(p payload) []WebMeta {
 	out := make([]WebMeta, 0, len(p.Web))
 	for _, w := range p.Web {
-		id := webID(w)
 		out = append(out, WebMeta{
-			ID:          id,
+			ID:          webID(w),
 			Title:       w.Name,
 			Username:    w.Username,
 			Domain:      w.Domain,
@@ -186,7 +188,7 @@ func webMetas(p payload) []WebMeta {
 			IsDeleted:   w.IsDeleted,
 			Groups:      w.Groups,
 			Shared:      w.Shared,
-			Pwned:       slices.Contains(p.Pwned, id),
+			Pwned:       slices.Contains(p.Pwned, webKey(w)),
 			HasPassword: len(w.Password) > 0,
 			Created:     w.Created,
 			Modified:    w.Modified,
