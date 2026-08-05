@@ -6,7 +6,7 @@ import HomePage from "./fragments/HomePage.svelte";
 import type {TransitionConfig} from "svelte/transition";
 import AuthFlow from "./fragments/AuthFlow.svelte";
 import {nav} from "./navigation.svelte";
-import {LOCKED_EVENT} from "./lib/lock";
+import {LOCKED_EVENT} from "./lib/events";
 
 onMount(() => {
     WML.Reload();

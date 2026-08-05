@@ -41,6 +41,10 @@ type Vault struct {
 	timer    *time.Timer
 	timerGen uint64
 	onLock   func()
+	onSync   func()
+	syncer   *syncer
+	inflight uint64
+	lastErr  error
 }
 
 func New(base string) *Vault {
@@ -86,6 +90,7 @@ func (v *Vault) UnlockWithPassword(masterPassword string) error {
 	pc := p
 	v.p = &pc
 	v.resetTimerLocked()
+	v.startSyncLocked(false)
 	return nil
 }
 
@@ -93,6 +98,21 @@ func (v *Vault) SetOnLock(fn func()) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.onLock = fn
+}
+
+func (v *Vault) SetOnSync(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onSync = fn
+}
+
+func (v *Vault) notify() {
+	v.mu.Lock()
+	fn := v.onSync
+	v.mu.Unlock()
+	if fn != nil {
+		fn()
+	}
 }
 
 func (v *Vault) SetAutoLock(d time.Duration) {
@@ -152,6 +172,8 @@ func (v *Vault) lockLocked() {
 	v.pending = appleservices.Credentials{}
 	v.sess.Close()
 	v.store.clear()
+	v.stopSyncLocked()
+	v.inflight = 0
 	if wasUnlocked && v.onLock != nil {
 		go v.onLock()
 	}
@@ -324,9 +346,8 @@ func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified boo
 }
 
 type keychainSource interface {
-	WebPasswords() ([]keychain.WebPassword, error)
+	Items() ([]keychain.Item, error)
 	WiFiPasswords() ([]keychain.WiFiPassword, error)
-	Passkeys() ([]keychain.Passkey, error)
 }
 
 var _ keychainSource = (*appleservices.KeychainVault)(nil)
@@ -439,43 +460,41 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 	v.k = k
 	v.p = p
 	v.resetTimerLocked()
+	v.startSyncLocked(true)
 	return nil
 }
 
 func (v *Vault) Sync() (bool, error) {
-	v.mu.Lock()
-	if v.p == nil || v.k == nil {
-		v.mu.Unlock()
-		return false, errLocked
-	}
-	origP := v.p
-	creds := v.p.Credentials
-	peer := v.p.Peer
-	session := v.p.Session
-	v.mu.Unlock()
-
-	v.store.set(session)
-	v.sess.SetCredentials(creds)
-
-	src, err := v.sess.Keychain(peer)
+	src, err := v.keychainSession()
 	if errors.Is(err, apple.ErrTwoFactorRequired) {
 		return true, nil
 	}
 	if err != nil {
 		return false, err
+	}
+	if err := v.syncAll(src); errors.Is(err, apple.ErrTwoFactorRequired) {
+		return true, nil
+	} else if err != nil {
+		return false, err
+	}
+	return false, nil
+}
+
+func (v *Vault) syncAll(src *appleservices.KeychainVault) error {
+	v.mu.Lock()
+	origP := v.p
+	v.mu.Unlock()
+	if origP == nil {
+		return errLocked
 	}
 
 	local := &payload{}
 	if err := fetchCaches(src, local); err != nil {
-		return false, err
+		return err
 	}
-
 	prof, err := v.sess.LoadProfile()
-	if errors.Is(err, apple.ErrTwoFactorRequired) {
-		return true, nil
-	}
 	if err != nil {
-		return false, err
+		return err
 	}
 	local.ProfileName = prof.Name
 	local.ProfilePhoto = prof.Photo
@@ -483,15 +502,54 @@ func (v *Vault) Sync() (bool, error) {
 
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	if v.p == nil || v.p != origP {
-		return false, errLocked
+	if v.p == nil || v.k == nil || v.p != origP {
+		return errLocked
+	}
+	if len(v.p.Outbox) > 0 {
+		return nil
 	}
 	copyCaches(v.p, local)
 	if sess, ok := v.store.take(); ok {
 		v.p.Session = sess
 	}
 	v.p.SyncedAt = time.Now().UTC()
-	return false, v.saveLocked()
+	return v.saveLocked()
+}
+
+func (v *Vault) refreshWeb(src *appleservices.KeychainVault) error {
+	v.mu.Lock()
+	origP := v.p
+	v.mu.Unlock()
+	if origP == nil {
+		return errLocked
+	}
+
+	items, err := src.Items()
+	if err != nil {
+		return err
+	}
+	web := keychain.WebPasswords(items)
+	passkey := passkeyEntries(items)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil || v.k == nil || v.p != origP {
+		return errLocked
+	}
+	if len(v.p.Outbox) > 0 {
+		return nil
+	}
+	for i := range v.p.Passkey {
+		zero(v.p.Passkey[i].PrivateKeyD)
+	}
+	v.p.Web = web
+	v.p.Passkey = passkey
+	prunePwned(v.p)
+	if sess, ok := v.store.take(); ok {
+		v.p.Session = sess
+	}
+	v.p.SyncedAt = time.Now().UTC()
+	return v.saveLocked()
 }
 
 func (v *Vault) ProfileInfo() ProfileMeta {
@@ -557,7 +615,7 @@ func (v *Vault) Middleware(next http.Handler) http.Handler {
 }
 
 func fetchCaches(src keychainSource, p *payload) error {
-	web, err := src.WebPasswords()
+	items, err := src.Items()
 	if err != nil {
 		return err
 	}
@@ -565,22 +623,23 @@ func fetchCaches(src keychainSource, p *payload) error {
 	if err != nil {
 		return err
 	}
-	passkey, err := src.Passkeys()
-	if err != nil {
-		return err
-	}
-	entries := make([]passkeyEntry, 0, len(passkey))
-	for _, k := range passkey {
+	p.Web = keychain.WebPasswords(items)
+	p.WiFi = wifi
+	p.Passkey = passkeyEntries(items)
+	return nil
+}
+
+func passkeyEntries(items []keychain.Item) []passkeyEntry {
+	found := keychain.Passkeys(items)
+	entries := make([]passkeyEntry, 0, len(found))
+	for _, k := range found {
 		e, err := newPasskeyEntry(k)
 		if err != nil {
 			continue
 		}
 		entries = append(entries, e)
 	}
-	p.Web = web
-	p.WiFi = wifi
-	p.Passkey = entries
-	return nil
+	return entries
 }
 
 func prunePwned(p *payload) {

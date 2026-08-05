@@ -54,6 +54,9 @@ type payload struct {
 	Passkey     []passkeyEntry            `cbor:"passkey,omitempty"`
 	SyncedAt    time.Time                 `cbor:"synced_at"`
 
+	Outbox    []outboxOp `cbor:"outbox,omitempty"`
+	OutboxSeq uint64     `cbor:"outbox_seq,omitempty"`
+
 	Pwned   []string  `cbor:"pwned,omitempty"`
 	PwnedAt time.Time `cbor:"pwned_at,omitempty"`
 

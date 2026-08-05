@@ -13,6 +13,7 @@ type Session struct {
 	creds   appleservices.Credentials
 	login   *appleservices.Login
 	client  *appleservices.Client
+	vault   *appleservices.KeychainVault
 	bottles []appleservices.BottleRef
 	peer    *appleservices.PeerKey
 	profile *appleservices.Profile
@@ -173,11 +174,19 @@ func (s *Session) TakePeer() (appleservices.PeerKey, bool) {
 func (s *Session) Keychain(peer appleservices.PeerKey) (*appleservices.KeychainVault, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.vault != nil {
+		return s.vault, nil
+	}
 	c, err := s.ensureClientLocked()
 	if err != nil {
 		return nil, err
 	}
-	return c.OpenKeychainWithPeer(peer)
+	kv, err := c.OpenKeychainWithPeer(peer)
+	if err != nil {
+		return nil, err
+	}
+	s.vault = kv
+	return kv, nil
 }
 
 func (s *Session) Close() {
@@ -229,6 +238,7 @@ func (s *Session) ensureClientLocked() (*appleservices.Client, error) {
 func (s *Session) resetLoginLocked() {
 	s.login = nil
 	s.client = nil
+	s.vault = nil
 	s.bottles = nil
 	s.profile = nil
 	s.clearPeerLocked()

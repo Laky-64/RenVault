@@ -2,9 +2,6 @@ package vault
 
 import "slices"
 
-// Settings raccoglie le scelte dell'utente che devono sopravvivere al riavvio.
-// Vivono dentro al payload cifrato come tutto il resto: fuori sarebbero un file
-// modificabile da chiunque abbia accesso al disco.
 type Settings struct {
 	SortField     string `cbor:"sort_field,omitempty" json:"sortField"`
 	SortAscending bool   `cbor:"sort_ascending,omitempty" json:"sortAscending"`

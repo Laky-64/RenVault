@@ -23,9 +23,11 @@
         webItem,
         wifiItem,
     } from "../lib/items";
-    import {canSave, type Draft as EditDraft, draftOf, titleOf} from "../lib/detail";
+    import {canSave, type Draft as EditDraft, draftOf} from "../lib/detail";
     import {type SortField, sortItems} from "../lib/sort";
     import {describeFailure} from "../lib/failure";
+    import {SYNCED_EVENT} from "../lib/events";
+    import {Events} from "@wailsio/runtime";
     import {onMount} from "svelte";
 
     const secrets: SecretSource = {
@@ -51,6 +53,21 @@
     onMount(() => {
         void loadSettings();
         void load().then(() => refreshPwned());
+        return Events.On(SYNCED_EVENT, () => {
+            if (editing) {
+                pendingReload = true;
+                return;
+            }
+            void load();
+        });
+    });
+
+    let pendingReload = $state(false);
+
+    $effect(() => {
+        if (editing || !pendingReload) return;
+        pendingReload = false;
+        void load();
     });
 
     async function loadSettings() {
@@ -70,9 +87,24 @@
             web = linked.web;
             wifi = (wifiMetas ?? []).map(wifiItem);
             passkey = linked.passkeys;
+            repoint();
         } catch (e) {
             console.error(describeFailure(e).raw);
         }
+    }
+
+    function repoint() {
+        const open = currentItem();
+        if (!open || editing) return;
+        const fresh = [...web, ...wifi, ...passkey].find(i => i.id === open.id);
+        if (fresh) {
+            openItem(fresh);
+            return;
+        }
+        if (open.kind !== 'web') return;
+        const moved = web.find(w => w.domain === open.domain && w.username === open.username);
+        if (moved) openItem(moved);
+        else nav.back();
     }
 
     async function refreshPwned(force = false) {
@@ -130,7 +162,13 @@
             .catch(e => console.error(describeFailure(e).raw));
     }
 
-    function addItem(draft: Draft) {
+    async function addItem(draft: Draft) {
+        try {
+            await Service.AddPassword(draft.title, draft.website, draft.username, draft.password, draft.notes);
+            await load();
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        }
     }
 
     let listStuck = $state(false);
@@ -158,32 +196,66 @@
     });
 
     const draftOk = $derived(canSave(draft));
+    let saving = $state(false);
 
-    function saveEdit() {
-        if (!draftOk) return;
-        editing = false;
+    async function saveEdit() {
+        if (!draftOk || saving) return;
         const item = editableOf(currentItem());
-        if (!item) return;
+        if (!item) {
+            editing = false;
+            return;
+        }
+        saving = true;
+        const website = draft.websites[0] ?? '';
+        const username = draft.username.trim();
+        try {
+            await Service.EditPassword(item.id, website, username, draft.password,
+                draft.note, draft.totpKey ?? '', draft.totpRemoved);
+            await load();
+            const domain = website || item.domain;
+            const account = username || item.username;
+            const moved = web.find(w => w.domain === domain && w.username === account && !w.isDeleted);
+            if (moved) openItem(moved);
+            else nav.back();
+            editing = false;
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        } finally {
+            saving = false;
+        }
     }
 
     function cancelEdit() {
         editing = false;
     }
 
-    function deleteItem() {
+    async function writeItem(id: string, run: (id: string) => Promise<void>) {
+        try {
+            await run(id);
+            nav.back();
+            await load();
+        } catch (e) {
+            console.error(describeFailure(e).raw);
+        }
+    }
+
+    async function deleteItem() {
         editing = false;
         const item = editableOf(currentItem());
         if (!item) return;
+        await writeItem(item.id, Service.DeletePassword);
     }
 
-    function recoverItem() {
+    async function recoverItem() {
         const item = currentItem();
         if (!item) return;
+        await writeItem(item.id, Service.RestorePassword);
     }
 
-    function purgeItem() {
+    async function purgeItem() {
         const item = currentItem();
         if (!item) return;
+        await writeItem(item.id, Service.PurgePassword);
     }
 </script>
 
@@ -225,7 +297,7 @@
         selectedCount={picked.size}
         bind:selecting
         bind:editing
-        canSave={draftOk}
+        canSave={draftOk && !saving}
         on_selectAll={selectAll}
         on_editSave={saveEdit}
         on_editCancel={cancelEdit}/>

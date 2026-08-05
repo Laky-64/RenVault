@@ -9,6 +9,7 @@ import (
 
 const (
 	LockedEvent     = "vault:locked"
+	SyncedEvent     = "vault:synced"
 	defaultAutoLock = 5 * time.Minute
 )
 
@@ -27,6 +28,11 @@ func NewService() *Service {
 	v.SetOnLock(func() {
 		if app := application.Get(); app != nil {
 			app.Event.Emit(LockedEvent)
+		}
+	})
+	v.SetOnSync(func() {
+		if app := application.Get(); app != nil {
+			app.Event.Emit(SyncedEvent)
 		}
 	})
 	go changeURLIndex()
@@ -89,6 +95,30 @@ func (s *Service) ListPasskey() []PasskeyMeta {
 
 func (s *Service) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error) {
 	return s.v.SignAssertion(id, clientDataHash, userVerified, signCount)
+}
+
+func (s *Service) SyncState() SyncStatus {
+	return s.v.SyncState()
+}
+
+func (s *Service) AddPassword(title, website, username, password, note string) error {
+	return s.v.AddPassword(title, website, username, password, note)
+}
+
+func (s *Service) EditPassword(id, website, username, password, note, totpURL string, dropTOTP bool) error {
+	return s.v.EditPassword(id, website, username, password, note, totpURL, dropTOTP)
+}
+
+func (s *Service) DeletePassword(id string) error {
+	return s.v.DeletePassword(id)
+}
+
+func (s *Service) RestorePassword(id string) error {
+	return s.v.RestorePassword(id)
+}
+
+func (s *Service) PurgePassword(id string) error {
+	return s.v.PurgePassword(id)
 }
 
 func (s *Service) GetPassword(id string) (string, error) {
