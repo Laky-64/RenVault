@@ -77,7 +77,9 @@
         {@const totp = codeOf(field)}
         {@const shown = secret ? revealed[field.label] : plainOf(field)}
         <div class="field" class:wrap={field.wrap}>
-            <p class="name">{field.label}</p>
+            {#if !field.bare}
+                <p class="name">{field.label}</p>
+            {/if}
 
             {#if totp}
                 <TotpField
@@ -98,7 +100,7 @@
             {:else if secret && shown === undefined}
                 <p class="value masked" aria-hidden="true">{MASK}</p>
             {:else}
-                <p class="value" class:wrapped={field.wrap}>{shown}</p>
+                <p class="value" class:wrapped={field.wrap} class:bare={field.bare}>{shown}</p>
             {/if}
         </div>
     {/each}
@@ -158,6 +160,11 @@
         line-height: 1.35;
         overflow-wrap: anywhere;
         white-space: pre-wrap;
+    }
+
+    .value.bare {
+        margin-inline: 0 auto;
+        text-align: left;
     }
 
     .masked {

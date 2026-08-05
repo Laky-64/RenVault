@@ -170,6 +170,7 @@ export interface DetailField {
     value: FieldValue;
     copyable?: boolean;
     wrap?: boolean;
+    bare?: boolean;
 }
 
 export interface ItemDetail {
@@ -201,7 +202,7 @@ function websiteOf(item: WebItem): string {
 }
 
 function pushNote(fields: DetailField[], note: string): void {
-    if (note.trim()) fields.push({label: m.field_notes(), value: {shown: note}, wrap: true});
+    if (note.trim()) fields.push({label: m.field_notes(), value: {shown: note}, wrap: true, bare: true});
 }
 
 function pushModified(fields: DetailField[], modified: string): void {
