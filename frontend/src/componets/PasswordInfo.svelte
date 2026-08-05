@@ -58,7 +58,7 @@
     let contentHeight = $state(0);
 
     $effect(() => {
-        item;
+        item?.id;
         scroller?.reset();
     });
 </script>

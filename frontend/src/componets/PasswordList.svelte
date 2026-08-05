@@ -61,7 +61,7 @@
 </script>
 
 <div class="container" style="--bar-height: {BAR_HEIGHT}px" class:stack use:observeSize={node => on_bounds?.(node.offsetLeft, node.offsetWidth)}>
-    <VirtualList items={zone.items} resetKey={zone} tail={ACTION_HEIGHT} bind:scrollOffset>
+    <VirtualList items={zone.items} resetKey={zone.kind} tail={ACTION_HEIGHT} bind:scrollOffset>
         {#snippet header()}
             {#if stack}
                 <div class="bar-spacer"></div>
