@@ -125,6 +125,10 @@
         display: block;
     }
 
+    div:focus {
+        outline: none;
+    }
+
     .morph.morphing {
         transition:
             width 400ms cubic-bezier(0.34, 1.32, 0.5, 1),
