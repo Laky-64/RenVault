@@ -10,7 +10,10 @@ import (
 	"github.com/Laky-64/appleservices/keychain"
 )
 
-var errNotFound = errors.New("vault: entry not found")
+var (
+	errNotFound   = errors.New("vault: entry not found")
+	errNeedsTitle = errors.New("vault: an entry without a website needs a title")
+)
 
 func (v *Vault) keychainSession() (*appleservices.KeychainVault, error) {
 	v.mu.Lock()
@@ -122,20 +125,31 @@ func associatedSites(domains []string, primary string) []string {
 	return out
 }
 
-func (v *Vault) EditPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) error {
+func (v *Vault) EditPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) (string, error) {
 	title = strings.TrimSpace(title)
 	website = strings.TrimSpace(website)
 	username = strings.TrimSpace(username)
 	note = strings.TrimSpace(note)
 	totpURL = strings.TrimSpace(totpURL)
-	return v.mutate(func(p *payload) error {
+	next := id
+	err := v.mutate(func(p *payload) error {
 		i := webIndex(p, id)
 		if i < 0 {
 			return errNotFound
 		}
 		w := p.Web[i]
+		unsite := w.Website && len(domains) == 0
+		if unsite && title == "" {
+			title = w.Name
+		}
+		if unsite && title == "" {
+			return errNeedsTitle
+		}
 		domain := website
-		if domain == "" {
+		switch {
+		case unsite:
+			domain = newLocalID()
+		case domain == "":
 			domain = w.Domain
 		}
 		account := username
@@ -149,10 +163,10 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 		rewrite := domain != w.Domain || account != w.Username || password != w.Password
 		drop := dropTOTP && w.TOTP != ""
 		setNote := note != w.Note
-		setTitle := title != "" && title != w.Name
+		setTitle := unsite || (title != "" && title != w.Name)
 
 		assoc := associatedSites(domains, domain)
-		setDomains := len(domains) > 0 && !slices.Equal(assoc, associatedSites(w.Domains, domain))
+		setDomains := !slices.Equal(assoc, associatedSites(w.Domains, domain))
 
 		if !rewrite && totp == "" && !drop && !setNote && !setTitle && !setDomains {
 			return nil
@@ -172,6 +186,7 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			SetDomains:  setDomains,
 			TOTP:        totp,
 			DropTOTP:    drop,
+			Manual:      unsite,
 			Rewrite:     rewrite,
 		}, v.inflight)
 		e := &p.Web[i]
@@ -187,38 +202,25 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			e.TOTP = ""
 		}
 		if rewrite {
-			e.Domains = domainsAfterRename(e.Domains, e.Domain, domain)
 			e.Domain = domain
 			e.Username = account
 			e.Password = password
 		}
-		if setDomains {
-			if e.Website {
-				e.Domains = append([]string{domain}, assoc...)
-			} else {
-				e.Domains = assoc
-			}
+		e.Website = keychain.IsWebsiteDomain(domain)
+		if e.Website {
+			e.Domains = append([]string{domain}, assoc...)
+		} else {
+			e.Domains = assoc
 		}
 		e.Modified = time.Now().UTC()
 		repointPwned(p, webKey(w), webKey(*e))
+		next = webID(*e)
 		return nil
 	})
-}
-
-func domainsAfterRename(domains []string, from, to string) []string {
-	if from == to || len(domains) == 0 {
-		return domains
+	if err != nil {
+		return "", err
 	}
-	out := make([]string, 0, len(domains))
-	for _, d := range domains {
-		if d == from {
-			d = to
-		}
-		if !slices.Contains(out, d) {
-			out = append(out, d)
-		}
-	}
-	return out
+	return next, nil
 }
 
 func (v *Vault) DeletePassword(id string) error {

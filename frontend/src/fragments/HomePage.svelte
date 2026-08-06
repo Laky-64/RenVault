@@ -226,12 +226,10 @@
         const website = sites[0] ?? '';
         const username = draft.username.trim();
         try {
-            await Service.EditPassword(item.id, titleOf(draft), website, username, draft.password,
-                draft.note, draft.totpKey ?? '', sites, draft.totpRemoved);
+            const next = await Service.EditPassword(item.id, titleOf(draft), website, username,
+                draft.password, draft.note, draft.totpKey ?? '', sites, draft.totpRemoved);
             await load();
-            const domain = website || item.domain;
-            const account = username || item.username;
-            const moved = web.find(w => w.domain === domain && w.username === account && !w.isDeleted);
+            const moved = web.find(w => w.id === next && !w.isDeleted);
             if (moved) openItem(moved);
             else nav.back();
             editing = false;
