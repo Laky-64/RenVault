@@ -116,6 +116,17 @@ func mergeAdd(prev *outboxOp, op outboxOp) {
 	if op.SetNote {
 		prev.Note = op.Note
 	}
+	if op.SetTitle {
+		prev.Title = op.Title
+		prev.SetTitle = true
+	}
+	if op.SetDomains {
+		prev.Domains = op.Domains
+		prev.SetDomains = true
+	}
+	if op.Manual {
+		prev.Manual = true
+	}
 	if !op.Rewrite {
 		return
 	}
@@ -349,10 +360,16 @@ func reconcileAdd(src *appleservices.KeychainVault, items []keychain.Item, op ou
 	}
 	cur := metadataOf(w)
 	meta := cur
-	if op.Manual && op.Title != "" {
+	switch {
+	case op.SetTitle:
+		meta.Title = op.Title
+	case op.Manual && op.Title != "":
 		meta.Title = op.Title
 	}
 	meta.Note = op.Note
+	if op.SetDomains {
+		meta.Domains = op.Domains
+	}
 	if meta.Equal(cur) {
 		return nil
 	}
