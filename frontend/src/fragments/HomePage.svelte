@@ -25,7 +25,7 @@
         webItem,
         wifiItem,
     } from "../lib/items";
-    import {canSave, type Draft as EditDraft, draftOf} from "../lib/detail";
+    import {canSave, type Draft as EditDraft, draftOf, tidyWebsites, titleOf} from "../lib/detail";
     import {type SortField, sortItems} from "../lib/sort";
     import {describeFailure} from "../lib/failure";
     import {SYNCED_EVENT} from "../lib/events";
@@ -222,11 +222,12 @@
             return;
         }
         saving = true;
-        const website = draft.websites[0] ?? '';
+        const sites = tidyWebsites(draft.websites);
+        const website = sites[0] ?? '';
         const username = draft.username.trim();
         try {
-            await Service.EditPassword(item.id, website, username, draft.password,
-                draft.note, draft.totpKey ?? '', draft.totpRemoved);
+            await Service.EditPassword(item.id, titleOf(draft), website, username, draft.password,
+                draft.note, draft.totpKey ?? '', sites, draft.totpRemoved);
             await load();
             const domain = website || item.domain;
             const account = username || item.username;

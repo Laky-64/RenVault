@@ -105,8 +105,8 @@ func (s *Service) AddPassword(title, website, username, password, note string) e
 	return s.v.AddPassword(title, website, username, password, note)
 }
 
-func (s *Service) EditPassword(id, website, username, password, note, totpURL string, dropTOTP bool) error {
-	return s.v.EditPassword(id, website, username, password, note, totpURL, dropTOTP)
+func (s *Service) EditPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) error {
+	return s.v.EditPassword(id, title, website, username, password, note, totpURL, domains, dropTOTP)
 }
 
 func (s *Service) DeletePassword(id string) error {

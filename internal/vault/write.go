@@ -110,7 +110,20 @@ func (v *Vault) AddPassword(title, website, username, password, note string) err
 	})
 }
 
-func (v *Vault) EditPassword(id, website, username, password, note, totpURL string, dropTOTP bool) error {
+func associatedSites(domains []string, primary string) []string {
+	out := make([]string, 0, len(domains))
+	for _, d := range domains {
+		d = strings.TrimSpace(d)
+		if d == "" || d == primary || slices.Contains(out, d) {
+			continue
+		}
+		out = append(out, d)
+	}
+	return out
+}
+
+func (v *Vault) EditPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) error {
+	title = strings.TrimSpace(title)
 	website = strings.TrimSpace(website)
 	username = strings.TrimSpace(username)
 	note = strings.TrimSpace(note)
@@ -136,7 +149,12 @@ func (v *Vault) EditPassword(id, website, username, password, note, totpURL stri
 		rewrite := domain != w.Domain || account != w.Username || password != w.Password
 		drop := dropTOTP && w.TOTP != ""
 		setNote := note != w.Note
-		if !rewrite && totp == "" && !drop && !setNote {
+		setTitle := title != "" && title != w.Name
+
+		assoc := associatedSites(domains, domain)
+		setDomains := len(domains) > 0 && !slices.Equal(assoc, associatedSites(w.Domains, domain))
+
+		if !rewrite && totp == "" && !drop && !setNote && !setTitle && !setDomains {
 			return nil
 		}
 		pushEdit(p, outboxOp{
@@ -146,13 +164,20 @@ func (v *Vault) EditPassword(id, website, username, password, note, totpURL stri
 			NewDomain:   domain,
 			NewUsername: account,
 			Password:    password,
+			Title:       title,
+			SetTitle:    setTitle,
 			Note:        note,
 			SetNote:     setNote,
+			Domains:     assoc,
+			SetDomains:  setDomains,
 			TOTP:        totp,
 			DropTOTP:    drop,
 			Rewrite:     rewrite,
 		}, v.inflight)
 		e := &p.Web[i]
+		if setTitle {
+			e.Name = title
+		}
 		if setNote {
 			e.Note = note
 		}
@@ -166,6 +191,13 @@ func (v *Vault) EditPassword(id, website, username, password, note, totpURL stri
 			e.Domain = domain
 			e.Username = account
 			e.Password = password
+		}
+		if setDomains {
+			if e.Website {
+				e.Domains = append([]string{domain}, assoc...)
+			} else {
+				e.Domains = assoc
+			}
 		}
 		e.Modified = time.Now().UTC()
 		repointPwned(p, webKey(w), webKey(*e))

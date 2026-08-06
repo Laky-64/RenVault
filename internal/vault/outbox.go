@@ -27,20 +27,23 @@ const (
 )
 
 type outboxOp struct {
-	Seq         uint64 `cbor:"seq"`
-	Kind        opKind `cbor:"kind"`
-	Domain      string `cbor:"domain"`
-	Username    string `cbor:"username"`
-	NewDomain   string `cbor:"new_domain,omitempty"`
-	NewUsername string `cbor:"new_username,omitempty"`
-	Password    string `cbor:"password,omitempty"`
-	Title       string `cbor:"title,omitempty"`
-	Note        string `cbor:"note,omitempty"`
-	SetNote     bool   `cbor:"set_note,omitempty"`
-	TOTP        string `cbor:"totp,omitempty"`
-	DropTOTP    bool   `cbor:"drop_totp,omitempty"`
-	Manual      bool   `cbor:"manual,omitempty"`
-	Rewrite     bool   `cbor:"rewrite,omitempty"`
+	Seq         uint64   `cbor:"seq"`
+	Kind        opKind   `cbor:"kind"`
+	Domain      string   `cbor:"domain"`
+	Username    string   `cbor:"username"`
+	NewDomain   string   `cbor:"new_domain,omitempty"`
+	NewUsername string   `cbor:"new_username,omitempty"`
+	Password    string   `cbor:"password,omitempty"`
+	Title       string   `cbor:"title,omitempty"`
+	Note        string   `cbor:"note,omitempty"`
+	SetNote     bool     `cbor:"set_note,omitempty"`
+	SetTitle    bool     `cbor:"set_title,omitempty"`
+	Domains     []string `cbor:"domains,omitempty"`
+	SetDomains  bool     `cbor:"set_domains,omitempty"`
+	TOTP        string   `cbor:"totp,omitempty"`
+	DropTOTP    bool     `cbor:"drop_totp,omitempty"`
+	Manual      bool     `cbor:"manual,omitempty"`
+	Rewrite     bool     `cbor:"rewrite,omitempty"`
 }
 
 func (o outboxOp) key() string { return o.Domain + "\x00" + o.Username }
@@ -90,6 +93,14 @@ func mergeEdit(prev *outboxOp, op outboxOp) {
 	if op.SetNote {
 		prev.Note = op.Note
 		prev.SetNote = true
+	}
+	if op.SetTitle {
+		prev.Title = op.Title
+		prev.SetTitle = true
+	}
+	if op.SetDomains {
+		prev.Domains = op.Domains
+		prev.SetDomains = true
 	}
 	switch {
 	case op.TOTP != "":
@@ -342,14 +353,19 @@ func reconcileAdd(src *appleservices.KeychainVault, items []keychain.Item, op ou
 		meta.Title = op.Title
 	}
 	meta.Note = op.Note
-	if meta == cur {
+	if meta.Equal(cur) {
 		return nil
 	}
 	return src.SetMetadataIn(items, w, meta)
 }
 
 func metadataOf(w keychain.WebPassword) appleservices.Metadata {
-	return appleservices.Metadata{Title: w.Name, Note: w.Note, TOTP: w.TOTP}
+	return appleservices.Metadata{
+		Title:   w.Name,
+		Note:    w.Note,
+		TOTP:    w.TOTP,
+		Domains: appleservices.AssociatedSites(w),
+	}
 }
 
 func runEdit(src *appleservices.KeychainVault, items []keychain.Item, op outboxOp, w keychain.WebPassword) error {
@@ -363,8 +379,14 @@ func runEdit(src *appleservices.KeychainVault, items []keychain.Item, op outboxO
 	}
 	cur := metadataOf(w)
 	meta := cur
+	if op.SetTitle {
+		meta.Title = op.Title
+	}
 	if op.SetNote {
 		meta.Note = op.Note
+	}
+	if op.SetDomains {
+		meta.Domains = op.Domains
 	}
 	switch {
 	case op.TOTP != "":
@@ -372,7 +394,7 @@ func runEdit(src *appleservices.KeychainVault, items []keychain.Item, op outboxO
 	case op.DropTOTP:
 		meta.TOTP = ""
 	}
-	if meta == cur {
+	if meta.Equal(cur) {
 		return nil
 	}
 	return src.SetMetadataIn(items, w, meta)
