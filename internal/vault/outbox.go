@@ -217,7 +217,7 @@ func (v *Vault) SyncState() SyncStatus {
 	return st
 }
 
-func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
+func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, bool, error) {
 	var (
 		items   []keychain.Item
 		web     []keychain.WebPassword
@@ -232,13 +232,13 @@ func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
 			if !dropped {
 				v.clearFailure()
 			}
-			return changed, nil
+			return changed, dropped, nil
 		}
 		if !fetched || staleFor(touched, batch) {
 			fresh, err := src.Items()
 			if err != nil {
 				v.releaseOp()
-				return changed, err
+				return changed, dropped, err
 			}
 			items = fresh
 			web = keychain.WebPasswords(fresh)
@@ -255,7 +255,7 @@ func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
 		}
 		if done > 0 {
 			if err := v.settleOps(batch[:done]); err != nil {
-				return changed, err
+				return changed, dropped, err
 			}
 			changed = true
 		}
@@ -264,11 +264,11 @@ func (v *Vault) flushOutbox(src *appleservices.KeychainVault) (bool, error) {
 		}
 		v.releaseOp()
 		if retryable(errs[done]) {
-			return changed, errs[done]
+			return changed, dropped, errs[done]
 		}
 		v.recordFailure(batch[done], errs[done])
 		if err := v.settleOps(batch[done : done+1]); err != nil {
-			return changed, err
+			return changed, dropped, err
 		}
 		changed = true
 		dropped = true

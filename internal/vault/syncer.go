@@ -96,7 +96,7 @@ func (s *syncer) cycle() error {
 	if err != nil {
 		return err
 	}
-	changed, ferr := v.flushOutbox(src)
+	changed, dropped, ferr := v.flushOutbox(src)
 	if ferr != nil {
 		if changed {
 			v.notify()
@@ -109,10 +109,11 @@ func (s *syncer) cycle() error {
 			return err
 		}
 		s.lastFull = time.Now()
-	case changed:
+	case dropped:
 		if err := v.refreshWeb(src); err != nil {
 			return err
 		}
+	case changed:
 	default:
 		return nil
 	}
