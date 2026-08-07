@@ -51,6 +51,14 @@ func (s *Service) AutoLockMinutes() int {
 	return int(s.v.AutoLock() / time.Minute)
 }
 
+func (s *Service) AutoLockChoices() []int {
+	return AutoLockChoices()
+}
+
+func (s *Service) SignOut() error {
+	return s.v.SignOut()
+}
+
 func (s *Service) ServiceName() string { return "Vault" }
 
 func (s *Service) Configured() bool {
@@ -173,6 +181,6 @@ func (s *Service) Middleware() application.Middleware {
 	return s.v.Middleware
 }
 
-func (s *Service) SetAutoLockMinutes(m int) {
-	s.v.SetAutoLock(time.Duration(m) * time.Minute)
+func (s *Service) SetAutoLockMinutes(m int) error {
+	return s.v.SetAutoLockMinutes(m)
 }

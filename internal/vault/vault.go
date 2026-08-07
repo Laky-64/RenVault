@@ -89,6 +89,7 @@ func (v *Vault) UnlockWithPassword(masterPassword string) error {
 	v.k = k
 	pc := p
 	v.p = &pc
+	v.applyAutoLockLocked()
 	v.resetTimerLocked()
 	v.startSyncLocked(false)
 	return nil
@@ -459,6 +460,7 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 	v.vf = &vf
 	v.k = k
 	v.p = p
+	v.applyAutoLockLocked()
 	v.resetTimerLocked()
 	v.startSyncLocked(true)
 	return nil
@@ -555,16 +557,32 @@ func (v *Vault) refreshWeb(src *appleservices.KeychainVault) error {
 func (v *Vault) ProfileInfo() ProfileMeta {
 	v.mu.Lock()
 	p := v.p
+	pending := v.pending.AppleID
 	if p != nil {
-		m := ProfileMeta{Name: p.ProfileName, HasPhoto: len(p.ProfilePhoto) > 0}
+		m := ProfileMeta{
+			Name:     p.ProfileName,
+			AppleID:  p.Credentials.AppleID,
+			HasPhoto: len(p.ProfilePhoto) > 0,
+		}
 		v.mu.Unlock()
 		return m
 	}
 	v.mu.Unlock()
 	if pr, ok := v.sess.Profile(); ok {
-		return ProfileMeta{Name: pr.Name, HasPhoto: len(pr.Photo) > 0}
+		return ProfileMeta{Name: pr.Name, AppleID: pending, HasPhoto: len(pr.Photo) > 0}
 	}
-	return ProfileMeta{}
+	return ProfileMeta{AppleID: pending}
+}
+
+func (v *Vault) SignOut() error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	err := appleservices.Logout(v.store)
+	v.lockLocked()
+	if rmErr := removeVaultFile(v.base); rmErr != nil {
+		return rmErr
+	}
+	return err
 }
 
 func (v *Vault) photoBytes() ([]byte, string) {

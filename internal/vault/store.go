@@ -228,6 +228,13 @@ func writeFileAtomic(path string, data []byte, perm os.FileMode) error {
 	return nil
 }
 
+func removeVaultFile(base string) error {
+	if err := os.Remove(vaultPath(base)); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
+}
+
 func saveVaultFile(base string, vf vaultFile) error {
 	data, err := cborEnc.Marshal(vf)
 	if err != nil {
