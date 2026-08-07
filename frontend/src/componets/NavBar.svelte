@@ -2,6 +2,7 @@
     import {type Zone, zoneText} from "./ZoneContainer";
     import BackButton from "./BackButton.svelte";
     import SelectButton from "./SelectButton.svelte";
+    import TotpRing from "./TotpRing.svelte";
     import {BACK_INSET, BAR_HEIGHT, type Bounds} from "../lib/layout";
     import {currentItem, nav} from "../navigation.svelte";
     import {editableOf} from "../lib/items";
@@ -50,6 +51,7 @@
     const canEdit = $derived(zone.kind !== 'deleted' && editableOf(currentItem()) !== null);
     const editingHere = $derived(editing && onDetail);
     const blocked = $derived(editing && !canSave);
+    const codeClock = $derived(onList && zone.kind === 'codes' && !selectingList);
 
     function backMode() {
         if (editingHere) return 'cancel' as const;
@@ -101,13 +103,18 @@
                 </div>
             {/if}
         </div>
-        <div class="slot">
+        <div class="slot stacked">
             <SelectButton
-                shown={onList || (onDetail && canEdit)}
+                shown={!codeClock && (onList || (onDetail && canEdit))}
                 label={onList ? m.list_select() : m.item_edit()}
                 active={onList ? selecting : editing}
                 disabled={!onList && blocked}
                 onclick={() => (onList ? (selecting = !selecting) : onEdit())}/>
+            {#if codeClock}
+                <div class="clock" transition:fade={crossfade}>
+                    <TotpRing size={28}/>
+                </div>
+            {/if}
         </div>
     </div>
     {#if !stack}
@@ -202,6 +209,22 @@
 
     .bar-backdrop.revealed {
         opacity: 1;
+    }
+
+    .slot.stacked {
+        display: grid;
+        justify-items: end;
+        align-items: center;
+    }
+
+    .slot.stacked > :global(*) {
+        grid-area: 1 / 1;
+    }
+
+    .clock {
+        display: flex;
+        align-items: center;
+        padding-inline: 8px;
     }
 
     .compact-title {
