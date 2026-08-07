@@ -18,3 +18,5 @@ frontend/public/puppertino/
 vault.enc
 device.json
 .DS_Store
+*.gen.go
+build/android/app/appinfo.properties

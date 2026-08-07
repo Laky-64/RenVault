@@ -230,6 +230,18 @@ tasks:
     cmds:
       - bun run dev --port {{.VITE_PORT}} --strictPort
 
+  generate:appinfo:
+    summary: Regenerates the app identity from build/config.yml
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - build/config.yml
+      - build/tools/appinfo/main.go
+    generates:
+      - internal/appinfo/info.gen.go
+      - build/android/app/appinfo.properties
+    cmds:
+      - go run ./build/tools/appinfo
+
   update:build-assets:
     summary: Updates the build assets
     dir: build

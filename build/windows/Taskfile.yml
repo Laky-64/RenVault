@@ -34,6 +34,7 @@ tasks:
     summary: Builds the application using native Go cross-compilation
     internal: true
     deps:
+      - task: common:generate:appinfo
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:

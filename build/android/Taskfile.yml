@@ -4,7 +4,8 @@ includes:
   common: ../Taskfile.yml
 
 vars:
-  APP_ID: '{{.APP_ID | default "com.wails.app"}}'
+  APP_ID:
+    sh: 'sed -n "s/^app.applicationId=//p" {{.ROOT_DIR}}/build/android/app/appinfo.properties 2>/dev/null || echo "com.wails.app"'
   MIN_SDK: '21'
   TARGET_SDK: '35'
   # The emulator runs the host architecture; physical devices are arm64
@@ -38,6 +39,7 @@ tasks:
   build:
     summary: Creates a debug build of the application for Android
     deps:
+      - task: common:generate:appinfo
       - task: common:go:mod:tidy
       - task: generate:android:overlay
       - task: common:build:frontend

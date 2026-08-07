@@ -2,6 +2,13 @@ plugins {
     id 'com.android.application'
 }
 
+def appInfoFile = file('appinfo.properties')
+if (!appInfoFile.exists()) {
+    throw new GradleException("appinfo.properties is missing; run: wails3 task common:generate:appinfo")
+}
+def appInfo = new Properties()
+appInfoFile.withInputStream { appInfo.load(it) }
+
 android {
     namespace 'com.wails.app'
     compileSdk 35
@@ -11,11 +18,13 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.wails.app"
+        applicationId appInfo.getProperty('app.applicationId')
         minSdk 21
         targetSdk 35
-        versionCode 1
-        versionName "1.0"
+        versionCode appInfo.getProperty('app.versionCode').toInteger()
+        versionName appInfo.getProperty('app.versionName')
+
+        resValue "string", "app_name", appInfo.getProperty('app.name')
 
         // Configure supported ABIs
         ndk {

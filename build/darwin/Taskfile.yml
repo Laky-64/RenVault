@@ -27,6 +27,7 @@ tasks:
     summary: Builds the application natively on macOS
     internal: true
     deps:
+      - task: common:generate:appinfo
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:

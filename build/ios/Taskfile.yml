@@ -43,6 +43,7 @@ tasks:
     deps:
       - task: generate:ios:overlay
       - task: generate:ios:xcode
+      - task: common:generate:appinfo
       - task: common:go:mod:tidy
       - task: common:build:frontend
         vars:
