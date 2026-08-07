@@ -127,7 +127,7 @@
                     mode="cancel"
                     onclick={() => on_editCancel?.()}/>
             </div>
-            <div class="slot">
+            <div class="slot push">
                 <SelectButton
                     shown={hasItem && canEdit}
                     label={m.item_edit()}
@@ -177,8 +177,11 @@
         flex: 1;
         min-width: 0;
         max-width: 250px;
-        margin-left: auto;
         pointer-events: auto;
+    }
+
+    .slot.push {
+        margin-left: auto;
     }
 
     .slot {
