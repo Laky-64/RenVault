@@ -280,6 +280,7 @@
     /*noinspection CssUnusedSymbol*/
     .surface.grown.settled {
         transition:
+            transform 250ms ease,
             border-radius calc(var(--open-ms) * 0.35) ease-out,
             background-color calc(var(--open-ms) * 0.5) ease,
             box-shadow calc(var(--open-ms) * 0.5) ease;

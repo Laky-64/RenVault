@@ -90,6 +90,7 @@
         text-align: left;
         cursor: pointer;
         --wails-draggable: no-drag;
+        transition: background 150ms ease;
     }
 
     .row:hover {
