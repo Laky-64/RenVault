@@ -21,6 +21,7 @@
         type WiFiItem,
         editableOf,
         linkItems,
+        matchesQuery,
         passkeyItem,
         webItem,
         wifiItem,
@@ -129,7 +130,11 @@
     let sortField: SortField = $state('title');
     let sortAscending = $state(true);
     const activeZone = $derived(zones.find(z => z.kind === currentZone()?.kind) ?? zones[0]);
-    const shownZone = $derived({...activeZone, items: sortItems(activeZone.items, sortField, sortAscending)});
+    let query = $state('');
+    const foundItems = $derived(query.trim() === ''
+        ? activeZone.items
+        : activeZone.items.filter(i => matchesQuery(i, query)));
+    const shownZone = $derived({...activeZone, items: sortItems(foundItems, sortField, sortAscending)});
 
     let selecting = $state(false);
     const picked = new SvelteSet<string>();
@@ -139,6 +144,11 @@
     let confirmDelete = $state(false);
 
     const zoneKind = $derived(shownZone.kind);
+
+    $effect(() => {
+        zoneKind;
+        query = '';
+    });
 
     $effect(() => {
         selecting;
@@ -282,6 +292,7 @@
     <div class="pane" style="transform: translateX({nav.offsetOf(1)}%)" inert={!nav.isActive(1)}>
         <PasswordList
             zone={shownZone}
+            bind:query
             {secrets}
             selected={currentItem() ?? null}
             on_selected={openItem}
@@ -293,7 +304,7 @@
     </div>
     <div class="pane" style="transform: translateX({nav.offsetOf(2)}%)" inert={!nav.isActive(2)}>
         <PasswordInfo
-            zone={shownZone}
+            zone={activeZone}
             item={currentItem() ?? null}
             {secrets}
             {editing}
@@ -305,6 +316,7 @@
     </div>
     <NavBar
         zone={shownZone}
+        bind:query
         list={listBounds}
         detail={detailBounds}
         stuck={listStuck}

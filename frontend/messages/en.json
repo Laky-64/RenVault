@@ -304,5 +304,30 @@
   "settings_securityTitle": "Security",
   "settings_aboutTitle": "About",
   "settings_autoLockNote": "RenVault locks itself after this long without activity. Your vault stays encrypted on disk until you unlock it again.",
-  "settings_signOutNote": "Signing out deletes the encrypted vault from this device. Your passwords stay in your Apple Account."
+  "settings_signOutNote": "Signing out deletes the encrypted vault from this device. Your passwords stay in your Apple Account.",
+  "search_placeholder": "Search",
+  "search_placeholderIn": [
+    {
+      "declarations": [
+        "input zone"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Search in {zone}"
+      }
+    }
+  ],
+  "search_clear": "Clear search",
+  "search_empty": [
+    {
+      "declarations": [
+        "input query"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "No results for “{query}”"
+      }
+    }
+  ],
+  "search_emptyDesc": "Check the spelling or try a new search."
 }

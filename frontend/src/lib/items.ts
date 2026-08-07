@@ -282,3 +282,20 @@ export function detailOf(item: Item, secrets: SecretSource): ItemDetail {
         }
     }
 }
+
+function haystack(item: Item): string[] {
+    switch (item.kind) {
+        case 'web':
+            return [labelOf(item), item.title, item.username, item.domain, ...(item.domains ?? [])];
+        case 'passkey':
+            return [item.title, item.username, item.relyingParty];
+        case 'wifi':
+            return [item.ssid];
+    }
+}
+
+export function matchesQuery(item: Item, query: string): boolean {
+    const needle = normalized(query);
+    if (needle.length === 0) return true;
+    return haystack(item).some(field => field && normalized(field).includes(needle));
+}

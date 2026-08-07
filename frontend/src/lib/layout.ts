@@ -1,4 +1,5 @@
 export const BAR_HEIGHT = 60;
+export const SEARCH_HEIGHT = 52;
 
 export const BACK_SIZE = 36;
 

@@ -2,6 +2,7 @@
     import {type Zone, zoneText} from "./ZoneContainer";
     import BackButton from "./BackButton.svelte";
     import SelectButton from "./SelectButton.svelte";
+    import SearchField from "./SearchField.svelte";
     import TotpRing from "./TotpRing.svelte";
     import {BACK_INSET, BAR_HEIGHT, type Bounds} from "../lib/layout";
     import {currentItem, nav} from "../navigation.svelte";
@@ -13,6 +14,7 @@
 
     let {
         zone,
+        query = $bindable(''),
         list,
         detail,
         stuck = false,
@@ -26,6 +28,7 @@
         on_editCancel,
     } : {
         zone: Zone;
+        query?: string;
         list: Bounds;
         detail: Bounds;
         stuck?: boolean;
@@ -43,7 +46,7 @@
     const onList = $derived(!stack || nav.depth === 1);
     const onDetail = $derived(stack && nav.depth > 1);
     const selectingList = $derived(selecting && onList);
-    const revealed = $derived(stack || stuck);
+    const revealed = $derived(stuck);
     const count = $derived(selectingList
         ? m.list_selectedCount({count: selectedCount})
         : m.zone_list_itemCount({count: zone.items.length}));
@@ -52,6 +55,9 @@
     const editingHere = $derived(editing && onDetail);
     const blocked = $derived(editing && !canSave);
     const codeClock = $derived(onList && zone.kind === 'codes' && !selectingList);
+    const placeholder = $derived(zone.kind === 'all'
+        ? m.search_placeholder()
+        : m.search_placeholderIn({zone: zoneText(zone).name}));
 
     function backMode() {
         if (editingHere) return 'cancel' as const;
@@ -84,11 +90,6 @@
 
 <div class="navbar" class:stack style="--inset: {BACK_INSET}px; --bar-height: {BAR_HEIGHT}px">
     <div class="bar" style="--bar-left: {list.left}px; --bar-width: {list.width}px">
-        <div class="top-bar">
-            {#if onList}
-                <div class="bar-backdrop" class:revealed transition:fade={crossfade}></div>
-            {/if}
-        </div>
         <div class="slot">
             <BackButton
                 shown={selectingList || (stack && nav.depth > 0)}
@@ -125,13 +126,16 @@
                     mode="cancel"
                     onclick={() => on_editCancel?.()}/>
             </div>
-            <div class="slot push">
+            <div class="slot">
                 <SelectButton
                     shown={hasItem && canEdit}
                     label={m.item_edit()}
                     active={editing}
                     disabled={blocked}
                     onclick={onEdit}/>
+            </div>
+            <div class="search">
+                <SearchField bind:value={query} {placeholder} glass/>
             </div>
         </div>
     {/if}
@@ -167,8 +171,13 @@
         right: 0;
     }
 
-    .slot.push {
+    .search {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        max-width: 250px;
         margin-left: auto;
+        pointer-events: auto;
     }
 
     .slot {
@@ -177,39 +186,8 @@
         pointer-events: auto;
     }
 
-    .top-bar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--bar-height);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        pointer-events: none;
-    }
 
-    .bar-backdrop {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--bar-height);
-        opacity: 0;
-        transition: opacity 200ms ease;
-        background: linear-gradient(
-            to bottom,
-            var(--secondary-bg-color) 0%,
-            color-mix(in srgb, var(--secondary-bg-color) 96%, transparent) 35%,
-            color-mix(in srgb, var(--secondary-bg-color) 72%, transparent) 65%,
-            color-mix(in srgb, var(--secondary-bg-color) 28%, transparent) 85%,
-            color-mix(in srgb, var(--secondary-bg-color) 0%, transparent) 100%
-        );
-    }
 
-    .bar-backdrop.revealed {
-        opacity: 1;
-    }
 
     .slot.stacked {
         display: grid;
