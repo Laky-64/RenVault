@@ -176,7 +176,7 @@
         display: flex;
         flex: 1;
         min-width: 0;
-        max-width: 250px;
+        max-width: 220px;
         pointer-events: auto;
     }
 
