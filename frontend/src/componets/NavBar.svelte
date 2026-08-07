@@ -45,6 +45,7 @@
     const stack = $derived(isCompact());
     const onList = $derived(!stack || nav.depth === 1);
     const onDetail = $derived(stack && nav.depth > 1);
+    const selectable = $derived(zone.kind !== 'passkeys' && zone.kind !== 'networks');
     const selectingList = $derived(selecting && onList);
     const revealed = $derived(stuck);
     const count = $derived(selectingList
@@ -84,7 +85,7 @@
     });
 
     $effect(() => {
-        if (nav.depth < 1) selecting = false;
+        if (nav.depth < 1 || !selectable) selecting = false;
     });
 </script>
 
@@ -106,7 +107,7 @@
         </div>
         <div class="slot stacked">
             <SelectButton
-                shown={!codeClock && (onList || (onDetail && canEdit))}
+                shown={!codeClock && ((onList && selectable) || (onDetail && canEdit))}
                 label={onList ? m.list_select() : m.item_edit()}
                 active={onList ? selecting : editing}
                 disabled={!onList && blocked}
