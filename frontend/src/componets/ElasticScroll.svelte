@@ -5,11 +5,13 @@
     let {
         contentHeight,
         scrollOffset = $bindable(0),
+        shownOffset = $bindable(0),
         viewportHeight = $bindable(0),
         children,
     }: {
         contentHeight: number;
         scrollOffset?: number;
+        shownOffset?: number;
         viewportHeight?: number;
         children: Snippet;
     } = $props();
@@ -54,6 +56,10 @@
 
     $effect(() => {
         scrollOffset = clampedOffset;
+    });
+
+    $effect(() => {
+        shownOffset = displayOffset;
     });
 
     let previousMaxScroll: number | undefined;
@@ -198,14 +204,14 @@
     }
 
     // noinspection JSUnusedGlobalSymbols
-    export function reset() {
+    export function reset(to = 0) {
         cancelMomentum();
         if (idleTimer) clearTimeout(idleTimer);
         dragging = false;
         pendingPointerId = null;
         activePointerId = null;
         velocity = 0;
-        rawOffset = 0;
+        rawOffset = Math.max(0, to);
     }
 </script>
 

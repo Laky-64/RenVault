@@ -10,16 +10,22 @@
         item,
         overscan = 4,
         tail = 0,
+        minReach = 0,
         resetKey,
+        startOffset = 0,
         scrollOffset = $bindable(0),
+        shownOffset = $bindable(0),
     }: {
         items: T[];
         header?: Snippet;
         item: Snippet<[T, number]>;
         overscan?: number;
         tail?: number;
+        minReach?: number;
         resetKey?: unknown;
+        startOffset?: number;
         scrollOffset?: number;
+        shownOffset?: number;
     } = $props();
 
     const BOOTSTRAP_GUESS = 32;
@@ -45,7 +51,7 @@
 
         measured.clear();
         itemsVersion++;
-        scroller?.reset();
+        scroller?.reset(startOffset);
     });
 
     const averageHeight = $derived.by(() => {
@@ -83,7 +89,10 @@
         return ans;
     }
 
-    const contentHeight = $derived(headerHeight + offsets[items.length] + tail);
+    const contentHeight = $derived(Math.max(
+        headerHeight + offsets[items.length] + tail,
+        viewportHeight > 0 ? viewportHeight + minReach : 0,
+    ));
 
     const startIndex = $derived(Math.max(0, indexAt(Math.max(0, scrollOffset - headerHeight)) - overscan));
     const endIndex = $derived(Math.min(items.length, indexAt(Math.max(0, scrollOffset - headerHeight) + viewportHeight) + 1 + overscan));
@@ -103,6 +112,10 @@
         }
     }
 
+    export function jumpTo(offset: number) {
+        scroller?.reset(offset);
+    }
+
     function applyHeaderHeight(height: number) {
         if (height <= 0) return;
         const previous = headerHeight;
@@ -119,6 +132,7 @@
     bind:this={scroller}
     contentHeight={contentHeight}
     bind:scrollOffset
+    bind:shownOffset
     bind:viewportHeight
 >
     <div class="header" use:observeSize={node => applyHeaderHeight(node.getBoundingClientRect().height)}>
