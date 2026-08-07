@@ -1,3 +1,7 @@
+<script lang="ts" module>
+    let seen = false;
+</script>
+
 <script lang="ts">
     import {prefersReducedMotion} from "../lib/dom";
 
@@ -12,10 +16,12 @@
     } = $props();
 
     const reduced = prefersReducedMotion();
+    const instant = reduced || seen;
     let ready = $state(false);
 
     function reveal() {
-        if (reduced) {
+        seen = true;
+        if (instant) {
             ready = true;
             return;
         }
@@ -35,7 +41,7 @@
     </svg>
 
     {#if hasPhoto}
-        <img class="profile" class:shown={ready} src="/profile" alt="" onload={reveal}/>
+        <img class="profile" class:shown={ready} class:still={instant} src="/profile" alt="" onload={reveal}/>
     {/if}
 </div>
 
@@ -65,6 +71,11 @@
     .profile.shown {
         opacity: 1;
         scale: 1;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .profile.still {
+        transition: none;
     }
 
     @media (prefers-reduced-motion: reduce) {

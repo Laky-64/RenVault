@@ -40,7 +40,7 @@
 <svelte:window onkeydown={open && stack ? onKey : undefined}/>
 
 {#snippet seed()}
-    <ProfileAvatar size={32} {hasPhoto}/>
+    <ProfileAvatar size={40} {hasPhoto}/>
 {/snippet}
 
 {#snippet bar()}

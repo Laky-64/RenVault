@@ -22,6 +22,7 @@ const {
 const stack = $derived(isCompact());
 let contentHeight = $state(0);
 let settingsOpen = $state(false);
+let settingsMorphing = $state(false);
 let settingsAnchor: HTMLElement | undefined = $state();
 let hasPhoto = $state(false);
 
@@ -58,10 +59,10 @@ $effect(() => {
     {/if}
 </div>
 
-<SettingsSurface bind:open={settingsOpen} anchor={settingsAnchor} {hasPhoto}/>
+<SettingsSurface bind:open={settingsOpen} bind:active={settingsMorphing} anchor={settingsAnchor} {hasPhoto}/>
 
 {#snippet profile()}
-    <div class="avatar" bind:this={settingsAnchor}>
+    <div class="avatar" class:swallowed={settingsMorphing} bind:this={settingsAnchor}>
         <Button variant="plain" padding="4px" radius="999px"
                 onclick={() => (settingsOpen = true)}>
             <ProfileAvatar size={stack ? 32 : 40} {hasPhoto} label={m.settings_openLabel()}/>
@@ -121,6 +122,10 @@ $effect(() => {
     .avatar {
         display: flex;
         flex-shrink: 0;
+    }
+
+    .avatar.swallowed {
+        opacity: 0;
     }
 
     .large-title > h1 {
