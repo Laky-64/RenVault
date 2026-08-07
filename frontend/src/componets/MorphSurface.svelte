@@ -148,7 +148,11 @@
 </script>
 
 {#if active}
-    <div class="layer" use:portal>
+    <div class="layer" use:portal
+         style="--open-ms: {motionMs(OPEN_MS)}ms; --close-ms: {motionMs(CLOSE_MS)}ms">
+    {#if dim}
+        <div class="veil" class:shown={grown}></div>
+    {/if}
     {#if open && dismissable}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div class="catcher" onpointerdown={() => (open = false)}></div>
@@ -159,12 +163,10 @@
         class:grown
         class:zoom
         class:pop
-        class:dim
         class:settled={settled && !pop}
         class:self={selfSized || freeSized}
         class:press={pressScale}
-        style="{shape}; --open-ms: {motionMs(OPEN_MS)}ms; --close-ms: {motionMs(CLOSE_MS)}ms;
-               --seed-scale: {seedScale}"
+        style="{shape}; --seed-scale: {seedScale}"
     >
         {#if seedFace}
             <div class="seed" aria-hidden="true">{@render seedFace()}</div>
@@ -232,14 +234,19 @@
             box-shadow calc(var(--open-ms) * 0.5) ease;
     }
 
-    /*noinspection CssUnusedSymbol*/
-    .surface.dim {
-        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 0%);
+    .veil {
+        position: fixed;
+        inset: 0;
+        z-index: 39;
+        background: rgb(0 0 0 / 0%);
+        pointer-events: none;
+        transition: background-color calc(var(--close-ms) * 0.54) ease calc(var(--close-ms) * 0.32);
     }
 
     /*noinspection CssUnusedSymbol*/
-    .surface.dim.grown {
-        box-shadow: var(--surface-shadow), 0 0 0 100vmax rgb(0 0 0 / 45%);
+    .veil.shown {
+        background: rgb(0 0 0 / 45%);
+        transition: background-color calc(var(--open-ms) * 0.5) ease;
     }
 
     /*noinspection CssUnusedSymbol*/
