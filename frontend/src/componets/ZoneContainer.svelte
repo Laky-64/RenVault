@@ -1,5 +1,10 @@
 <script lang="ts">
 import ZoneButton from "./ZoneButton.svelte";
+import ProfileAvatar from "./ProfileAvatar.svelte";
+import SettingsSurface from "./SettingsSurface.svelte";
+import Button from "./Button.svelte";
+import {Service} from "../../bindings/github.com/Laky-64/RenVault/internal/vault";
+import {m} from "../paraglide/messages";
 import ElasticScroll from "./ElasticScroll.svelte";
 import {type Zone, zoneText} from "./ZoneContainer";
 import {isCompact} from "../lib/navigation.svelte";
@@ -16,14 +21,25 @@ const {
 } = $props();
 const stack = $derived(isCompact());
 let contentHeight = $state(0);
+let settingsOpen = $state(false);
+let settingsAnchor: HTMLElement | undefined = $state();
+let hasPhoto = $state(false);
+
+$effect(() => {
+    Service.ProfileInfo()
+        .then(info => (hasPhoto = info.hasPhoto))
+        .catch(() => {});
+});
 </script>
 
 <div class="frame" class:stack>
+    <div class="scroll">
     <ElasticScroll {contentHeight}>
         <div class="content" bind:clientHeight={contentHeight}>
             {#if stack}
                 <div class="large-title">
                     <h1>{appName()}</h1>
+                    {@render profile()}
                 </div>
             {/if}
             <div class="grid">
@@ -33,9 +49,29 @@ let contentHeight = $state(0);
             </div>
         </div>
     </ElasticScroll>
+    </div>
+
+    {#if !stack}
+        <div class="account">
+            {@render profile()}
+        </div>
+    {/if}
 </div>
+
+<SettingsSurface bind:open={settingsOpen} anchor={settingsAnchor} {hasPhoto}/>
+
+{#snippet profile()}
+    <div class="avatar" bind:this={settingsAnchor}>
+        <Button variant="plain" padding="4px" radius="999px"
+                onclick={() => (settingsOpen = true)}>
+            <ProfileAvatar size={stack ? 32 : 40} {hasPhoto} label={m.settings_openLabel()}/>
+        </Button>
+    </div>
+{/snippet}
 <style>
     .frame {
+        display: flex;
+        flex-direction: column;
         flex: 1.0;
         height: calc(100% - 16px);
         margin-block: 8px;
@@ -60,7 +96,31 @@ let contentHeight = $state(0);
     }
 
     .large-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
         padding: 15px 13px 0;
+    }
+
+    .large-title > h1 {
+        flex: 1;
+    }
+
+    .scroll {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .account {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        padding: 8px 9px;
+    }
+
+    .avatar {
+        display: flex;
+        flex-shrink: 0;
     }
 
     .large-title > h1 {

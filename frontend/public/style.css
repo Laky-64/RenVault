@@ -67,6 +67,16 @@ html, body {
     }
 }
 
+.page-surface {
+    --surface-bg: var(--secondary-bg-color);
+    --surface-shadow:
+        0 20px 50px rgb(0 0 0 / 45%),
+        inset 0 1px 0 color-mix(in srgb, var(--text-color) 20%, transparent);
+    background: var(--surface-bg);
+    box-shadow: var(--surface-shadow);
+    color: var(--text-color);
+}
+
 .panel-surface {
     --glass-blur: 20px;
     --glass-saturate: 180%;

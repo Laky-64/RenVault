@@ -259,5 +259,50 @@
         "countPlural=*": "{count} items"
       }
     }
-  ]
+  ],
+  "settings_title": "Settings",
+  "settings_openLabel": "Account and settings",
+  "settings_autoLock": "Auto-Lock",
+  "settings_autoLockNever": "Never",
+  "settings_autoLockHour": "1 hour",
+  "settings_autoLockMinute": "1 minute",
+  "settings_autoLockMinutes": [
+    {
+      "declarations": [
+        "input count"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{count} minutes"
+      }
+    }
+  ],
+  "settings_lockNow": "Lock Now",
+  "settings_checkPwned": "Check for Compromised Passwords",
+  "settings_lastSync": "Last Synced",
+  "settings_pending": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} change waiting to sync",
+        "countPlural=*": "{count} changes waiting to sync"
+      }
+    }
+  ],
+  "settings_syncedNever": "Never",
+  "settings_version": "Version",
+  "settings_signOut": "Sign Out",
+  "settings_signOutTitle": "Sign out of RenVault?",
+  "settings_signOutDesc": "Your encrypted vault will be deleted from this device. You will have to sign in with your Apple Account again, including two-factor and a device passcode, to restore it.",
+  "settings_close": "Close",
+  "settings_securityTitle": "Security",
+  "settings_aboutTitle": "About",
+  "settings_autoLockNote": "RenVault locks itself after this long without activity. Your vault stays encrypted on disk until you unlock it again.",
+  "settings_signOutNote": "Signing out deletes the encrypted vault from this device. Your passwords stay in your Apple Account."
 }
