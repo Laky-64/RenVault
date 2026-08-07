@@ -28,7 +28,7 @@
 </script>
 
 {#snippet body()}
-    <div class="row">
+    <div class="row" class:divided={edge === 'middle' || edge === 'bottom'}>
         <span class="label" class:accent={tone === 'accent'} class:danger={tone === 'danger'}>{label}</span>
         {#if value}<span class="value">{value}</span>{/if}
         {#if chevron}
@@ -49,12 +49,24 @@
 
 <style>
     .row {
+        position: relative;
         display: flex;
         align-items: center;
         gap: 10px;
         width: 100%;
         min-height: 48px;
         padding: 6px 15px;
+    }
+
+    /*noinspection CssUnusedSymbol*/
+    .row.divided::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 15px;
+        right: 15px;
+        height: 1px;
+        background: var(--hairline-color);
     }
 
     .label {
