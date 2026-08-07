@@ -3,11 +3,11 @@ module github.com/Laky-64/RenVault
 go 1.26
 
 require (
-	github.com/Laky-64/appleservices v1.0.11
+	github.com/Laky-64/appleservices v1.0.14
 	github.com/Laky-64/http v1.0.8
 	github.com/adrg/xdg v0.5.3
 	github.com/fxamacker/cbor/v2 v2.9.2
-	github.com/wailsapp/wails/v3 v3.0.0-beta.4
+	github.com/wailsapp/wails/v3 v3.0.0-beta.5
 	golang.org/x/crypto v0.54.0
 	golang.org/x/sys v0.47.0
 	gopkg.in/yaml.v3 v3.0.1
