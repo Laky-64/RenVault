@@ -89,6 +89,10 @@ public class MainActivity extends AppCompatActivity {
         bridge = new WailsBridge(this);
         bridge.initialize();
 
+        RenVaultAdvertiser.attach(this);
+        RenVaultAdvertiser.requestPermissions(this);
+        RenVaultScanner.attach(this);
+
         // Set up WebView
         setupWebView();
 
