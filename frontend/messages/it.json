@@ -1,0 +1,335 @@
+{
+  "$schema": "https://inlang.com/schema/inlang-message-format",
+  "auth_signInTitle": "Accedi con il tuo Apple ID",
+  "auth_signInHint": "Accedi con un'email o un numero di telefono per usare RenVault",
+  "auth_emailPlaceholder": "Email o numero di telefono",
+  "auth_passwordPlaceholder": "Password",
+  "auth_signInAction": "Accedi",
+  "auth_showPassword": "Mostra password",
+  "auth_hidePassword": "Nascondi password",
+  "auth_privacyNotice": "Utilizziamo il tuo Apple ID per farti accedere in modo sicuro e per accedere ai tuoi dati. Apple potrebbe raccogliere informazioni per motivi di sicurezza. Scopri di più nell'",
+  "auth_privacyLink": "Informativa sulla privacy dell'Apple ID.",
+  "auth_2faTitle": "Autenticazione a due fattori",
+  "auth_2faHint": "Un codice di verifica è stato inviato ai tuoi dispositivi attendibili. Inserisci il codice per continuare.",
+  "auth_2faResendAction": "Invia nuovamente il codice",
+  "auth_deviceSelectionTitle": "Scegli un dispositivo attendibile",
+  "auth_deviceSelectionHint": "Seleziona un dispositivo attendibile per continuare. Ti verrà chiesto di inserire il suo codice per verificare la tua identità.",
+  "auth_devicePasscodeTitle": "Inserisci il codice del dispositivo",
+  "auth_devicePasscodeHint": "Inserisci il codice che usi per sbloccare \"{device}\". Il codice non viene mai inviato ad Apple.",
+  "auth_devicePasscodePlaceholder": "Codice",
+  "auth_continueAction": "Continua",
+  "auth_masterSetupTitle": "Crea una password principale",
+  "auth_masterSetupHint": "Questa password crittografa il tuo archivio su questo dispositivo. Non viene inviata da nessuna parte e non può essere recuperata: se la dimentichi, dovrai accedere di nuovo.",
+  "auth_masterPlaceholder": "Password principale",
+  "auth_masterRepeatPlaceholder": "Conferma password",
+  "auth_masterMismatch": "Le password non coincidono.",
+  "auth_unlockTitle": "Sblocca RenVault",
+  "auth_unlockHint": "Inserisci la password principale per sbloccare l'archivio.",
+  "auth_unlockAction": "Sblocca",
+  "strength_weak": "Debole",
+  "strength_fair": "Media",
+  "strength_strong": "Forte",
+  "field_username": "Nome utente",
+  "field_password": "Password",
+  "field_website": "Sito web",
+  "field_modified": "Modificata",
+  "field_notes": "Note",
+  "field_verificationCode": "Codice",
+  "field_networkName": "Nome",
+  "field_copied": "Copiato",
+  "field_copyAction": "Copia {name}",
+  "field_passkey": "Passkey",
+  "field_passkeyCreationDate": "Data di creazione: {date}",
+  "passkey_noteDesc": "Una passkey è un modo sicuro per accedere ai tuoi account. Le passkey offrono un livello di sicurezza superiore rispetto alle password tradizionali.",
+  "passkey_learnMore": "Scopri di più…",
+  "nav_back": "Indietro",
+  "list_select": "Seleziona",
+  "list_selectAll": "Seleziona tutto",
+  "list_selectedCount": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} selezionato",
+        "countPlural=*": "{count} selezionati"
+      }
+    }
+  ],
+  "list_deselectAll": "Deseleziona tutto",
+  "item_edit": "Modifica",
+  "list_selectDone": "Fine",
+  "list_order": "Ordina",
+  "sort_descending": "Decrescente",
+  "sort_ascending": "Crescente",
+  "sort_modified": "Data di modifica",
+  "sort_created": "Data di creazione",
+  "sort_website": "Sito web",
+  "sort_title": "Titolo",
+  "list_add": "Aggiungi",
+  "editor_newPassword": "Nuova password",
+  "editor_title": "Titolo",
+  "editor_usernameHint": "nome utente",
+  "editor_websiteHint": "esempio.com",
+  "editor_notes": "Note",
+  "editor_cancel": "Annulla",
+  "editor_save": "Salva",
+  "edit_delete": "Elimina password",
+  "edit_setUpCode": "Configura codice di verifica",
+  "edit_deleteCode": "Elimina codice di verifica",
+  "edit_noCode": "Nessuno",
+  "edit_noWebsite": "Nessuno",
+  "edit_saveForCode": "Salva per visualizzare il codice",
+  "delete_title": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Elimina password",
+        "countPlural=*": "Elimina {count} password"
+      }
+    }
+  ],
+  "delete_confirm": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Elimina password",
+        "countPlural=*": "Elimina {count} password"
+      }
+    }
+  ],
+  "delete_softDesc": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "La password verrà spostata in Eliminate. Dopo 30 giorni verrà eliminata definitivamente.",
+        "countPlural=*": "Le password verranno spostate in Eliminate. Dopo 30 giorni verranno eliminate definitivamente."
+      }
+    }
+  ],
+  "delete_hardDesc": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Se la elimini, la password verrà rimossa dall'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata.",
+        "countPlural=*": "Se le elimini, le password verranno rimosse dall'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata."
+      }
+    }
+  ],
+  "deleted_recover": "Recupera",
+  "deleted_delete": "Elimina",
+  "websites_title": "Siti web",
+  "websites_desc": "La compilazione automatica suggerirà la password di \"{title}\" su questi siti web.",
+  "websites_add": "Aggiungi sito web",
+  "websites_remove": "Rimuovi sito web",
+  "totp_title": "Configura codice di verifica",
+  "totp_desc": "Se \"{domain}\" supporta i codici di verifica, visita il sito web per ottenere una chiave di configurazione e inseriscila qui.",
+  "totp_key": "Chiave di configurazione",
+  "totp_use": "Usa chiave di configurazione",
+  "list_delete": "Elimina",
+  "item_compromised": "Password compromessa",
+  "security_changeTitle": "Cambia subito questa password",
+  "security_changeDesc": "La password di \"{domain}\" è comparsa in una fuga di dati e potrebbe essere compromessa. Cambiala sul sito web per proteggere il tuo account.",
+  "security_changeAction": "Cambia password",
+  "item_wifiNetwork": "Rete Wi-Fi",
+  "code_inputLabel": "Codice di verifica",
+  "busy_signingInTitle": "Accesso in corso",
+  "busy_checkingCredentials": "Verifica delle credenziali…",
+  "busy_openingVaultTitle": "RenVault",
+  "busy_openingVault": "Apertura dell'archivio…",
+  "busy_sendingCode": "Invio di un nuovo codice…",
+  "busy_verifyingCode": "Verifica del codice…",
+  "busy_verifyingPasscode": "Verifica del codice del dispositivo…",
+  "busy_creatingVaultTitle": "Creazione dell'archivio",
+  "busy_creatingVault": "Crittografia delle password…",
+  "failure_generic": "Si è verificato un errore. Controlla la connessione e riprova.",
+  "failure_badCredentials": "Apple Account o password non corretti.",
+  "failure_accountLocked": "Questo account è stato bloccato per motivi di sicurezza.",
+  "failure_wrongPasscode": "Codice non corretto. Apple limita il numero di tentativi.",
+  "failure_wrongMasterPassword": "Password principale non corretta.",
+  "zone_all_name": "Tutto",
+  "zone_all_empty": "Nessun elemento salvato",
+  "zone_all_noSelection": "Nessun elemento selezionato",
+  "zone_all_desc": "Le password dei tuoi siti web e delle tue app vengono conservate in modo sicuro. Accedi alle credenziali salvate quando vuoi.",
+  "zone_passkeys_name": "Passkey",
+  "zone_passkeys_empty": "Nessuna passkey salvata",
+  "zone_passkeys_noSelection": "Nessuna passkey selezionata",
+  "zone_passkeys_desc": "Le passkey offrono il massimo livello di sicurezza disponibile per i tuoi account. Quando usi una passkey, per accedere devi autenticarti con i dati biometrici, il PIN o il codice del dispositivo.",
+  "zone_codes_name": "Codici",
+  "zone_codes_empty": "Nessun codice di verifica salvato",
+  "zone_codes_noSelection": "Nessun codice di verifica selezionato",
+  "zone_codes_desc": "I codici di verifica forniscono un livello di sicurezza aggiuntivo per aiutarti a proteggere i tuoi account.",
+  "zone_networks_name": "Wi-Fi",
+  "zone_networks_empty": "Nessuna rete Wi-Fi salvata",
+  "zone_networks_noSelection": "Nessuna rete selezionata",
+  "zone_networks_desc": "Le reti Wi-Fi vengono conservate in modo sicuro per un accesso rapido. Visualizza e gestisci le reti salvate.",
+  "zone_security_name": "Sicurezza",
+  "zone_security_empty": "Nessun consiglio di sicurezza",
+  "zone_security_noSelection": "Nessun consiglio selezionato",
+  "zone_security_desc": "RenVault monitora le tue password in modo privato e sicuro per avvisarti se sono facili da indovinare o se compaiono in fughe di dati dai siti web.",
+  "zone_deleted_name": "Eliminate",
+  "zone_deleted_empty": "Nessun elemento eliminato",
+  "zone_deleted_noSelection": "Nessun elemento selezionato",
+  "zone_deleted_desc": "Gli elementi eliminati restano qui per 30 giorni prima di essere rimossi definitivamente. Recupera quelli che ti servono ancora.",
+  "deleted_countdown": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "La password verrà eliminata definitivamente tra {count} giorno se non viene recuperata.",
+        "countPlural=*": "La password verrà eliminata definitivamente tra {count} giorni se non viene recuperata."
+      }
+    }
+  ],
+  "field_websiteMore": [
+    {
+      "declarations": [
+        "input domain",
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{domain} e un altro",
+        "countPlural=*": "{domain} e altri {count}"
+      }
+    }
+  ],
+  "auth_masterTooShort": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Usa almeno {count} carattere.",
+        "countPlural=*": "Usa almeno {count} caratteri."
+      }
+    }
+  ],
+  "zone_list_itemCount": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} elemento",
+        "countPlural=*": "{count} elementi"
+      }
+    }
+  ],
+  "settings_title": "Impostazioni",
+  "settings_openLabel": "Account e impostazioni",
+  "settings_autoLock": "Blocco automatico",
+  "settings_autoLockNever": "Mai",
+  "settings_autoLockHour": "1 ora",
+  "settings_autoLockMinute": "1 minuto",
+  "settings_autoLockMinutes": [
+    {
+      "declarations": [
+        "input count"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "{count} minuti"
+      }
+    }
+  ],
+  "settings_lockNow": "Blocca ora",
+  "settings_checkPwned": "Verifica password compromesse",
+  "settings_lastSync": "Ultima sincronizzazione",
+  "settings_pending": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} modifica da sincronizzare",
+        "countPlural=*": "{count} modifiche da sincronizzare"
+      }
+    }
+  ],
+  "settings_syncedNever": "Mai",
+  "settings_version": "Versione",
+  "settings_signOut": "Esci",
+  "settings_signOutTitle": "Vuoi uscire da RenVault?",
+  "settings_signOutDesc": "L'archivio crittografato verrà eliminato da questo dispositivo. Per ripristinarlo dovrai accedere di nuovo con il tuo Apple Account, completando l'autenticazione a due fattori e inserendo il codice di un dispositivo.",
+  "settings_close": "Chiudi",
+  "settings_generalTitle": "Generale",
+  "settings_language": "Lingua",
+  "settings_securityTitle": "Sicurezza",
+  "settings_aboutTitle": "Info",
+  "settings_autoLockNote": "RenVault si blocca automaticamente dopo questo periodo di inattività. L'archivio resta crittografato sul disco finché non lo sblocchi di nuovo.",
+  "settings_signOutNote": "Uscendo, l'archivio crittografato viene eliminato da questo dispositivo. Le tue password restano nel tuo Apple Account.",
+  "search_placeholder": "Cerca",
+  "search_placeholderIn": [
+    {
+      "declarations": [
+        "input zone"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Cerca in {zone}"
+      }
+    }
+  ],
+  "search_clear": "Cancella ricerca",
+  "search_empty": [
+    {
+      "declarations": [
+        "input query"
+      ],
+      "selectors": [],
+      "match": {
+        "*": "Nessun risultato per “{query}”"
+      }
+    }
+  ],
+  "search_emptyDesc": "Verifica che non ci siano errori di battitura o esegui una nuova ricerca."
+}
