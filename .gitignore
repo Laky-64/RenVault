@@ -20,3 +20,10 @@ device.json
 .DS_Store
 *.gen.go
 build/android/app/appinfo.properties
+docs/
+hybrid-qr.txt
+/RenVault
+build/android/.gradle/
+build/android/build/
+build/android/app/build/
+build/android/app/src/main/jniLibs/
