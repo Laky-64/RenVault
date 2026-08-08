@@ -4,8 +4,10 @@ import (
 	"embed"
 	"log"
 
+	"github.com/Laky-64/RenVault/internal/agent"
 	"github.com/Laky-64/RenVault/internal/appinfo"
 	"github.com/Laky-64/RenVault/internal/icons"
+	"github.com/Laky-64/RenVault/internal/localkey"
 	"github.com/Laky-64/RenVault/internal/vault"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -18,12 +20,20 @@ func main() {
 	iconService := icons.New()
 
 	appleVault := vault.NewService()
+
+	var hybridAgent *agent.Agent
+	if agent.Supported() {
+		hybridAgent = agent.NewDefault(appleVault, nil)
+	}
+
 	app := application.New(application.Options{
 		Name:        appinfo.Name,
 		Description: appinfo.Description,
 		Services: []application.Service{
 			application.NewService(appleVault),
 			application.NewService(appinfo.NewService()),
+			application.NewService(agent.NewService(hybridAgent)),
+			application.NewService(localkey.NewService(appleVault)),
 		},
 		Assets: application.AssetOptions{
 			Handler:    application.AssetFileServerFS(assets),
