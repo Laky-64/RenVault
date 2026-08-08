@@ -314,6 +314,11 @@ func (v *Vault) CheckPwned() (PwnedReport, error) {
 	return PwnedReport{Checked: len(byKey), Pwned: len(pwned), CheckedAt: v.p.PwnedAt}, nil
 }
 
+const (
+	flagBackupEligible = 0x08
+	flagBackupState    = 0x10
+)
+
 type Assertion struct {
 	AuthenticatorData []byte `json:"authenticatorData"`
 	Signature         []byte `json:"signature"`
@@ -335,7 +340,7 @@ func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified boo
 	if err != nil {
 		return Assertion{}, err
 	}
-	flags := byte(keychain.FlagUserPresent)
+	flags := byte(keychain.FlagUserPresent) | flagBackupEligible | flagBackupState
 	if userVerified {
 		flags |= keychain.FlagUserVerified
 	}
