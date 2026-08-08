@@ -4,11 +4,14 @@
     import Button from "./Button.svelte";
     import ProfileAvatar from "./ProfileAvatar.svelte";
     import SettingsPage from "../fragments/SettingsPage.svelte";
+    import LanguagePage from "../fragments/LanguagePage.svelte";
+    import SearchField from "./SearchField.svelte";
     import LoadingDialog from "./LoadingDialog.svelte";
     import {isCompact} from "../lib/navigation.svelte";
     import {prefersReducedMotion} from "../lib/dom";
     import {m} from "../paraglide/messages";
-    import {CLOSE} from "../lib/icons";
+    import {CHEVRON, CLOSE} from "../lib/icons";
+    import {SEARCH_HEIGHT} from "../lib/layout";
 
     let {
         open = $bindable(false),
@@ -24,16 +27,33 @@
 
     const stack = $derived(isCompact());
     const reduced = prefersReducedMotion();
-    let sheetHeight = $state(0);
-    let dialogHeight = $state(0);
+    let rootHeight = $state(0);
+    let langHeight = $state(0);
     let busy = $state(false);
+    let deep = $state(false);
+    let langOffset = $state(0);
+    let query = $state('');
+
+    $effect(() => {
+        if (open) deep = false;
+    });
+
+    $effect(() => {
+        if (!deep) query = '';
+    });
 
     function close() {
         open = false;
     }
 
+    function back() {
+        deep = false;
+    }
+
     function onKey(event: KeyboardEvent) {
-        if (event.key === 'Escape') close();
+        if (event.key !== 'Escape') return;
+        if (deep) back();
+        else close();
     }
 </script>
 
@@ -46,41 +66,60 @@
 {#snippet bar()}
     <div class="bar">
         <div class="close">
-            <Button variant="glass" padding="7px" radius="999px" onclick={close}>
+            <Button variant="glass" padding="7px" radius="999px" morph={deep} flash={deep}
+                    onclick={deep ? back : close}>
                 <svg viewBox="0 -960 960 960" width="22" height="22" role="img"
-                     aria-label={m.settings_close()}>
-                    <path d={CLOSE} fill="var(--text-color)"/>
+                     aria-label={deep ? m.nav_back() : m.settings_close()}>
+                    <path d={deep ? CHEVRON : CLOSE} fill="var(--text-color)"/>
                 </svg>
             </Button>
         </div>
-        <p class="heading">{m.settings_title()}</p>
+        <p class="heading">{deep ? m.settings_language() : m.settings_title()}</p>
     </div>
 {/snippet}
 
-{#if stack}
-    <div class="frame sheet" class:shown={open} class:still={reduced} inert={!open}>
-        {@render bar()}
-        <div class="scroll">
-            <ElasticScroll contentHeight={sheetHeight}>
-                <div class="body" bind:clientHeight={sheetHeight}>
-                    <SettingsPage onClose={close} bind:busy/>
-                </div>
-            </ElasticScroll>
+{#snippet body()}
+    <div class="panes" class:deep class:still={reduced}>
+        <div class="pane" inert={deep}>
+            <div class="scroll">
+                <ElasticScroll contentHeight={rootHeight}>
+                    <div class="content" bind:clientHeight={rootHeight}>
+                        <SettingsPage onClose={close} onLanguage={() => (deep = true)} bind:busy/>
+                    </div>
+                </ElasticScroll>
+            </div>
         </div>
+        <div class="pane" inert={!deep}>
+            <div class="scroll">
+                <ElasticScroll contentHeight={langHeight} bind:shownOffset={langOffset}>
+                    <div class="content lang" bind:clientHeight={langHeight}>
+                        <LanguagePage {query}/>
+                    </div>
+                </ElasticScroll>
+            </div>
+        </div>
+    </div>
+    {#if deep}
+        <div class="dock">
+            <SearchField bind:value={query} placeholder={m.search_placeholder()} glass={langOffset > 2}/>
+        </div>
+    {/if}
+{/snippet}
+
+{#if stack}
+    <div class="frame sheet" class:shown={open} class:still={reduced} inert={!open}
+         style="--search: {deep ? SEARCH_HEIGHT : 0}px">
+        {@render bar()}
+        {@render body()}
         {#if busy}<LoadingDialog label={m.settings_checkPwned()}/>{/if}
     </div>
 {:else}
     <MorphDialog bind:open bind:active {anchor} {seed} surface="page-surface" fluid>
         {#snippet children(_stack: boolean)}
-            <div class="frame dialog" role="dialog" aria-modal="true" aria-label={m.settings_title()}>
+            <div class="frame dialog" role="dialog" aria-modal="true" aria-label={m.settings_title()}
+                 style="--search: {deep ? SEARCH_HEIGHT : 0}px">
                 {@render bar()}
-                <div class="scroll">
-                    <ElasticScroll contentHeight={dialogHeight}>
-                        <div class="body" bind:clientHeight={dialogHeight}>
-                            <SettingsPage onClose={close} bind:busy/>
-                        </div>
-                    </ElasticScroll>
-                </div>
+                {@render body()}
                 {#if busy}<LoadingDialog label={m.settings_checkPwned()}/>{/if}
             </div>
         {/snippet}
@@ -112,11 +151,15 @@
     .bar::before {
         content: '';
         position: absolute;
-        inset: 0 0 -22px;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--bar) + var(--search, 0px));
         background: linear-gradient(
             to bottom,
-            var(--secondary-bg-color) 0%,
-            color-mix(in srgb, var(--secondary-bg-color) 88%, transparent) 52%,
+            var(--secondary-bg-color) 0,
+            color-mix(in srgb, var(--secondary-bg-color) 96%, transparent) 55%,
+            color-mix(in srgb, var(--secondary-bg-color) 74%, transparent) 84%,
             transparent 100%
         );
         pointer-events: none;
@@ -142,13 +185,57 @@
         color: var(--text-color);
     }
 
+    .panes {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
+
+    .pane {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        background: var(--secondary-bg-color);
+        transition: transform 350ms cubic-bezier(0.32, 0.72, 0, 1);
+        will-change: transform;
+    }
+
+    .pane:last-child {
+        transform: translateX(100%);
+    }
+
+    .panes.deep > .pane:first-child {
+        transform: translateX(-28%);
+    }
+
+    .panes.deep > .pane:last-child {
+        transform: translateX(0);
+    }
+
+    .panes.still > .pane {
+        transition: none;
+    }
+
     .scroll {
         flex: 1;
         min-height: 0;
     }
 
-    .body {
+    .content {
         padding-top: var(--bar);
+    }
+
+    .content.lang {
+        padding-top: calc(var(--bar) + var(--search, 0px));
+    }
+
+    .dock {
+        position: absolute;
+        top: var(--bar);
+        left: 0;
+        right: 0;
+        z-index: 3;
+        padding: 0 16px 12px;
     }
 
     .dialog {
@@ -159,11 +246,11 @@
         background: var(--secondary-bg-color);
     }
 
-    .dialog > .scroll {
+    .dialog .scroll {
         padding-inline: 16px;
     }
 
-    .dialog .body {
+    .dialog .content {
         padding-bottom: 18px;
     }
 
@@ -178,11 +265,11 @@
         will-change: transform;
     }
 
-    .sheet > .scroll {
+    .sheet .scroll {
         padding-inline: 16px;
     }
 
-    .sheet .body {
+    .sheet .content {
         padding-bottom: 34px;
     }
 

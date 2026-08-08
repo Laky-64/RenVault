@@ -1,11 +1,12 @@
 <script lang="ts">
     import Button from "./Button.svelte";
-    import {CHEVRON} from "../lib/icons";
+    import {CHECK, CHEVRON} from "../lib/icons";
 
     const {
         label,
         value = '',
         chevron = false,
+        check = false,
         tone = 'plain',
         edge = 'middle',
         onclick,
@@ -13,6 +14,7 @@
         label: string;
         value?: string;
         chevron?: boolean;
+        check?: boolean;
         tone?: 'plain' | 'accent' | 'danger';
         edge?: 'top' | 'bottom' | 'middle' | 'only';
         onclick?: () => void;
@@ -31,6 +33,11 @@
     <div class="row" class:divided={edge === 'middle' || edge === 'bottom'}>
         <span class="label" class:accent={tone === 'accent'} class:danger={tone === 'danger'}>{label}</span>
         {#if value}<span class="value">{value}</span>{/if}
+        {#if check}
+            <svg class="check" viewBox="0 -960 960 960" width="17" height="17" aria-hidden="true">
+                <path d={CHECK} fill="var(--accent-text-color)"/>
+            </svg>
+        {/if}
         {#if chevron}
             <svg class="chevron" viewBox="0 -960 960 960" width="15" height="15" aria-hidden="true">
                 <path d={CHEVRON} fill="var(--subtitle-text-color)"/>
@@ -94,5 +101,9 @@
     .chevron {
         flex-shrink: 0;
         rotate: 180deg;
+    }
+
+    .check {
+        flex-shrink: 0;
     }
 </style>

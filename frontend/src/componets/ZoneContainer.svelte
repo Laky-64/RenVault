@@ -9,6 +9,7 @@ import ElasticScroll from "./ElasticScroll.svelte";
 import {type Zone, zoneText} from "./ZoneContainer";
 import {isCompact} from "../lib/navigation.svelte";
 import {appName} from "../lib/app.svelte";
+import {keepSettingsOpen, settingsOpen as wasOpen} from "../lib/settings.svelte";
 
 const {
     zones,
@@ -21,8 +22,12 @@ const {
 } = $props();
 const stack = $derived(isCompact());
 let contentHeight = $state(0);
-let settingsOpen = $state(false);
+let settingsOpen = $state(wasOpen());
 let settingsMorphing = $state(false);
+
+$effect(() => {
+    keepSettingsOpen(settingsOpen);
+});
 let settingsAnchor: HTMLElement | undefined = $state();
 let hasPhoto = $state(false);
 

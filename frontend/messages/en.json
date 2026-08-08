@@ -301,6 +301,8 @@
   "settings_signOutTitle": "Sign out of RenVault?",
   "settings_signOutDesc": "Your encrypted vault will be deleted from this device. You will have to sign in with your Apple Account again, including two-factor and a device passcode, to restore it.",
   "settings_close": "Close",
+  "settings_generalTitle": "General",
+  "settings_language": "Language",
   "settings_securityTitle": "Security",
   "settings_aboutTitle": "About",
   "settings_autoLockNote": "RenVault locks itself after this long without activity. Your vault stays encrypted on disk until you unlock it again.",

@@ -11,13 +11,16 @@
     import {describeFailure} from "../lib/failure";
     import {formatRelative} from "../lib/datetime";
     import {appName} from "../lib/app.svelte";
+    import {locale, localeName} from "../lib/locale.svelte";
     import {m} from "../paraglide/messages";
 
     let {
         onClose,
+        onLanguage,
         busy = $bindable(false),
     }: {
         onClose?: () => void;
+        onLanguage?: () => void;
         busy?: boolean;
     } = $props();
 
@@ -128,6 +131,16 @@
             <p class="mail">{profile.appleId}</p>
         {/if}
     </div>
+
+    <p class="section">{m.settings_generalTitle()}</p>
+    <Card>
+        <SettingsRow
+            edge="only"
+            label={m.settings_language()}
+            value={localeName(locale())}
+            chevron
+            onclick={() => onLanguage?.()}/>
+    </Card>
 
     <p class="section">{m.settings_securityTitle()}</p>
     <Card>

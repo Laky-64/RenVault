@@ -7,6 +7,7 @@ import type {TransitionConfig} from "svelte/transition";
 import AuthFlow from "./fragments/AuthFlow.svelte";
 import {nav} from "./navigation.svelte";
 import {LOCKED_EVENT} from "./lib/events";
+import {locale} from "./lib/locale.svelte";
 
 onMount(() => {
     WML.Reload();
@@ -31,18 +32,20 @@ let authenticated = $state(false);
 
 </script>
 <main>
-    <TitleBar/>
-    <div class="page">
-        {#if authenticated}
-            <div class="screen" in:swap={{scale: 1.02}}>
-                <HomePage/>
-            </div>
-        {:else}
-            <div class="screen" out:swap={{scale: 0.98}}>
-                <AuthFlow onDone={() => authenticated = true}/>
-            </div>
-        {/if}
-    </div>
+    {#key locale()}
+        <TitleBar/>
+        <div class="page">
+            {#if authenticated}
+                <div class="screen" in:swap={{scale: 1.02}}>
+                    <HomePage/>
+                </div>
+            {:else}
+                <div class="screen" out:swap={{scale: 0.98}}>
+                    <AuthFlow onDone={() => authenticated = true}/>
+                </div>
+            {/if}
+        </div>
+    {/key}
 </main>
 
 <style>
