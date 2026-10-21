@@ -54,9 +54,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.Dp
+import io.lauren.renvault.ui.theme.RvTone
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -80,6 +83,7 @@ import kotlinx.coroutines.launch
 
 private const val VeilMs = 220L
 private val BodyMax = 440.dp
+private const val DeviceArtFill = 0.64f
 
 private enum class AuthStep { TwoFactor, TrustedDevices, DevicePasscode, MasterSetup }
 
@@ -93,7 +97,7 @@ data class RvAuthProfile(
 data class RvAuthDevice(
     val name: String,
     val model: String,
-    val art: Painter? = null,
+    val art: ImageBitmap? = null,
 )
 
 @Composable
@@ -525,11 +529,10 @@ fun RvAuthFlow(
                                     count = devices.size,
                                     onClick = { pickDevice(index) },
                                     leading = {
-                                        RvShapeBadge(
-                                            icon = RvDevicesIcon,
+                                        AuthDeviceBadge(
+                                            art = device.art,
                                             tone = RenVault.accents.forIndex(index),
-                                            polygon = MaterialShapes.Cookie6Sided,
-                                            size = 40.dp,
+                                            size = 48.dp,
                                         )
                                     },
                                     supporting = { Text(device.model) },
@@ -544,7 +547,16 @@ fun RvAuthFlow(
                 )
 
                 "step:${AuthStep.DevicePasscode.name}" -> AuthPage(
-                    hero = avatar,
+                    hero = devices.getOrNull(chosen)?.art?.let { art ->
+                        {
+                            AuthDeviceBadge(
+                                art = art,
+                                tone = RenVault.accents.forIndex(chosen),
+                                size = 112.dp,
+                                arrive = true,
+                            )
+                        }
+                    } ?: avatar,
                     title = strings.authDevicePasscodeTitle,
                     hint = strings.authDevicePasscodeHint(devices.getOrNull(chosen)?.model.orEmpty()),
                     body = {
@@ -806,6 +818,56 @@ private fun AuthHero(icon: ImageVector, polygon: RoundedPolygon) {
             contentDescription = null,
             tint = colors.onPrimaryContainer,
             modifier = Modifier.size(48.dp),
+        )
+    }
+}
+
+@Composable
+private fun AuthDeviceBadge(
+    art: ImageBitmap?,
+    tone: RvTone,
+    size: Dp,
+    arrive: Boolean = false,
+) {
+    if (art == null) {
+        RvShapeBadge(
+            icon = RvDevicesIcon,
+            tone = tone,
+            polygon = MaterialShapes.Cookie6Sided,
+            size = size,
+        )
+        return
+    }
+
+    val arrival = remember { Animatable(if (arrive) 0f else 1f) }
+    val spring = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
+
+    LaunchedEffect(Unit) { arrival.animateTo(1f, spring) }
+
+    Box(modifier = Modifier.size(size), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .graphicsLayer {
+                    rotationZ = -60f * (1f - arrival.value)
+                    val scale = 0.6f + 0.4f * arrival.value
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(MaterialShapes.Cookie6Sided.toShape())
+                .background(tone.container),
+        )
+        Image(
+            bitmap = art,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(size * DeviceArtFill)
+                .graphicsLayer {
+                    val scale = 0.8f + 0.2f * arrival.value
+                    scaleX = scale
+                    scaleY = scale
+                },
         )
     }
 }

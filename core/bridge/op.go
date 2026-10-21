@@ -50,5 +50,6 @@ const (
 )
 
 const (
-	OpIconTile uint32 = 0x3001
+	OpIconTile  uint32 = 0x3001
+	OpIconImage uint32 = 0x3002
 )

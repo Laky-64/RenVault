@@ -42,6 +42,7 @@ internal object Op {
     const val ANISETTE_SET_SERVER = 0x2008
 
     const val ICON_TILE = 0x3001
+    const val ICON_IMAGE = 0x3002
 }
 
 internal object FailureKind {

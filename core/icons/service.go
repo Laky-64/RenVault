@@ -1,8 +1,10 @@
 package icons
 
 import (
+	"errors"
 	"fmt"
 	"image"
+	"net/url"
 	"sync"
 	"time"
 
@@ -16,6 +18,8 @@ const (
 	fetchTimeout = 10 * time.Second
 	maxEntries   = 512
 )
+
+var ErrUnsupportedURL = errors.New("unsupported image url")
 
 type entry struct {
 	png     []byte
@@ -35,6 +39,14 @@ func New() *IconService {
 
 func (s *IconService) Tile(domain string) ([]byte, error) {
 	return s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain))
+}
+
+func (s *IconService) Image(src string) ([]byte, error) {
+	parsed, err := url.Parse(src)
+	if err != nil || parsed.Scheme != "https" || parsed.Host == "" {
+		return nil, ErrUnsupportedURL
+	}
+	return s.tile(parsed.String())
 }
 
 func (s *IconService) tile(src string) ([]byte, error) {

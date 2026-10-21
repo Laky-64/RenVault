@@ -115,6 +115,9 @@ object Vault {
     suspend fun icon(domain: String): ByteArray =
         exchange<DomainRequest, BytesResponse>(Op.ICON_TILE, DomainRequest(domain)).data
 
+    suspend fun image(url: String): ByteArray =
+        exchange<UrlRequest, BytesResponse>(Op.ICON_IMAGE, UrlRequest(url)).data
+
     suspend fun startLogin(appleId: String, password: String): Boolean =
         exchange<StartLoginRequest, StartLoginResponse>(
             Op.LOGIN_START,

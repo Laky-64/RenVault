@@ -47,8 +47,12 @@ import io.lauren.renvault.ui.components.fitted
 import io.lauren.renvault.ui.components.homeZones
 import io.lauren.renvault.ui.components.rememberClipboardCopy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
 
 @Composable
@@ -203,8 +207,16 @@ fun RvVaultApp(
                 requestCode = { Vault.requestCode() },
                 submitCode = { code -> Vault.submitCode(code) },
                 loadDevices = {
-                    Vault.bottles().map { device ->
-                        RvAuthDevice(name = device.name, model = device.shortModel)
+                    coroutineScope {
+                        Vault.bottles().map { device ->
+                            async {
+                                RvAuthDevice(
+                                    name = device.name,
+                                    model = device.shortModel,
+                                    art = deviceArt(device.imageUrl),
+                                )
+                            }
+                        }.awaitAll()
                     }
                 },
                 loadProfile = {
@@ -310,6 +322,8 @@ private const val PrivacyUrl = "https://www.apple.com/legal/privacy/data/en/appl
 
 private const val PasskeyUrl = "https://support.apple.com/en-us/102195"
 
+private const val DeviceArtTimeoutMs = 4_000L
+
 private suspend fun create(draft: RvEditorDraft) {
     runCatching {
         Vault.addPassword(
@@ -350,4 +364,14 @@ private fun sortKeyOf(field: RvSortField): String = when (field) {
     RvSortField.Modified -> "modified"
     RvSortField.Created -> "created"
     RvSortField.Title -> "title"
+}
+
+private suspend fun deviceArt(url: String): ImageBitmap? {
+    if (url.isEmpty()) return null
+    val bytes = withTimeoutOrNull(DeviceArtTimeoutMs) {
+        runCatching { Vault.image(url) }.getOrNull()
+    } ?: return null
+    return withContext(Dispatchers.Default) {
+        runCatching { bytes.decodeToImageBitmap() }.getOrNull()
+    }
 }

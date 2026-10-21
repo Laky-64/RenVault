@@ -42,6 +42,10 @@ type startLoginRequest struct {
 	Password string `cbor:"password"`
 }
 
+type urlRequest struct {
+	URL string `cbor:"url"`
+}
+
 type anisetteRequest struct {
 	URL string `cbor:"url"`
 }

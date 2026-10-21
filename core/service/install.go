@@ -25,6 +25,11 @@ func installIcons() {
 		return bytesResponse{Data: png}, err
 	})
 
+	handle(bridge.OpIconImage, func(_ context.Context, request urlRequest) (bytesResponse, error) {
+		png, err := tiles.Image(request.URL)
+		return bytesResponse{Data: png}, err
+	})
+
 	handle(bridge.OpChangePasswordAt, func(_ context.Context, request domainRequest) (secretResponse, error) {
 		return secretResponse{Secret: vault.ChangePasswordURL(request.Domain)}, nil
 	})

@@ -36,6 +36,9 @@ internal data class StartLoginRequest(
 )
 
 @Serializable
+internal data class UrlRequest(@SerialName("url") val url: String)
+
+@Serializable
 internal data class AnisetteRequest(@SerialName("url") val url: String)
 
 @Serializable
