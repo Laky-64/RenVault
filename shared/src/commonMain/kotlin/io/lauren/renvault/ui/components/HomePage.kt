@@ -124,7 +124,7 @@ fun RvHomePage(
     onDeleteMany: suspend (List<String>, Boolean) -> Unit = { _, _ -> },
     onAutoLock: (Int) -> Unit = {},
     onLockNow: () -> Unit = {},
-    onCheckPwned: () -> Unit = {},
+    onCheckPwned: suspend () -> Int = { 0 },
     onSignOut: () -> Unit = {},
     onAnisette: suspend (String) -> Boolean = { true },
 ) {
@@ -346,6 +346,11 @@ fun RvHomePage(
             onCheckPwned = onCheckPwned,
             onSignOut = onSignOut,
             onAnisette = onAnisette,
+            onShowPwned = {
+                settingsOpen = false
+                itemId = null
+                zoneKind = RvZoneKind.Security
+            },
         )
     }
 

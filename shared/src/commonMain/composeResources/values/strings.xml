@@ -227,4 +227,14 @@
     <string name="anisette_invalid">That is not a valid server address.</string>
     <string name="anisette_note">It applies from the next sign-in.</string>
     <string name="settings_advanced_title">Advanced</string>
+    <string name="pwned_checking">Checking your passwords…</string>
+    <string name="pwned_none">No compromised passwords found</string>
+    <string name="pwned_failed">Couldn’t complete the check</string>
+    <string name="pwned_show">Show</string>
+    <string name="settings_pwned_never">Never checked</string>
+    <string name="settings_pwned_last">Last checked %1$s</string>
+    <plurals name="pwned_found">
+        <item quantity="one">%1$d compromised password found</item>
+        <item quantity="other">%1$d compromised passwords found</item>
+    </plurals>
 </resources>

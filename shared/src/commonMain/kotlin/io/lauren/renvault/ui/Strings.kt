@@ -161,6 +161,13 @@ import io.lauren.renvault.resources.settings_sign_out_title
 import io.lauren.renvault.resources.settings_sign_out_desc
 import io.lauren.renvault.resources.settings_open_label
 import io.lauren.renvault.resources.relative_now
+import io.lauren.renvault.resources.pwned_checking
+import io.lauren.renvault.resources.pwned_none
+import io.lauren.renvault.resources.pwned_failed
+import io.lauren.renvault.resources.pwned_show
+import io.lauren.renvault.resources.settings_pwned_never
+import io.lauren.renvault.resources.settings_pwned_last
+import io.lauren.renvault.resources.pwned_found
 import io.lauren.renvault.resources.settings_auto_lock_minutes
 import io.lauren.renvault.resources.settings_pending
 import io.lauren.renvault.resources.relative_minutes
@@ -356,9 +363,16 @@ private val TextResources = listOf(
     Res.string.zone_security_empty,
     Res.string.zone_security_name,
     Res.string.zone_security_no_selection,
+    Res.string.pwned_checking,
+    Res.string.pwned_none,
+    Res.string.pwned_failed,
+    Res.string.pwned_show,
+    Res.string.settings_pwned_never,
+    Res.string.settings_pwned_last,
 )
 
 private val PluralResources = listOf(
+    Res.plurals.pwned_found,
     Res.plurals.auth_master_too_short,
     Res.plurals.settings_auto_lock_minutes,
     Res.plurals.settings_pending,
@@ -468,6 +482,11 @@ private class ResourceStrings(
     override val settingsAutoLockNote: String get() = text(Res.string.settings_auto_lock_note)
     override val settingsLockNow: String get() = text(Res.string.settings_lock_now)
     override val settingsCheckPwned: String get() = text(Res.string.settings_check_pwned)
+    override val pwnedChecking: String get() = text(Res.string.pwned_checking)
+    override val pwnedNone: String get() = text(Res.string.pwned_none)
+    override val pwnedFailed: String get() = text(Res.string.pwned_failed)
+    override val pwnedShow: String get() = text(Res.string.pwned_show)
+    override val settingsPwnedNever: String get() = text(Res.string.settings_pwned_never)
     override val settingsAboutTitle: String get() = text(Res.string.settings_about_title)
     override val settingsLastSync: String get() = text(Res.string.settings_last_sync)
     override val settingsSyncedNever: String get() = text(Res.string.settings_synced_never)
@@ -582,6 +601,8 @@ private class ResourceStrings(
         many(Res.plurals.settings_auto_lock_minutes, count, count)
 
     override fun settingsPending(count: Int): String = many(Res.plurals.settings_pending, count, count)
+    override fun settingsPwnedLast(time: String): String = text(Res.string.settings_pwned_last, time)
+    override fun pwnedFound(count: Int): String = many(Res.plurals.pwned_found, count, count)
 
     override fun relativeTime(value: RvRelative): String = when (value.unit) {
         RvRelativeUnit.Now -> text(Res.string.relative_now)

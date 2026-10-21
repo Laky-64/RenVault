@@ -1,6 +1,13 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -63,6 +70,7 @@ data class RvSettingsState(
     val pending: Int = 0,
     val syncedAt: Long = 0L,
     val anisette: String = "",
+    val pwnedCheckedAt: Long = 0L,
 )
 
 @Composable
@@ -75,10 +83,11 @@ fun RvSettingsScreen(
     onClose: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
-    onCheckPwned: () -> Unit,
+    onCheckPwned: suspend () -> Int,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
     onAnisette: suspend (String) -> Boolean = { true },
+    onShowPwned: () -> Unit = {},
 ) {
     var language by remember { mutableStateOf(false) }
     val motion = MaterialTheme.motionScheme
@@ -111,6 +120,7 @@ fun RvSettingsScreen(
                 onCheckPwned = onCheckPwned,
                 onSignOut = onSignOut,
                 onAnisette = onAnisette,
+                onShowPwned = onShowPwned,
             )
         }
     }
@@ -146,11 +156,15 @@ private fun RootPage(
     onLanguage: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
-    onCheckPwned: () -> Unit,
+    onCheckPwned: suspend () -> Int,
     onSignOut: () -> Unit,
     onAnisette: suspend (String) -> Boolean,
+    onShowPwned: () -> Unit,
 ) {
     val locale = LocalLocale.current
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    var checking by remember { mutableStateOf(false) }
     val accents = RenVault.accents
     val list = rememberLazyListState()
     val scrolled by list.scrolledPast()
@@ -169,10 +183,39 @@ private fun RootPage(
     }
 
     val synced = relativeOf(state.syncedAt, now)?.let { strings.relativeTime(it) } ?: strings.settingsSyncedNever
+    val pwnedChecked = relativeOf(state.pwnedCheckedAt, now)
+        ?.let { strings.settingsPwnedLast(strings.relativeTime(it)) }
+        ?: strings.settingsPwnedNever
+
+    val checkPwned: () -> Unit = {
+        if (!checking) {
+            scope.launch {
+                checking = true
+                val found = runCatching { onCheckPwned() }
+                checking = false
+                snackbar.currentSnackbarData?.dismiss()
+                found.fold(
+                    onSuccess = { count ->
+                        if (count == 0) {
+                            snackbar.showSnackbar(strings.pwnedNone)
+                        } else {
+                            val result = snackbar.showSnackbar(
+                                message = strings.pwnedFound(count),
+                                actionLabel = strings.pwnedShow,
+                            )
+                            if (result == SnackbarResult.ActionPerformed) onShowPwned()
+                        }
+                    },
+                    onFailure = { snackbar.showSnackbar(strings.pwnedFailed) },
+                )
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = background,
+        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             RvPageBar(
                 title = strings.settingsTitle,
@@ -259,8 +302,15 @@ private fun RootPage(
                     RvSegment(
                         index = 2,
                         count = 3,
-                        onClick = onCheckPwned,
-                        leading = { SettingBadge(RvVerifiedIcon, accents.green) },
+                        onClick = checkPwned,
+                        leading = {
+                            if (checking) {
+                                LoadingIndicator(modifier = Modifier.size(40.dp))
+                            } else {
+                                SettingBadge(RvVerifiedIcon, accents.green)
+                            }
+                        },
+                        supporting = { Text(if (checking) strings.pwnedChecking else pwnedChecked) },
                     ) {
                         Text(strings.settingsCheckPwned)
                     }

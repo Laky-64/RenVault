@@ -83,6 +83,7 @@ fun RvVaultApp(
     var photo by remember { mutableStateOf<ImageBitmap?>(null) }
     var revision by remember { mutableStateOf(0) }
     var anisette by remember { mutableStateOf("") }
+    var pwnedAt by remember { mutableStateOf(0L) }
 
     val icons = remember { mutableStateMapOf<String, Painter?>() }
     val wanted = remember { mutableStateListOf<String>() }
@@ -114,6 +115,7 @@ fun RvVaultApp(
         profile = runCatching { Vault.profile() }.getOrDefault(Profile())
         settings = runCatching { Vault.settings() }.getOrDefault(Settings())
         choices = runCatching { Vault.autoLockChoices() }.getOrDefault(emptyList())
+        pwnedAt = runCatching { Vault.pwnedInfo().checkedAt }.getOrDefault(0L)
         photo = if (profile.hasPhoto) {
             val raw = runCatching { Vault.profilePhoto() }.getOrNull()
             raw?.let {
@@ -262,6 +264,7 @@ fun RvVaultApp(
                         pending = sync.pending,
                         syncedAt = sync.syncedAt,
                         anisette = anisette,
+                        pwnedCheckedAt = pwnedAt,
                     ),
                     sortField = sortFieldOf(settings.sortField),
                     sortAscending = settings.sortAscending,
@@ -302,7 +305,12 @@ fun RvVaultApp(
                             unlocked = false
                         }
                     },
-                    onCheckPwned = { scope.launch { runCatching { Vault.checkPwned() }; revision++ } },
+                    onCheckPwned = {
+                        val report = Vault.checkPwned()
+                        pwnedAt = report.checkedAt
+                        revision++
+                        report.pwned
+                    },
                     onAnisette = chooseAnisette,
                     onSignOut = {
                         scope.launch {

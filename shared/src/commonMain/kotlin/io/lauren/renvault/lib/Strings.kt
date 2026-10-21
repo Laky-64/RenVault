@@ -63,6 +63,11 @@ interface RvStrings {
     val settingsAutoLockNote: String
     val settingsLockNow: String
     val settingsCheckPwned: String
+    val pwnedChecking: String
+    val pwnedNone: String
+    val pwnedFailed: String
+    val pwnedShow: String
+    val settingsPwnedNever: String
     val settingsAboutTitle: String
     val settingsLastSync: String
     val settingsSyncedNever: String
@@ -150,6 +155,8 @@ interface RvStrings {
     fun securityChangeDesc(domain: String): String
     fun settingsAutoLockMinutes(count: Int): String
     fun settingsPending(count: Int): String
+    fun settingsPwnedLast(time: String): String
+    fun pwnedFound(count: Int): String
     fun relativeTime(value: RvRelative): String
     fun zoneText(kind: RvZoneKind, empty: Boolean): RvZoneText
 }

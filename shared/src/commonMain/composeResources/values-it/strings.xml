@@ -223,4 +223,14 @@
     <string name="anisette_invalid">Non è un indirizzo di server valido.</string>
     <string name="anisette_note">Vale dal prossimo accesso.</string>
     <string name="settings_advanced_title">Avanzate</string>
+    <string name="pwned_checking">Controllo delle password in corso…</string>
+    <string name="pwned_none">Nessuna password compromessa</string>
+    <string name="pwned_failed">Impossibile completare il controllo</string>
+    <string name="pwned_show">Mostra</string>
+    <string name="settings_pwned_never">Mai controllate</string>
+    <string name="settings_pwned_last">Ultimo controllo %1$s</string>
+    <plurals name="pwned_found">
+        <item quantity="one">%1$d password compromessa trovata</item>
+        <item quantity="other">%1$d password compromesse trovate</item>
+    </plurals>
 </resources>
