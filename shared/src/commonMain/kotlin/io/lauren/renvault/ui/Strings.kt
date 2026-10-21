@@ -1,0 +1,632 @@
+package io.lauren.renvault.ui
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.staticCompositionLocalOf
+import io.lauren.renvault.lib.RvRelative
+import io.lauren.renvault.lib.RvRelativeUnit
+import io.lauren.renvault.lib.RvStrings
+import io.lauren.renvault.lib.unescape
+import io.lauren.renvault.lib.RvZoneKind
+import io.lauren.renvault.lib.RvZoneText
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.settings_advanced_title
+import io.lauren.renvault.resources.anisette_title
+import io.lauren.renvault.resources.anisette_desc
+import io.lauren.renvault.resources.anisette_placeholder
+import io.lauren.renvault.resources.anisette_default
+import io.lauren.renvault.resources.anisette_reset
+import io.lauren.renvault.resources.anisette_invalid
+import io.lauren.renvault.resources.anisette_note
+import io.lauren.renvault.resources.totp_key_confirm
+import io.lauren.renvault.resources.totp_key_placeholder
+import io.lauren.renvault.resources.totp_setup_desc
+import io.lauren.renvault.resources.websites_add
+import io.lauren.renvault.resources.websites_placeholder
+import io.lauren.renvault.resources.websites_desc
+import io.lauren.renvault.resources.websites_title
+import io.lauren.renvault.resources.settings_version
+import io.lauren.renvault.resources.auth_2fa_hint
+import io.lauren.renvault.resources.auth_2fa_resend_action
+import io.lauren.renvault.resources.auth_2fa_title
+import io.lauren.renvault.resources.auth_continue_action
+import io.lauren.renvault.resources.auth_device_passcode_hint
+import io.lauren.renvault.resources.auth_device_passcode_placeholder
+import io.lauren.renvault.resources.auth_device_passcode_title
+import io.lauren.renvault.resources.auth_device_selection_hint
+import io.lauren.renvault.resources.auth_device_selection_title
+import io.lauren.renvault.resources.auth_email_placeholder
+import io.lauren.renvault.resources.auth_master_mismatch
+import io.lauren.renvault.resources.auth_master_placeholder
+import io.lauren.renvault.resources.auth_master_repeat_placeholder
+import io.lauren.renvault.resources.auth_master_setup_hint
+import io.lauren.renvault.resources.auth_master_setup_title
+import io.lauren.renvault.resources.auth_master_too_short
+import io.lauren.renvault.resources.auth_password_placeholder
+import io.lauren.renvault.resources.auth_privacy_link
+import io.lauren.renvault.resources.auth_privacy_notice
+import io.lauren.renvault.resources.auth_sign_in_action
+import io.lauren.renvault.resources.auth_sign_in_hint
+import io.lauren.renvault.resources.auth_sign_in_title
+import io.lauren.renvault.resources.auth_unlock_action
+import io.lauren.renvault.resources.auth_unlock_hint
+import io.lauren.renvault.resources.auth_unlock_title
+import io.lauren.renvault.resources.busy_checking_credentials
+import io.lauren.renvault.resources.busy_creating_vault
+import io.lauren.renvault.resources.busy_creating_vault_title
+import io.lauren.renvault.resources.busy_opening_vault
+import io.lauren.renvault.resources.busy_opening_vault_title
+import io.lauren.renvault.resources.busy_sending_code
+import io.lauren.renvault.resources.busy_signing_in_title
+import io.lauren.renvault.resources.busy_verifying_code
+import io.lauren.renvault.resources.busy_verifying_passcode
+import io.lauren.renvault.resources.cancel
+import io.lauren.renvault.resources.strength_fair
+import io.lauren.renvault.resources.strength_strong
+import io.lauren.renvault.resources.strength_weak
+import io.lauren.renvault.resources.failure_account_locked
+import io.lauren.renvault.resources.failure_bad_credentials
+import io.lauren.renvault.resources.failure_generic
+import io.lauren.renvault.resources.failure_no_devices
+import io.lauren.renvault.resources.failure_wrong_master_password
+import io.lauren.renvault.resources.failure_wrong_passcode
+import io.lauren.renvault.resources.delete_confirm
+import io.lauren.renvault.resources.delete_hard_desc
+import io.lauren.renvault.resources.delete_soft_desc
+import io.lauren.renvault.resources.delete_title
+import io.lauren.renvault.resources.deleted_countdown
+import io.lauren.renvault.resources.deleted_delete
+import io.lauren.renvault.resources.deleted_recover
+import io.lauren.renvault.resources.edit_delete
+import io.lauren.renvault.resources.edit_delete_code
+import io.lauren.renvault.resources.edit_no_code
+import io.lauren.renvault.resources.edit_no_website
+import io.lauren.renvault.resources.edit_save_for_code
+import io.lauren.renvault.resources.edit_set_up_code
+import io.lauren.renvault.resources.editor_cancel
+import io.lauren.renvault.resources.editor_new_password
+import io.lauren.renvault.resources.editor_notes
+import io.lauren.renvault.resources.editor_save
+import io.lauren.renvault.resources.editor_title
+import io.lauren.renvault.resources.editor_website_hint
+import io.lauren.renvault.resources.editor_username_hint
+import io.lauren.renvault.resources.field_copied
+import io.lauren.renvault.resources.field_modified
+import io.lauren.renvault.resources.field_network_name
+import io.lauren.renvault.resources.field_notes
+import io.lauren.renvault.resources.field_passkey
+import io.lauren.renvault.resources.field_passkey_creation_date
+import io.lauren.renvault.resources.field_password
+import io.lauren.renvault.resources.field_username
+import io.lauren.renvault.resources.field_verification_code
+import io.lauren.renvault.resources.field_website
+import io.lauren.renvault.resources.field_website_more
+import io.lauren.renvault.resources.item_compromised
+import io.lauren.renvault.resources.item_wifi_network
+import io.lauren.renvault.resources.list_selected_count
+import io.lauren.renvault.resources.nav_back
+import io.lauren.renvault.resources.passkey_learn_more
+import io.lauren.renvault.resources.passkey_note_desc
+import io.lauren.renvault.resources.search_empty
+import io.lauren.renvault.resources.search_empty_desc
+import io.lauren.renvault.resources.search_placeholder
+import io.lauren.renvault.resources.search_placeholder_in
+import io.lauren.renvault.resources.security_change_action
+import io.lauren.renvault.resources.security_change_desc
+import io.lauren.renvault.resources.security_change_title
+import io.lauren.renvault.resources.zone_all_desc
+import io.lauren.renvault.resources.zone_all_empty
+import io.lauren.renvault.resources.zone_all_name
+import io.lauren.renvault.resources.zone_all_no_selection
+import io.lauren.renvault.resources.zone_codes_desc
+import io.lauren.renvault.resources.zone_codes_empty
+import io.lauren.renvault.resources.zone_codes_name
+import io.lauren.renvault.resources.zone_codes_no_selection
+import io.lauren.renvault.resources.zone_deleted_desc
+import io.lauren.renvault.resources.zone_deleted_empty
+import io.lauren.renvault.resources.zone_deleted_name
+import io.lauren.renvault.resources.zone_deleted_no_selection
+import io.lauren.renvault.resources.zone_item_count
+import io.lauren.renvault.resources.zone_networks_desc
+import io.lauren.renvault.resources.zone_networks_empty
+import io.lauren.renvault.resources.zone_networks_name
+import io.lauren.renvault.resources.zone_networks_no_selection
+import io.lauren.renvault.resources.zone_passkeys_desc
+import io.lauren.renvault.resources.zone_passkeys_empty
+import io.lauren.renvault.resources.zone_passkeys_name
+import io.lauren.renvault.resources.zone_passkeys_no_selection
+import io.lauren.renvault.resources.zone_security_desc
+import io.lauren.renvault.resources.zone_security_empty
+import io.lauren.renvault.resources.zone_security_name
+import io.lauren.renvault.resources.zone_security_no_selection
+import io.lauren.renvault.resources.settings_title
+import io.lauren.renvault.resources.settings_close
+import io.lauren.renvault.resources.settings_general_title
+import io.lauren.renvault.resources.settings_language
+import io.lauren.renvault.resources.settings_security_title
+import io.lauren.renvault.resources.settings_auto_lock
+import io.lauren.renvault.resources.settings_auto_lock_never
+import io.lauren.renvault.resources.settings_auto_lock_minute
+import io.lauren.renvault.resources.settings_auto_lock_hour
+import io.lauren.renvault.resources.settings_auto_lock_note
+import io.lauren.renvault.resources.settings_lock_now
+import io.lauren.renvault.resources.settings_check_pwned
+import io.lauren.renvault.resources.settings_about_title
+import io.lauren.renvault.resources.settings_last_sync
+import io.lauren.renvault.resources.settings_synced_never
+import io.lauren.renvault.resources.settings_sign_out
+import io.lauren.renvault.resources.settings_sign_out_note
+import io.lauren.renvault.resources.settings_sign_out_title
+import io.lauren.renvault.resources.settings_sign_out_desc
+import io.lauren.renvault.resources.settings_open_label
+import io.lauren.renvault.resources.relative_now
+import io.lauren.renvault.resources.settings_auto_lock_minutes
+import io.lauren.renvault.resources.settings_pending
+import io.lauren.renvault.resources.relative_minutes
+import io.lauren.renvault.resources.relative_hours
+import io.lauren.renvault.resources.relative_days
+import io.lauren.renvault.resources.relative_months
+import io.lauren.renvault.resources.relative_years
+import io.lauren.renvault.resources.list_deselect_all
+import io.lauren.renvault.resources.list_select
+import io.lauren.renvault.resources.list_select_all
+import io.lauren.renvault.resources.item_edit
+import io.lauren.renvault.resources.list_delete
+import io.lauren.renvault.resources.list_order
+import io.lauren.renvault.resources.list_add
+import io.lauren.renvault.resources.sort_ascending
+import io.lauren.renvault.resources.sort_descending
+import io.lauren.renvault.resources.sort_modified
+import io.lauren.renvault.resources.sort_created
+import io.lauren.renvault.resources.sort_website
+import io.lauren.renvault.resources.sort_title
+import org.jetbrains.compose.resources.PluralStringResource
+import org.jetbrains.compose.resources.ResourceEnvironment
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getPluralString
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.rememberResourceEnvironment
+
+val LocalStrings = staticCompositionLocalOf<RvStrings> {
+    error("RvStrings not provided")
+}
+
+@Composable
+fun rememberStrings(tag: String = LocalLocale.current.current): RvStrings {
+    val environment = rememberResourceEnvironment()
+    val strings by produceState<RvStrings>(EmptyStrings, environment, tag) {
+        value = loadStrings(environment)
+    }
+    return strings
+}
+
+private val TextResources = listOf(
+    Res.string.settings_advanced_title,
+    Res.string.anisette_title,
+    Res.string.anisette_desc,
+    Res.string.anisette_placeholder,
+    Res.string.anisette_default,
+    Res.string.anisette_reset,
+    Res.string.anisette_invalid,
+    Res.string.anisette_note,
+    Res.string.settings_version,
+    Res.string.websites_title,
+    Res.string.websites_desc,
+    Res.string.websites_placeholder,
+    Res.string.websites_add,
+    Res.string.totp_setup_desc,
+    Res.string.totp_key_placeholder,
+    Res.string.totp_key_confirm,
+    Res.string.auth_sign_in_title,
+    Res.string.auth_sign_in_hint,
+    Res.string.auth_email_placeholder,
+    Res.string.auth_password_placeholder,
+    Res.string.auth_sign_in_action,
+    Res.string.auth_privacy_notice,
+    Res.string.auth_privacy_link,
+    Res.string.auth_2fa_title,
+    Res.string.auth_2fa_hint,
+    Res.string.auth_2fa_resend_action,
+    Res.string.auth_device_selection_title,
+    Res.string.auth_device_selection_hint,
+    Res.string.auth_device_passcode_title,
+    Res.string.auth_device_passcode_hint,
+    Res.string.auth_device_passcode_placeholder,
+    Res.string.auth_continue_action,
+    Res.string.auth_master_setup_title,
+    Res.string.auth_master_setup_hint,
+    Res.string.auth_master_placeholder,
+    Res.string.auth_master_repeat_placeholder,
+    Res.string.auth_master_mismatch,
+    Res.string.auth_unlock_title,
+    Res.string.auth_unlock_hint,
+    Res.string.auth_unlock_action,
+    Res.string.busy_signing_in_title,
+    Res.string.busy_checking_credentials,
+    Res.string.busy_opening_vault_title,
+    Res.string.busy_opening_vault,
+    Res.string.busy_sending_code,
+    Res.string.busy_verifying_code,
+    Res.string.busy_verifying_passcode,
+    Res.string.busy_creating_vault_title,
+    Res.string.busy_creating_vault,
+    Res.string.strength_weak,
+    Res.string.strength_fair,
+    Res.string.strength_strong,
+    Res.string.failure_generic,
+    Res.string.failure_bad_credentials,
+    Res.string.failure_account_locked,
+    Res.string.failure_wrong_passcode,
+    Res.string.failure_wrong_master_password,
+    Res.string.failure_no_devices,
+    Res.string.cancel,
+    Res.string.deleted_delete,
+    Res.string.deleted_recover,
+    Res.string.edit_delete,
+    Res.string.edit_delete_code,
+    Res.string.edit_no_code,
+    Res.string.edit_no_website,
+    Res.string.edit_save_for_code,
+    Res.string.edit_set_up_code,
+    Res.string.editor_notes,
+    Res.string.editor_new_password,
+    Res.string.editor_cancel,
+    Res.string.editor_save,
+    Res.string.editor_title,
+    Res.string.editor_website_hint,
+    Res.string.editor_username_hint,
+    Res.string.field_copied,
+    Res.string.field_modified,
+    Res.string.field_network_name,
+    Res.string.field_notes,
+    Res.string.field_passkey,
+    Res.string.field_passkey_creation_date,
+    Res.string.field_password,
+    Res.string.field_username,
+    Res.string.field_verification_code,
+    Res.string.field_website,
+    Res.string.item_compromised,
+    Res.string.item_wifi_network,
+    Res.string.nav_back,
+    Res.string.list_select,
+    Res.string.list_select_all,
+    Res.string.list_deselect_all,
+    Res.string.item_edit,
+    Res.string.list_delete,
+    Res.string.list_order,
+    Res.string.list_add,
+    Res.string.sort_ascending,
+    Res.string.sort_descending,
+    Res.string.sort_modified,
+    Res.string.sort_created,
+    Res.string.sort_website,
+    Res.string.sort_title,
+    Res.string.search_empty,
+    Res.string.search_empty_desc,
+    Res.string.search_placeholder,
+    Res.string.search_placeholder_in,
+    Res.string.settings_title,
+    Res.string.settings_close,
+    Res.string.settings_general_title,
+    Res.string.settings_language,
+    Res.string.settings_security_title,
+    Res.string.settings_auto_lock,
+    Res.string.settings_auto_lock_never,
+    Res.string.settings_auto_lock_minute,
+    Res.string.settings_auto_lock_hour,
+    Res.string.settings_auto_lock_note,
+    Res.string.settings_lock_now,
+    Res.string.settings_check_pwned,
+    Res.string.settings_about_title,
+    Res.string.settings_last_sync,
+    Res.string.settings_synced_never,
+    Res.string.settings_sign_out,
+    Res.string.settings_sign_out_note,
+    Res.string.settings_sign_out_title,
+    Res.string.settings_sign_out_desc,
+    Res.string.settings_open_label,
+    Res.string.relative_now,
+    Res.string.security_change_action,
+    Res.string.security_change_desc,
+    Res.string.security_change_title,
+    Res.string.passkey_learn_more,
+    Res.string.passkey_note_desc,
+    Res.string.zone_all_desc,
+    Res.string.zone_all_empty,
+    Res.string.zone_all_name,
+    Res.string.zone_all_no_selection,
+    Res.string.zone_codes_desc,
+    Res.string.zone_codes_empty,
+    Res.string.zone_codes_name,
+    Res.string.zone_codes_no_selection,
+    Res.string.zone_deleted_desc,
+    Res.string.zone_deleted_empty,
+    Res.string.zone_deleted_name,
+    Res.string.zone_deleted_no_selection,
+    Res.string.zone_networks_desc,
+    Res.string.zone_networks_empty,
+    Res.string.zone_networks_name,
+    Res.string.zone_networks_no_selection,
+    Res.string.zone_passkeys_desc,
+    Res.string.zone_passkeys_empty,
+    Res.string.zone_passkeys_name,
+    Res.string.zone_passkeys_no_selection,
+    Res.string.zone_security_desc,
+    Res.string.zone_security_empty,
+    Res.string.zone_security_name,
+    Res.string.zone_security_no_selection,
+)
+
+private val PluralResources = listOf(
+    Res.plurals.auth_master_too_short,
+    Res.plurals.settings_auto_lock_minutes,
+    Res.plurals.settings_pending,
+    Res.plurals.relative_minutes,
+    Res.plurals.relative_hours,
+    Res.plurals.relative_days,
+    Res.plurals.relative_months,
+    Res.plurals.relative_years,
+    Res.plurals.delete_confirm,
+    Res.plurals.delete_hard_desc,
+    Res.plurals.delete_soft_desc,
+    Res.plurals.delete_title,
+    Res.plurals.deleted_countdown,
+    Res.plurals.field_website_more,
+    Res.plurals.list_selected_count,
+    Res.plurals.zone_item_count,
+)
+
+private suspend fun loadStrings(environment: ResourceEnvironment): RvStrings = ResourceStrings(
+    texts = TextResources.associateWith { unescape(getString(environment, it)) },
+    plurals = PluralResources.associateWith {
+        unescape(getPluralString(environment, it, 1)) to unescape(getPluralString(environment, it, 2))
+    },
+)
+
+private val ArgPattern = Regex("""%(\d+)\$[ds]""")
+
+private fun String.withArgs(args: Array<out Any>): String = ArgPattern.replace(this) { match ->
+    args.getOrNull(match.groupValues[1].toInt() - 1)?.toString() ?: match.value
+}
+
+private val EmptyStrings: RvStrings = ResourceStrings(emptyMap(), emptyMap())
+
+private class ResourceStrings(
+    private val texts: Map<StringResource, String>,
+    private val plurals: Map<PluralStringResource, Pair<String, String>>,
+) : RvStrings {
+    private fun text(resource: StringResource): String = texts[resource].orEmpty()
+
+    private fun text(resource: StringResource, vararg args: Any): String =
+        texts[resource].orEmpty().withArgs(args)
+
+    private fun many(resource: PluralStringResource, count: Int, vararg args: Any): String {
+        val forms = plurals[resource] ?: return ""
+        return (if (count == 1) forms.first else forms.second).withArgs(args)
+    }
+
+    override val fieldUsername: String get() = text(Res.string.field_username)
+    override val fieldPassword: String get() = text(Res.string.field_password)
+    override val fieldWebsite: String get() = text(Res.string.field_website)
+    override val fieldVerificationCode: String get() = text(Res.string.field_verification_code)
+    override val fieldNotes: String get() = text(Res.string.field_notes)
+    override val fieldModified: String get() = text(Res.string.field_modified)
+    override val fieldPasskey: String get() = text(Res.string.field_passkey)
+    override val fieldNetworkName: String get() = text(Res.string.field_network_name)
+    override val fieldCopied: String get() = text(Res.string.field_copied)
+    override val itemWifiNetwork: String get() = text(Res.string.item_wifi_network)
+    override val itemCompromised: String get() = text(Res.string.item_compromised)
+
+    override val editNoWebsite: String get() = text(Res.string.edit_no_website)
+    override val editSaveForCode: String get() = text(Res.string.edit_save_for_code)
+    override val editNoCode: String get() = text(Res.string.edit_no_code)
+    override val editDeleteCode: String get() = text(Res.string.edit_delete_code)
+    override val editSetUpCode: String get() = text(Res.string.edit_set_up_code)
+    override val editDelete: String get() = text(Res.string.edit_delete)
+    override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
+    override val editorNotes: String get() = text(Res.string.editor_notes)
+    override val editorNewPassword: String get() = text(Res.string.editor_new_password)
+    override val editorCancel: String get() = text(Res.string.editor_cancel)
+    override val editorSave: String get() = text(Res.string.editor_save)
+    override val editorTitle: String get() = text(Res.string.editor_title)
+    override val editorWebsiteHint: String get() = text(Res.string.editor_website_hint)
+    override val securityChangeAction: String get() = text(Res.string.security_change_action)
+    override val securityChangeTitle: String get() = text(Res.string.security_change_title)
+    override val passkeyNoteDesc: String get() = text(Res.string.passkey_note_desc)
+    override val passkeyLearnMore: String get() = text(Res.string.passkey_learn_more)
+
+    override val deletedRecover: String get() = text(Res.string.deleted_recover)
+    override val deletedDelete: String get() = text(Res.string.deleted_delete)
+
+    override val searchPlaceholder: String get() = text(Res.string.search_placeholder)
+    override val searchEmptyDesc: String get() = text(Res.string.search_empty_desc)
+
+    override val navBack: String get() = text(Res.string.nav_back)
+    override val listSelect: String get() = text(Res.string.list_select)
+    override val listSelectAll: String get() = text(Res.string.list_select_all)
+    override val listDeselectAll: String get() = text(Res.string.list_deselect_all)
+    override val itemEdit: String get() = text(Res.string.item_edit)
+    override val listDelete: String get() = text(Res.string.list_delete)
+    override val listOrder: String get() = text(Res.string.list_order)
+    override val listAdd: String get() = text(Res.string.list_add)
+    override val sortAscending: String get() = text(Res.string.sort_ascending)
+    override val sortDescending: String get() = text(Res.string.sort_descending)
+    override val sortModified: String get() = text(Res.string.sort_modified)
+    override val sortCreated: String get() = text(Res.string.sort_created)
+    override val sortWebsite: String get() = text(Res.string.sort_website)
+    override val sortTitle: String get() = text(Res.string.sort_title)
+    override val settingsTitle: String get() = text(Res.string.settings_title)
+    override val settingsClose: String get() = text(Res.string.settings_close)
+    override val settingsGeneralTitle: String get() = text(Res.string.settings_general_title)
+    override val settingsLanguage: String get() = text(Res.string.settings_language)
+    override val settingsSecurityTitle: String get() = text(Res.string.settings_security_title)
+    override val settingsAutoLock: String get() = text(Res.string.settings_auto_lock)
+    override val settingsAutoLockNever: String get() = text(Res.string.settings_auto_lock_never)
+    override val settingsAutoLockMinute: String get() = text(Res.string.settings_auto_lock_minute)
+    override val settingsAutoLockHour: String get() = text(Res.string.settings_auto_lock_hour)
+    override val settingsAutoLockNote: String get() = text(Res.string.settings_auto_lock_note)
+    override val settingsLockNow: String get() = text(Res.string.settings_lock_now)
+    override val settingsCheckPwned: String get() = text(Res.string.settings_check_pwned)
+    override val settingsAboutTitle: String get() = text(Res.string.settings_about_title)
+    override val settingsLastSync: String get() = text(Res.string.settings_last_sync)
+    override val settingsSyncedNever: String get() = text(Res.string.settings_synced_never)
+    override val settingsSignOut: String get() = text(Res.string.settings_sign_out)
+    override val settingsSignOutNote: String get() = text(Res.string.settings_sign_out_note)
+    override val settingsSignOutTitle: String get() = text(Res.string.settings_sign_out_title)
+    override val settingsSignOutDesc: String get() = text(Res.string.settings_sign_out_desc)
+    override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
+    override val cancel: String get() = text(Res.string.cancel)
+    override val settingsVersion: String get() = text(Res.string.settings_version)
+    override val settingsAdvancedTitle: String get() = text(Res.string.settings_advanced_title)
+    override val anisetteTitle: String get() = text(Res.string.anisette_title)
+    override val anisetteDesc: String get() = text(Res.string.anisette_desc)
+    override val anisettePlaceholder: String get() = text(Res.string.anisette_placeholder)
+    override val anisetteDefault: String get() = text(Res.string.anisette_default)
+    override val anisetteReset: String get() = text(Res.string.anisette_reset)
+    override val anisetteInvalid: String get() = text(Res.string.anisette_invalid)
+    override val anisetteNote: String get() = text(Res.string.anisette_note)
+    override val websitesTitle: String get() = text(Res.string.websites_title)
+    override val websitesPlaceholder: String get() = text(Res.string.websites_placeholder)
+    override val websitesAdd: String get() = text(Res.string.websites_add)
+    override val totpKeyPlaceholder: String get() = text(Res.string.totp_key_placeholder)
+    override val totpKeyConfirm: String get() = text(Res.string.totp_key_confirm)
+
+    override val authSignInTitle: String get() = text(Res.string.auth_sign_in_title)
+    override val authSignInHint: String get() = text(Res.string.auth_sign_in_hint)
+    override val authEmailPlaceholder: String get() = text(Res.string.auth_email_placeholder)
+    override val authPasswordPlaceholder: String get() = text(Res.string.auth_password_placeholder)
+    override val authSignInAction: String get() = text(Res.string.auth_sign_in_action)
+    override val authPrivacyNotice: String get() = text(Res.string.auth_privacy_notice)
+    override val authPrivacyLink: String get() = text(Res.string.auth_privacy_link)
+    override val authTwoFactorTitle: String get() = text(Res.string.auth_2fa_title)
+    override val authTwoFactorHint: String get() = text(Res.string.auth_2fa_hint)
+    override val authTwoFactorResend: String get() = text(Res.string.auth_2fa_resend_action)
+    override val authDeviceSelectionTitle: String get() = text(Res.string.auth_device_selection_title)
+    override val authDeviceSelectionHint: String get() = text(Res.string.auth_device_selection_hint)
+    override val authDevicePasscodeTitle: String get() = text(Res.string.auth_device_passcode_title)
+    override val authDevicePasscodePlaceholder: String
+        get() = text(Res.string.auth_device_passcode_placeholder)
+    override val authContinueAction: String get() = text(Res.string.auth_continue_action)
+    override val authMasterSetupTitle: String get() = text(Res.string.auth_master_setup_title)
+    override val authMasterSetupHint: String get() = text(Res.string.auth_master_setup_hint)
+    override val authMasterPlaceholder: String get() = text(Res.string.auth_master_placeholder)
+    override val authMasterRepeatPlaceholder: String
+        get() = text(Res.string.auth_master_repeat_placeholder)
+    override val authMasterMismatch: String get() = text(Res.string.auth_master_mismatch)
+    override val authUnlockTitle: String get() = text(Res.string.auth_unlock_title)
+    override val authUnlockHint: String get() = text(Res.string.auth_unlock_hint)
+    override val authUnlockAction: String get() = text(Res.string.auth_unlock_action)
+
+    override val busySigningInTitle: String get() = text(Res.string.busy_signing_in_title)
+    override val busyCheckingCredentials: String get() = text(Res.string.busy_checking_credentials)
+    override val busyOpeningVaultTitle: String get() = text(Res.string.busy_opening_vault_title)
+    override val busyOpeningVault: String get() = text(Res.string.busy_opening_vault)
+    override val busySendingCode: String get() = text(Res.string.busy_sending_code)
+    override val busyVerifyingCode: String get() = text(Res.string.busy_verifying_code)
+    override val busyVerifyingPasscode: String get() = text(Res.string.busy_verifying_passcode)
+    override val busyCreatingVaultTitle: String get() = text(Res.string.busy_creating_vault_title)
+    override val busyCreatingVault: String get() = text(Res.string.busy_creating_vault)
+
+    override val strengthWeak: String get() = text(Res.string.strength_weak)
+    override val strengthFair: String get() = text(Res.string.strength_fair)
+    override val strengthStrong: String get() = text(Res.string.strength_strong)
+
+    override val failureGeneric: String get() = text(Res.string.failure_generic)
+    override val failureBadCredentials: String get() = text(Res.string.failure_bad_credentials)
+    override val failureAccountLocked: String get() = text(Res.string.failure_account_locked)
+    override val failureWrongPasscode: String get() = text(Res.string.failure_wrong_passcode)
+    override val failureWrongMasterPassword: String
+        get() = text(Res.string.failure_wrong_master_password)
+    override val failureNoDevices: String get() = text(Res.string.failure_no_devices)
+
+    override fun websitesDesc(title: String): String = text(Res.string.websites_desc, title)
+
+    override fun totpSetupDesc(site: String): String = text(Res.string.totp_setup_desc, site)
+
+    override fun authDevicePasscodeHint(device: String): String =
+        text(Res.string.auth_device_passcode_hint, device)
+
+    override fun authMasterTooShort(count: Int): String =
+        many(Res.plurals.auth_master_too_short, count, count)
+
+    override fun fieldWebsiteMore(domain: String, count: Int): String =
+        many(Res.plurals.field_website_more, count, domain, count)
+
+    override fun fieldPasskeyCreationDate(date: String): String =
+        text(Res.string.field_passkey_creation_date, date)
+
+    override fun deleteTitle(count: Int): String = many(Res.plurals.delete_title, count, count)
+
+    override fun deleteSoftDesc(count: Int): String = many(Res.plurals.delete_soft_desc, count, count)
+
+    override fun deleteHardDesc(count: Int): String = many(Res.plurals.delete_hard_desc, count, count)
+
+    override fun deleteConfirm(count: Int): String = many(Res.plurals.delete_confirm, count, count)
+
+    override fun deletedCountdown(count: Int): String = many(Res.plurals.deleted_countdown, count, count)
+
+    override fun listSelectedCount(count: Int): String = many(Res.plurals.list_selected_count, count, count)
+
+    override fun zoneItemCount(count: Int): String = many(Res.plurals.zone_item_count, count, count)
+
+    override fun searchPlaceholderIn(zone: String): String =
+        text(Res.string.search_placeholder_in, zone)
+
+    override fun searchEmpty(query: String): String = text(Res.string.search_empty, query)
+
+    override fun securityChangeDesc(domain: String): String =
+        text(Res.string.security_change_desc, domain)
+
+    override fun settingsAutoLockMinutes(count: Int): String =
+        many(Res.plurals.settings_auto_lock_minutes, count, count)
+
+    override fun settingsPending(count: Int): String = many(Res.plurals.settings_pending, count, count)
+
+    override fun relativeTime(value: RvRelative): String = when (value.unit) {
+        RvRelativeUnit.Now -> text(Res.string.relative_now)
+        RvRelativeUnit.Minute -> many(Res.plurals.relative_minutes, value.count, value.count)
+        RvRelativeUnit.Hour -> many(Res.plurals.relative_hours, value.count, value.count)
+        RvRelativeUnit.Day -> many(Res.plurals.relative_days, value.count, value.count)
+        RvRelativeUnit.Month -> many(Res.plurals.relative_months, value.count, value.count)
+        RvRelativeUnit.Year -> many(Res.plurals.relative_years, value.count, value.count)
+    }
+
+    override fun zoneText(kind: RvZoneKind, empty: Boolean): RvZoneText = when (kind) {
+        RvZoneKind.All -> RvZoneText(
+            name = text(Res.string.zone_all_name),
+            emptyTitle = text(if (empty) Res.string.zone_all_empty else Res.string.zone_all_no_selection),
+            emptyDescription = text(Res.string.zone_all_desc),
+        )
+
+        RvZoneKind.Passkeys -> RvZoneText(
+            name = text(Res.string.zone_passkeys_name),
+            emptyTitle = text(if (empty) Res.string.zone_passkeys_empty else Res.string.zone_passkeys_no_selection),
+            emptyDescription = text(Res.string.zone_passkeys_desc),
+        )
+
+        RvZoneKind.Codes -> RvZoneText(
+            name = text(Res.string.zone_codes_name),
+            emptyTitle = text(if (empty) Res.string.zone_codes_empty else Res.string.zone_codes_no_selection),
+            emptyDescription = text(Res.string.zone_codes_desc),
+        )
+
+        RvZoneKind.Networks -> RvZoneText(
+            name = text(Res.string.zone_networks_name),
+            emptyTitle = text(if (empty) Res.string.zone_networks_empty else Res.string.zone_networks_no_selection),
+            emptyDescription = text(Res.string.zone_networks_desc),
+        )
+
+        RvZoneKind.Security -> RvZoneText(
+            name = text(Res.string.zone_security_name),
+            emptyTitle = text(if (empty) Res.string.zone_security_empty else Res.string.zone_security_no_selection),
+            emptyDescription = text(Res.string.zone_security_desc),
+        )
+
+        RvZoneKind.Deleted -> RvZoneText(
+            name = text(Res.string.zone_deleted_name),
+            emptyTitle = text(if (empty) Res.string.zone_deleted_empty else Res.string.zone_deleted_no_selection),
+            emptyDescription = text(Res.string.zone_deleted_desc),
+        )
+    }
+}

@@ -1,0 +1,226 @@
+<resources>
+    <string name="field_username">Nome utente</string>
+    <string name="field_password">Password</string>
+    <string name="field_website">Sito web</string>
+    <string name="field_verification_code">Codice</string>
+    <string name="field_notes">Note</string>
+    <string name="field_modified">Modificata</string>
+    <string name="field_passkey">Passkey</string>
+    <string name="field_network_name">Nome</string>
+    <string name="field_copied">Copiato</string>
+    <string name="item_wifi_network">Rete Wi-Fi</string>
+    <string name="item_compromised">Password compromessa</string>
+    <string name="edit_no_website">Nessuno</string>
+    <string name="edit_save_for_code">Salva per visualizzare il codice</string>
+    <string name="edit_no_code">Nessuno</string>
+    <string name="edit_delete_code">Elimina codice di verifica</string>
+    <string name="edit_set_up_code">Configura codice di verifica</string>
+    <string name="edit_delete">Elimina password</string>
+    <string name="editor_username_hint">nome utente</string>
+    <string name="editor_notes">Note</string>
+    <string name="editor_new_password">Nuova password</string>
+    <string name="editor_cancel">Annulla</string>
+    <string name="editor_save">Salva</string>
+    <string name="editor_title">Titolo</string>
+    <string name="editor_website_hint">esempio.com</string>
+    <string name="security_change_action">Cambia password</string>
+    <string name="security_change_title">Cambia subito questa password</string>
+    <string name="security_change_desc">La password di "%1$s" è comparsa in una fuga di dati e potrebbe essere compromessa. Cambiala sul sito web per proteggere il tuo account.</string>
+    <string name="passkey_note_desc">Una passkey è un modo sicuro per accedere ai tuoi account. Le passkey offrono un livello di sicurezza superiore rispetto alle password tradizionali.</string>
+    <string name="passkey_learn_more">Scopri di più…</string>
+    <string name="deleted_recover">Recupera</string>
+    <string name="deleted_delete">Elimina</string>
+    <string name="search_placeholder">Cerca</string>
+    <string name="search_empty_desc">Verifica che non ci siano errori di battitura o esegui una nuova ricerca.</string>
+    <string name="cancel">Annulla</string>
+    <string name="field_passkey_creation_date">Data di creazione: %1$s</string>
+    <string name="search_placeholder_in">Cerca in %1$s</string>
+    <string name="search_empty">Nessun risultato per “%1$s”</string>
+    <string name="zone_all_name">Tutto</string>
+    <string name="zone_all_empty">Nessun elemento salvato</string>
+    <string name="zone_all_no_selection">Nessun elemento selezionato</string>
+    <string name="zone_all_desc">Le password dei tuoi siti web e delle tue app vengono conservate in modo sicuro. Accedi alle credenziali salvate quando vuoi.</string>
+    <string name="zone_passkeys_name">Passkey</string>
+    <string name="zone_passkeys_empty">Nessuna passkey salvata</string>
+    <string name="zone_passkeys_no_selection">Nessuna passkey selezionata</string>
+    <string name="zone_passkeys_desc">Le passkey offrono il massimo livello di sicurezza disponibile per i tuoi account. Quando usi una passkey, per accedere devi autenticarti con i dati biometrici, il PIN o il codice del dispositivo.</string>
+    <string name="zone_codes_name">Codici</string>
+    <string name="zone_codes_empty">Nessun codice di verifica salvato</string>
+    <string name="zone_codes_no_selection">Nessun codice di verifica selezionato</string>
+    <string name="zone_codes_desc">I codici di verifica forniscono un livello di sicurezza aggiuntivo per aiutarti a proteggere i tuoi account.</string>
+    <string name="zone_networks_name">Wi-Fi</string>
+    <string name="zone_networks_empty">Nessuna rete Wi-Fi salvata</string>
+    <string name="zone_networks_no_selection">Nessuna rete selezionata</string>
+    <string name="zone_networks_desc">Le reti Wi-Fi vengono conservate in modo sicuro per un accesso rapido. Visualizza e gestisci le reti salvate.</string>
+    <string name="zone_security_name">Sicurezza</string>
+    <string name="zone_security_empty">Nessun consiglio di sicurezza</string>
+    <string name="zone_security_no_selection">Nessun consiglio selezionato</string>
+    <string name="zone_security_desc">RenVault monitora le tue password in modo privato e sicuro per avvisarti se sono facili da indovinare o se compaiono in fughe di dati dai siti web.</string>
+    <string name="zone_deleted_name">Eliminate</string>
+    <string name="zone_deleted_empty">Nessun elemento eliminato</string>
+    <string name="zone_deleted_no_selection">Nessun elemento selezionato</string>
+    <string name="zone_deleted_desc">Gli elementi eliminati restano qui per 30 giorni prima di essere rimossi definitivamente. Recupera quelli che ti servono ancora.</string>
+
+    <plurals name="field_website_more">
+        <item quantity="one">%1$s e un altro</item>
+        <item quantity="other">%1$s e altri %2$d</item>
+    </plurals>
+    <plurals name="delete_title">
+        <item quantity="one">Elimina password</item>
+        <item quantity="other">Elimina %1$d password</item>
+    </plurals>
+    <plurals name="delete_soft_desc">
+        <item quantity="one">La password verrà spostata in Eliminate. Dopo 30 giorni verrà eliminata definitivamente.</item>
+        <item quantity="other">Le password verranno spostate in Eliminate. Dopo 30 giorni verranno eliminate definitivamente.</item>
+    </plurals>
+    <plurals name="delete_hard_desc">
+        <item quantity="one">Se la elimini, la password verrà rimossa dall\'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata.</item>
+        <item quantity="other">Se le elimini, le password verranno rimosse dall\'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata.</item>
+    </plurals>
+    <plurals name="delete_confirm">
+        <item quantity="one">Elimina password</item>
+        <item quantity="other">Elimina %1$d password</item>
+    </plurals>
+    <plurals name="deleted_countdown">
+        <item quantity="one">La password verrà eliminata definitivamente tra %1$d giorno se non viene recuperata.</item>
+        <item quantity="other">La password verrà eliminata definitivamente tra %1$d giorni se non viene recuperata.</item>
+    </plurals>
+    <plurals name="list_selected_count">
+        <item quantity="one">%1$d selezionato</item>
+        <item quantity="other">%1$d selezionati</item>
+    </plurals>
+    <plurals name="zone_item_count">
+        <item quantity="one">%1$d elemento</item>
+        <item quantity="other">%1$d elementi</item>
+    </plurals>
+    <string name="settings_title">Impostazioni</string>
+    <string name="settings_close">Chiudi</string>
+    <string name="settings_general_title">Generale</string>
+    <string name="settings_language">Lingua</string>
+    <string name="settings_security_title">Sicurezza</string>
+    <string name="settings_auto_lock">Blocco automatico</string>
+    <string name="settings_auto_lock_never">Mai</string>
+    <string name="settings_auto_lock_minute">1 minuto</string>
+    <string name="settings_auto_lock_hour">1 ora</string>
+    <string name="settings_auto_lock_note">RenVault si blocca automaticamente dopo questo periodo di inattività. L\'archivio resta crittografato sul disco finché non lo sblocchi di nuovo.</string>
+    <string name="settings_lock_now">Blocca ora</string>
+    <string name="settings_check_pwned">Verifica password compromesse</string>
+    <string name="settings_about_title">Info</string>
+    <string name="settings_last_sync">Ultima sincronizzazione</string>
+    <string name="settings_synced_never">Mai</string>
+    <string name="settings_sign_out">Esci</string>
+    <string name="settings_sign_out_note">Uscendo, l\'archivio crittografato viene eliminato da questo dispositivo. Le tue password restano nel tuo Apple Account.</string>
+    <string name="settings_sign_out_title">Vuoi uscire da RenVault?</string>
+    <string name="settings_sign_out_desc">L\'archivio crittografato verrà eliminato da questo dispositivo. Per ripristinarlo dovrai accedere di nuovo con il tuo Apple Account, completando l\'autenticazione a due fattori e inserendo il codice di un dispositivo.</string>
+    <string name="settings_open_label">Account e impostazioni</string>
+    <string name="relative_now">adesso</string>
+    <plurals name="settings_auto_lock_minutes">
+        <item quantity="one">%1$d minuti</item>
+        <item quantity="other">%1$d minuti</item>
+    </plurals>
+    <plurals name="settings_pending">
+        <item quantity="one">%1$d modifica da sincronizzare</item>
+        <item quantity="other">%1$d modifiche da sincronizzare</item>
+    </plurals>
+    <plurals name="relative_minutes">
+        <item quantity="one">%1$d minuto fa</item>
+        <item quantity="other">%1$d minuti fa</item>
+    </plurals>
+    <plurals name="relative_hours">
+        <item quantity="one">%1$d ora fa</item>
+        <item quantity="other">%1$d ore fa</item>
+    </plurals>
+    <plurals name="relative_days">
+        <item quantity="one">%1$d giorno fa</item>
+        <item quantity="other">%1$d giorni fa</item>
+    </plurals>
+    <plurals name="relative_months">
+        <item quantity="one">%1$d mese fa</item>
+        <item quantity="other">%1$d mesi fa</item>
+    </plurals>
+    <plurals name="relative_years">
+        <item quantity="one">%1$d anno fa</item>
+        <item quantity="other">%1$d anni fa</item>
+    </plurals>
+    <string name="list_select">Seleziona</string>
+    <string name="item_edit">Modifica</string>
+    <string name="list_delete">Elimina</string>
+    <string name="list_order">Ordina</string>
+    <string name="list_add">Aggiungi</string>
+    <string name="sort_ascending">Crescente</string>
+    <string name="sort_descending">Decrescente</string>
+    <string name="sort_modified">Data di modifica</string>
+    <string name="sort_created">Data di creazione</string>
+    <string name="sort_website">Sito web</string>
+    <string name="sort_title">Titolo</string>
+    <string name="list_select_all">Seleziona tutto</string>
+    <string name="list_deselect_all">Deseleziona tutto</string>
+
+    <string name="websites_title">Siti web</string>
+    <string name="websites_desc">La compilazione automatica suggerirà la password di \"%1$s\" su questi siti web.</string>
+    <string name="websites_placeholder">esempio.com</string>
+    <string name="websites_add">Aggiungi sito web</string>
+    <string name="totp_setup_desc">Se \"%1$s\" supporta i codici di verifica, visita il sito web per ottenere una chiave di configurazione e inseriscila qui.</string>
+    <string name="totp_key_placeholder">Chiave di configurazione</string>
+    <string name="totp_key_confirm">Usa chiave di configurazione</string>
+    <string name="settings_version">Versione</string>
+
+    <string name="auth_sign_in_title">Accedi con il tuo Apple ID</string>
+    <string name="auth_sign_in_hint">Accedi con un\'email o un numero di telefono per usare RenVault</string>
+    <string name="auth_email_placeholder">Email o numero di telefono</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_sign_in_action">Accedi</string>
+    <string name="auth_show_password">Mostra password</string>
+    <string name="auth_hide_password">Nascondi password</string>
+    <string name="auth_privacy_notice">Usiamo il tuo Apple ID per farti accedere in modo sicuro ai tuoi dati. Apple può raccogliere informazioni per motivi di sicurezza. Scopri di più nella</string>
+    <string name="auth_privacy_link">Informativa sulla privacy dell\'Apple ID.</string>
+    <string name="auth_2fa_title">Autenticazione a due fattori</string>
+    <string name="auth_2fa_hint">Abbiamo inviato un codice di verifica ai tuoi dispositivi attendibili. Inseriscilo per continuare.</string>
+    <string name="auth_2fa_resend_action">Invia di nuovo il codice</string>
+    <string name="auth_device_selection_title">Scegli un dispositivo attendibile</string>
+    <string name="auth_device_selection_hint">Seleziona un dispositivo attendibile per continuare. Ti verrà chiesto il suo codice per verificare la tua identità.</string>
+    <string name="auth_device_passcode_title">Inserisci il codice del dispositivo</string>
+    <string name="auth_device_passcode_hint">Inserisci il codice che usi per sbloccare \"%1$s\". Il codice non viene mai inviato ad Apple.</string>
+    <string name="auth_device_passcode_placeholder">Codice</string>
+    <string name="auth_continue_action">Continua</string>
+    <string name="auth_master_setup_title">Crea una password principale</string>
+    <string name="auth_master_setup_hint">Questa password cifra l\'archivio su questo dispositivo. Non viene mai inviata e non si può recuperare: se la dimentichi dovrai accedere di nuovo.</string>
+    <string name="auth_master_placeholder">Password principale</string>
+    <string name="auth_master_repeat_placeholder">Conferma password</string>
+    <string name="auth_master_mismatch">Le password non coincidono.</string>
+    <string name="auth_unlock_title">Sblocca RenVault</string>
+    <string name="auth_unlock_hint">Inserisci la password principale per decifrare l\'archivio.</string>
+    <string name="auth_unlock_action">Sblocca</string>
+    <plurals name="auth_master_too_short">
+        <item quantity="one">Usa almeno %1$d carattere.</item>
+        <item quantity="other">Usa almeno %1$d caratteri.</item>
+    </plurals>
+    <string name="strength_weak">Debole</string>
+    <string name="strength_fair">Discreta</string>
+    <string name="strength_strong">Forte</string>
+    <string name="nav_back">Indietro</string>
+    <string name="code_input_label">Codice di verifica</string>
+    <string name="busy_signing_in_title">Accesso in corso</string>
+    <string name="busy_checking_credentials">Verifica delle credenziali…</string>
+    <string name="busy_opening_vault_title">RenVault</string>
+    <string name="busy_opening_vault">Apertura dell\'archivio…</string>
+    <string name="busy_sending_code">Invio di un nuovo codice…</string>
+    <string name="busy_verifying_code">Verifica del codice…</string>
+    <string name="busy_verifying_passcode">Verifica del codice del dispositivo…</string>
+    <string name="busy_creating_vault_title">Creazione dell\'archivio</string>
+    <string name="busy_creating_vault">Cifratura delle password…</string>
+    <string name="failure_generic">Si è verificato un errore. Controlla la connessione e riprova.</string>
+    <string name="failure_bad_credentials">Apple Account o password non corretti.</string>
+    <string name="failure_account_locked">Questo account è stato bloccato per motivi di sicurezza.</string>
+    <string name="failure_wrong_passcode">Il codice non è corretto. Apple limita il numero di tentativi.</string>
+    <string name="failure_wrong_master_password">La password principale non è corretta.</string>
+    <string name="failure_no_devices">Nessun dispositivo recuperabile è collegato a questo account.</string>
+    <string name="anisette_title">Server anisette</string>
+    <string name="anisette_desc">Apple richiede i dati anisette per farti accedere. Di predefinito RenVault usa i server pubblici di SideStore. Puoi indicarne uno tuo: in quel caso verrà usato solo quello.</string>
+    <string name="anisette_placeholder">Indirizzo del server</string>
+    <string name="anisette_default">Predefinito (SideStore)</string>
+    <string name="anisette_reset">Usa predefinito</string>
+    <string name="anisette_invalid">Non è un indirizzo di server valido.</string>
+    <string name="anisette_note">Vale dal prossimo accesso.</string>
+    <string name="settings_advanced_title">Avanzate</string>
+</resources>

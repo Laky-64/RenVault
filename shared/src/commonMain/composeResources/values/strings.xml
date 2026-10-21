@@ -1,0 +1,230 @@
+<resources>
+    <string name="auth_sign_in_title">Sign in with your Apple ID</string>
+    <string name="auth_sign_in_hint">Sign in with an email or phone number to use RenVault</string>
+    <string name="auth_email_placeholder">Email or phone number</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_sign_in_action">Sign in</string>
+    <string name="auth_show_password">Show password</string>
+    <string name="auth_hide_password">Hide password</string>
+    <string name="auth_privacy_notice">We use your Apple ID to securely sign you in and access your data. Apple may collect information for security purposes. Learn more in the</string>
+    <string name="auth_privacy_link">Apple ID Privacy Policy.</string>
+    <string name="auth_2fa_title">Two-Factor Authentication</string>
+    <string name="auth_2fa_hint">A verification code has been sent to your trusted devices. Enter the code to continue.</string>
+    <string name="auth_2fa_resend_action">Resend Code</string>
+    <string name="auth_device_selection_title">Choose a Trusted Device</string>
+    <string name="auth_device_selection_hint">Select a trusted device to continue. You\'ll be asked to enter its passcode to verify your identity.</string>
+    <string name="auth_device_passcode_title">Enter Device Passcode</string>
+    <string name="auth_device_passcode_hint">Enter the passcode you use to unlock \"%1$s\". Your passcode is never sent to Apple.</string>
+    <string name="auth_device_passcode_placeholder">Passcode</string>
+    <string name="auth_continue_action">Continue</string>
+    <string name="auth_master_setup_title">Create a Master Password</string>
+    <string name="auth_master_setup_hint">This password encrypts your vault on this device. It is never sent anywhere and cannot be recovered, if you forget it, you will have to sign in again.</string>
+    <string name="auth_master_placeholder">Master password</string>
+    <string name="auth_master_repeat_placeholder">Confirm password</string>
+    <string name="auth_master_mismatch">The passwords do not match.</string>
+    <string name="auth_unlock_title">Unlock RenVault</string>
+    <string name="auth_unlock_hint">Enter your master password to decrypt your vault.</string>
+    <string name="auth_unlock_action">Unlock</string>
+
+    <plurals name="auth_master_too_short">
+        <item quantity="one">Use at least %1$d character.</item>
+        <item quantity="other">Use at least %1$d characters.</item>
+    </plurals>
+
+    <string name="strength_weak">Weak</string>
+    <string name="strength_fair">Fair</string>
+    <string name="strength_strong">Strong</string>
+
+    <string name="nav_back">Back</string>
+    <string name="code_input_label">Verification code</string>
+
+    <string name="busy_signing_in_title">Signing In</string>
+    <string name="busy_checking_credentials">Checking your credentials…</string>
+    <string name="busy_opening_vault_title">RenVault</string>
+    <string name="busy_opening_vault">Opening your vault…</string>
+    <string name="busy_sending_code">Sending a new code…</string>
+    <string name="busy_verifying_code">Verifying your code…</string>
+    <string name="busy_verifying_passcode">Verifying your passcode…</string>
+    <string name="busy_creating_vault_title">Creating Your Vault</string>
+    <string name="busy_creating_vault">Encrypting your passwords…</string>
+
+    <string name="failure_generic">Something went wrong. Please check your connection and try again.</string>
+    <string name="failure_bad_credentials">Your Apple Account or password is incorrect.</string>
+    <string name="failure_account_locked">This account has been locked for security reasons.</string>
+    <string name="failure_wrong_passcode">That passcode is incorrect. Apple limits how many times you can try.</string>
+    <string name="failure_wrong_master_password">That master password is incorrect.</string>
+    <string name="failure_no_devices">No recoverable devices are linked to this account.</string>
+    <string name="field_username">User Name</string>
+    <string name="field_password">Password</string>
+    <string name="field_website">Website</string>
+    <string name="field_verification_code">Code</string>
+    <string name="field_notes">Notes</string>
+    <string name="field_modified">Modified</string>
+    <string name="field_passkey">Passkey</string>
+    <string name="field_network_name">Name</string>
+    <string name="field_copied">Copied</string>
+    <string name="item_wifi_network">Wi-Fi Network</string>
+    <string name="item_compromised">Compromised Password</string>
+    <string name="edit_no_website">None</string>
+    <string name="edit_save_for_code">Save to View Code</string>
+    <string name="edit_no_code">None</string>
+    <string name="edit_delete_code">Delete Verification Code</string>
+    <string name="edit_set_up_code">Set Up Verification Code</string>
+    <string name="edit_delete">Delete Password</string>
+    <string name="editor_username_hint">username</string>
+    <string name="editor_notes">Notes</string>
+    <string name="editor_new_password">New Password</string>
+    <string name="editor_cancel">Cancel</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_title">Title</string>
+    <string name="editor_website_hint">example.com</string>
+    <string name="security_change_action">Change Password</string>
+    <string name="security_change_title">Change This Password Now</string>
+    <string name="security_change_desc">The password for "%1$s" was found in a data leak and may be compromised. Change it on the website to help protect your account.</string>
+    <string name="passkey_note_desc">A passkey is a secure way to sign in to your accounts. Passkeys provide more security than traditional passwords.</string>
+    <string name="passkey_learn_more">Learn More…</string>
+    <string name="deleted_recover">Recover</string>
+    <string name="deleted_delete">Delete</string>
+    <string name="search_placeholder">Search</string>
+    <string name="search_empty_desc">Check the spelling or try a new search.</string>
+    <string name="cancel">Cancel</string>
+    <string name="field_passkey_creation_date">Creation Date: %1$s</string>
+    <string name="search_placeholder_in">Search in %1$s</string>
+    <string name="search_empty">No results for “%1$s”</string>
+    <string name="zone_all_name">All</string>
+    <string name="zone_all_empty">No Items Saved</string>
+    <string name="zone_all_no_selection">No Item Selected</string>
+    <string name="zone_all_desc">Passwords are securely stored for your websites and apps. Access your saved credentials anytime.</string>
+    <string name="zone_passkeys_name">Passkeys</string>
+    <string name="zone_passkeys_empty">No Passkeys Saved</string>
+    <string name="zone_passkeys_no_selection">No Passkey Selected</string>
+    <string name="zone_passkeys_desc">Passkeys provide the strongest security available for your accounts. When using a passkey, authenticate with your device\'s biometrics, PIN, or passcode to sign in.</string>
+    <string name="zone_codes_name">Codes</string>
+    <string name="zone_codes_empty">No Verification Codes Saved</string>
+    <string name="zone_codes_no_selection">No Code Selected</string>
+    <string name="zone_codes_desc">Verification codes provide an extra layer of security to help keep your accounts safe.</string>
+    <string name="zone_networks_name">Wi-Fi</string>
+    <string name="zone_networks_empty">No Wi-Fi Networks Saved</string>
+    <string name="zone_networks_no_selection">No Network Selected</string>
+    <string name="zone_networks_desc">Wi-Fi networks are securely stored for quick access. View and manage your saved networks.</string>
+    <string name="zone_security_name">Security</string>
+    <string name="zone_security_empty">No Security Recommendations</string>
+    <string name="zone_security_no_selection">No Recommendation Selected</string>
+    <string name="zone_security_desc">RenVault privately and securely monitors your passwords to alert you if any are easily guessed or appear in data leaks from website.</string>
+    <string name="zone_deleted_name">Deleted</string>
+    <string name="zone_deleted_empty">No Deleted Items</string>
+    <string name="zone_deleted_no_selection">No Item Selected</string>
+    <string name="zone_deleted_desc">Deleted items stay here for 30 days before they are removed for good. Recover the ones you still need.</string>
+
+    <plurals name="field_website_more">
+        <item quantity="one">%1$s and %2$d other</item>
+        <item quantity="other">%1$s and %2$d others</item>
+    </plurals>
+    <plurals name="delete_title">
+        <item quantity="one">Delete Password</item>
+        <item quantity="other">Delete %1$d Passwords</item>
+    </plurals>
+    <plurals name="delete_soft_desc">
+        <item quantity="one">The password will be moved to Deleted. After 30 days, it will be permanently deleted.</item>
+        <item quantity="other">The passwords will be moved to Deleted. After 30 days, they will be permanently deleted.</item>
+    </plurals>
+    <plurals name="delete_hard_desc">
+        <item quantity="one">If you delete it, the password will be removed from the Passwords app on all your devices. This action cannot be undone.</item>
+        <item quantity="other">If you delete them, the passwords will be removed from the Passwords app on all your devices. This action cannot be undone.</item>
+    </plurals>
+    <plurals name="delete_confirm">
+        <item quantity="one">Delete Password</item>
+        <item quantity="other">Delete %1$d Passwords</item>
+    </plurals>
+    <plurals name="deleted_countdown">
+        <item quantity="one">The password will be permanently deleted in %1$d day unless it is recovered.</item>
+        <item quantity="other">The password will be permanently deleted in %1$d days unless it is recovered.</item>
+    </plurals>
+    <plurals name="list_selected_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="zone_item_count">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <string name="settings_title">Settings</string>
+    <string name="settings_close">Close</string>
+    <string name="settings_general_title">General</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_security_title">Security</string>
+    <string name="settings_auto_lock">Auto-Lock</string>
+    <string name="settings_auto_lock_never">Never</string>
+    <string name="settings_auto_lock_minute">1 minute</string>
+    <string name="settings_auto_lock_hour">1 hour</string>
+    <string name="settings_auto_lock_note">RenVault locks itself after this long without activity. Your vault stays encrypted on disk until you unlock it again.</string>
+    <string name="settings_lock_now">Lock Now</string>
+    <string name="settings_check_pwned">Check for Compromised Passwords</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_last_sync">Last Synced</string>
+    <string name="settings_synced_never">Never</string>
+    <string name="settings_sign_out">Sign Out</string>
+    <string name="settings_sign_out_note">Signing out deletes the encrypted vault from this device. Your passwords stay in your Apple Account.</string>
+    <string name="settings_sign_out_title">Sign out of RenVault?</string>
+    <string name="settings_sign_out_desc">Your encrypted vault will be deleted from this device. You will have to sign in with your Apple Account again, including two-factor and a device passcode, to restore it.</string>
+    <string name="settings_open_label">Account and settings</string>
+    <string name="relative_now">just now</string>
+    <plurals name="settings_auto_lock_minutes">
+        <item quantity="one">%1$d minutes</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="settings_pending">
+        <item quantity="one">%1$d change waiting to sync</item>
+        <item quantity="other">%1$d changes waiting to sync</item>
+    </plurals>
+    <plurals name="relative_minutes">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="relative_hours">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="relative_days">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="relative_months">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="relative_years">
+        <item quantity="one">%1$d year ago</item>
+        <item quantity="other">%1$d years ago</item>
+    </plurals>
+    <string name="list_select">Select</string>
+    <string name="item_edit">Edit</string>
+    <string name="list_delete">Delete</string>
+    <string name="list_order">Order</string>
+    <string name="list_add">Add</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
+    <string name="sort_modified">Date Modified</string>
+    <string name="sort_created">Date Created</string>
+    <string name="sort_website">Website</string>
+    <string name="sort_title">Title</string>
+    <string name="list_select_all">Select All</string>
+    <string name="list_deselect_all">Deselect All</string>
+
+    <string name="websites_title">Websites</string>
+    <string name="websites_desc">AutoFill will suggest the password for \"%1$s\" on these websites.</string>
+    <string name="websites_placeholder">example.com</string>
+    <string name="websites_add">Add website</string>
+    <string name="totp_setup_desc">If \"%1$s\" supports verification codes, visit the website to get a setup key and enter it here.</string>
+    <string name="totp_key_placeholder">Setup key</string>
+    <string name="totp_key_confirm">Use setup key</string>
+    <string name="settings_version">Version</string>
+    <string name="anisette_title">Anisette server</string>
+    <string name="anisette_desc">Apple needs anisette data to sign you in. By default RenVault uses the public SideStore servers. You can set your own instead: then only that one is used.</string>
+    <string name="anisette_placeholder">Server address</string>
+    <string name="anisette_default">Default (SideStore)</string>
+    <string name="anisette_reset">Use default</string>
+    <string name="anisette_invalid">That is not a valid server address.</string>
+    <string name="anisette_note">It applies from the next sign-in.</string>
+    <string name="settings_advanced_title">Advanced</string>
+</resources>

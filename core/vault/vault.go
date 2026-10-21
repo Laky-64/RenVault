@@ -1,0 +1,701 @@
+package vault
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"slices"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/Laky-64/appleservices"
+	"github.com/Laky-64/appleservices/keychain"
+	"github.com/Laky-64/renvault-core/apple"
+)
+
+var errLocked = errors.New("vault: locked")
+
+func zeroPayloadSecrets(p *payload) {
+	if p == nil {
+		return
+	}
+	zero(p.Peer.PrivateKey)
+	for i := range p.Passkey {
+		zero(p.Passkey[i].PrivateKeyD)
+	}
+}
+
+type Vault struct {
+	base string
+
+	mu       sync.Mutex
+	vf       *vaultFile
+	k        []byte
+	p        *payload
+	store    *appleStore
+	sess     *apple.Session
+	pending  appleservices.Credentials
+	autoLock time.Duration
+	timer    *time.Timer
+	timerGen uint64
+	onLock   func()
+	onSync   func()
+	syncer   *syncer
+	inflight uint64
+	lastErr  error
+}
+
+func New(base string) *Vault {
+	st := newAppleStore(base)
+	sess := apple.NewSession(st)
+	sess.SetAnisetteServer(loadAnisette(base))
+	return &Vault{base: base, store: st, sess: sess}
+}
+
+func (v *Vault) Configured() bool {
+	_, ok, err := loadVaultFile(v.base)
+	return err == nil && ok
+}
+
+func (v *Vault) Unlocked() bool {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return v.k != nil
+}
+
+func (v *Vault) UnlockWithPassword(masterPassword string) error {
+	vf, ok, err := loadVaultFile(v.base)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errNoVault
+	}
+	pw := []byte(masterPassword)
+	defer zero(pw)
+	k, p, err := vf.unlockWithPassword(pw)
+	if err != nil {
+		return err
+	}
+	_ = lockMemory(k)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.k != nil {
+		zero(v.k)
+	}
+	zeroPayloadSecrets(v.p)
+	v.vf = &vf
+	v.k = k
+	pc := p
+	v.p = &pc
+	v.applyAutoLockLocked()
+	v.resetTimerLocked()
+	v.startSyncLocked(false)
+	return nil
+}
+
+func (v *Vault) SetOnLock(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onLock = fn
+}
+
+func (v *Vault) SetOnSync(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onSync = fn
+}
+
+func (v *Vault) notify() {
+	v.mu.Lock()
+	fn := v.onSync
+	v.mu.Unlock()
+	if fn != nil {
+		fn()
+	}
+}
+
+func (v *Vault) SetAutoLock(d time.Duration) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.autoLock = d
+	v.resetTimerLocked()
+}
+
+func (v *Vault) AutoLock() time.Duration {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	return v.autoLock
+}
+
+func (v *Vault) resetTimerLocked() {
+	v.timerGen++
+	if v.timer != nil {
+		v.timer.Stop()
+		v.timer = nil
+	}
+	if v.autoLock <= 0 || v.k == nil {
+		return
+	}
+	gen := v.timerGen
+	v.timer = time.AfterFunc(v.autoLock, func() { v.autoLockFire(gen) })
+}
+
+func (v *Vault) autoLockFire(gen uint64) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.timerGen != gen {
+		return
+	}
+	v.lockLocked()
+}
+
+func (v *Vault) Lock() {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.lockLocked()
+}
+
+func (v *Vault) lockLocked() {
+	wasUnlocked := v.k != nil
+	if v.timer != nil {
+		v.timer.Stop()
+		v.timer = nil
+	}
+	if v.k != nil {
+		zero(v.k)
+		v.k = nil
+	}
+	zeroPayloadSecrets(v.p)
+	v.p = nil
+	v.vf = nil
+	v.pending = appleservices.Credentials{}
+	v.sess.Close()
+	v.store.clear()
+	v.stopSyncLocked()
+	v.inflight = 0
+	if wasUnlocked && v.onLock != nil {
+		go v.onLock()
+	}
+}
+
+func (v *Vault) ListWeb() []WebMeta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return nil
+	}
+	v.resetTimerLocked()
+	return webMetas(*v.p)
+}
+
+func (v *Vault) ListWiFi() []WiFiMeta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return nil
+	}
+	v.resetTimerLocked()
+	return wifiMetas(*v.p)
+}
+
+func (v *Vault) ListPasskey() []PasskeyMeta {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return nil
+	}
+	v.resetTimerLocked()
+	return passkeyMetas(*v.p)
+}
+
+func (v *Vault) GetPassword(id string) (string, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return "", errLocked
+	}
+	v.resetTimerLocked()
+	if w, ok := findWeb(*v.p, id); ok {
+		return w.Password, nil
+	}
+	if w, ok := findWiFi(*v.p, id); ok {
+		return w.Password, nil
+	}
+	return "", errors.New("vault: entry not found")
+}
+
+func (v *Vault) GetTOTP(id string) (string, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return "", errLocked
+	}
+	v.resetTimerLocked()
+	w, ok := findWeb(*v.p, id)
+	if !ok {
+		return "", errors.New("vault: entry not found or has no TOTP")
+	}
+	if w.TOTP == "" {
+		return "", errors.New("vault: entry has no TOTP")
+	}
+	return w.TOTPCode(time.Now())
+}
+
+type PwnedReport struct {
+	Checked   int       `json:"checked"`
+	Pwned     int       `json:"pwned"`
+	CheckedAt time.Time `json:"checkedAt"`
+}
+
+func (v *Vault) PwnedInfo() PwnedReport {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return PwnedReport{}
+	}
+	checked := 0
+	for _, w := range v.p.Web {
+		if !w.IsDeleted && w.Password != "" {
+			checked++
+		}
+	}
+	return PwnedReport{Checked: checked, Pwned: len(v.p.Pwned), CheckedAt: v.p.PwnedAt}
+}
+
+func (v *Vault) CheckPwned() (PwnedReport, error) {
+	v.mu.Lock()
+	if v.p == nil || v.k == nil {
+		v.mu.Unlock()
+		return PwnedReport{}, errLocked
+	}
+	origP := v.p
+	v.resetTimerLocked()
+	byKey := make(map[string]string, len(v.p.Web))
+	for _, w := range v.p.Web {
+		if w.IsDeleted || w.Password == "" {
+			continue
+		}
+		byKey[webKey(w)] = pwnedHash(w.Password)
+	}
+	v.mu.Unlock()
+
+	hashes := make([]string, 0, len(byKey))
+	for _, h := range byKey {
+		hashes = append(hashes, h)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), pwnedTimeout)
+	defer cancel()
+	hit, err := lookupPwned(ctx, hashes)
+	if err != nil {
+		return PwnedReport{}, err
+	}
+
+	pwned := make([]string, 0, len(hit))
+	for key, h := range byKey {
+		if _, ok := hit[h]; ok {
+			pwned = append(pwned, key)
+		}
+	}
+	slices.Sort(pwned)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil || v.p != origP {
+		return PwnedReport{}, errLocked
+	}
+	v.resetTimerLocked()
+	v.p.Pwned = pwned
+	v.p.PwnedAt = time.Now().UTC()
+	if err := v.saveLocked(); err != nil {
+		return PwnedReport{}, err
+	}
+	return PwnedReport{Checked: len(byKey), Pwned: len(pwned), CheckedAt: v.p.PwnedAt}, nil
+}
+
+const (
+	flagBackupEligible = 0x08
+	flagBackupState    = 0x10
+)
+
+type Assertion struct {
+	AuthenticatorData []byte `json:"authenticatorData"`
+	Signature         []byte `json:"signature"`
+	UserHandle        []byte `json:"userHandle"`
+}
+
+func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return Assertion{}, errLocked
+	}
+	v.resetTimerLocked()
+	e, ok := findPasskey(*v.p, id)
+	if !ok {
+		return Assertion{}, errors.New("vault: passkey not found")
+	}
+	pk, err := e.passkey()
+	if err != nil {
+		return Assertion{}, err
+	}
+	flags := byte(keychain.FlagUserPresent) | flagBackupEligible | flagBackupState
+	if userVerified {
+		flags |= keychain.FlagUserVerified
+	}
+	authData, sig, err := pk.Sign(clientDataHash, flags, signCount)
+	if err != nil {
+		return Assertion{}, err
+	}
+	return Assertion{AuthenticatorData: authData, Signature: sig, UserHandle: e.UserHandle}, nil
+}
+
+type keychainSource interface {
+	Items() ([]keychain.Item, error)
+	WiFiPasswords() ([]keychain.WiFiPassword, error)
+}
+
+var _ keychainSource = (*appleservices.KeychainVault)(nil)
+
+func (v *Vault) saveLocked() error {
+	if v.vf == nil || v.k == nil || v.p == nil {
+		return errLocked
+	}
+	nvf, err := v.vf.reencryptPayload(v.k, *v.p)
+	if err != nil {
+		return err
+	}
+	if err := saveVaultFile(v.base, nvf); err != nil {
+		return err
+	}
+	v.vf = &nvf
+	return nil
+}
+
+func (v *Vault) StartLogin(appleID, password string) (bool, error) {
+	creds := appleservices.Credentials{AppleID: appleID, Password: password}
+	v.mu.Lock()
+	v.pending = creds
+	v.mu.Unlock()
+	v.store.clear()
+	return v.sess.Start(creds)
+}
+
+func (v *Vault) RequestCode() error {
+	return v.sess.RequestCode()
+}
+
+func (v *Vault) SubmitCode(code string) error {
+	return v.sess.SubmitCode(code)
+}
+
+func (v *Vault) Bottles() ([]apple.BottleInfo, error) {
+	return v.sess.Bottles()
+}
+
+func (v *Vault) RecoverBottle(index int, passcode string) error {
+	pc := []byte(passcode)
+	defer zero(pc)
+	return v.sess.RecoverBottle(index, pc)
+}
+
+func (v *Vault) FinishSetup(masterPassword string) error {
+	v.mu.Lock()
+	creds := v.pending
+	v.mu.Unlock()
+	if creds.AppleID == "" {
+		return apple.ErrNoLogin
+	}
+
+	peer, ok := v.sess.TakePeer()
+	if !ok {
+		return apple.ErrNoPeer
+	}
+	p := &payload{Credentials: creds, Peer: peer}
+
+	src, err := v.sess.Keychain(peer)
+	if err != nil {
+		zeroPayloadSecrets(p)
+		return err
+	}
+	if err := fetchCaches(src, p); err != nil {
+		zeroPayloadSecrets(p)
+		return err
+	}
+	pr, ok := v.sess.Profile()
+	if !ok {
+		zeroPayloadSecrets(p)
+		return apple.ErrNoProfile
+	}
+	p.ProfileName = pr.Name
+	p.ProfilePhoto = pr.Photo
+	p.ProfilePhotoType = pr.PhotoType
+	if sess, ok := v.store.take(); ok {
+		p.Session = sess
+	}
+	p.SyncedAt = time.Now().UTC()
+
+	k, err := genKey()
+	if err != nil {
+		zeroPayloadSecrets(p)
+		return err
+	}
+	mpw := []byte(masterPassword)
+	defer zero(mpw)
+	vf, err := newVaultFile(mpw, k, *p)
+	if err != nil {
+		zero(k)
+		zeroPayloadSecrets(p)
+		return err
+	}
+	if err := saveVaultFile(v.base, vf); err != nil {
+		zero(k)
+		zeroPayloadSecrets(p)
+		return err
+	}
+	_ = lockMemory(k)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.k != nil {
+		zero(v.k)
+	}
+	zeroPayloadSecrets(v.p)
+	v.vf = &vf
+	v.k = k
+	v.p = p
+	v.applyAutoLockLocked()
+	v.resetTimerLocked()
+	v.startSyncLocked(true)
+	return nil
+}
+
+func (v *Vault) Sync() (bool, error) {
+	src, err := v.keychainSession()
+	if errors.Is(err, apple.ErrTwoFactorRequired) {
+		return true, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	if err := v.syncAll(src); errors.Is(err, apple.ErrTwoFactorRequired) {
+		return true, nil
+	} else if err != nil {
+		return false, err
+	}
+	return false, nil
+}
+
+func (v *Vault) syncAll(src *appleservices.KeychainVault) error {
+	v.mu.Lock()
+	origP := v.p
+	v.mu.Unlock()
+	if origP == nil {
+		return errLocked
+	}
+
+	local := &payload{}
+	if err := fetchCaches(src, local); err != nil {
+		return err
+	}
+	prof, err := v.sess.LoadProfile()
+	if err != nil {
+		return err
+	}
+	local.ProfileName = prof.Name
+	local.ProfilePhoto = prof.Photo
+	local.ProfilePhotoType = prof.PhotoType
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil || v.k == nil || v.p != origP {
+		return errLocked
+	}
+	if len(v.p.Outbox) > 0 {
+		return nil
+	}
+	copyCaches(v.p, local)
+	if sess, ok := v.store.take(); ok {
+		v.p.Session = sess
+	}
+	v.p.SyncedAt = time.Now().UTC()
+	return v.saveLocked()
+}
+
+func (v *Vault) refreshWeb(src *appleservices.KeychainVault) error {
+	v.mu.Lock()
+	origP := v.p
+	v.mu.Unlock()
+	if origP == nil {
+		return errLocked
+	}
+
+	items, err := src.Items()
+	if err != nil {
+		return err
+	}
+	web := keychain.WebPasswords(items)
+	passkey := passkeyEntries(items)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil || v.k == nil || v.p != origP {
+		return errLocked
+	}
+	if len(v.p.Outbox) > 0 {
+		return nil
+	}
+	for i := range v.p.Passkey {
+		zero(v.p.Passkey[i].PrivateKeyD)
+	}
+	v.p.Web = web
+	v.p.Passkey = passkey
+	prunePwned(v.p)
+	if sess, ok := v.store.take(); ok {
+		v.p.Session = sess
+	}
+	v.p.SyncedAt = time.Now().UTC()
+	return v.saveLocked()
+}
+
+func (v *Vault) ProfileInfo() ProfileMeta {
+	v.mu.Lock()
+	p := v.p
+	pending := v.pending.AppleID
+	if p != nil {
+		m := ProfileMeta{
+			Name:     p.ProfileName,
+			AppleID:  p.Credentials.AppleID,
+			HasPhoto: len(p.ProfilePhoto) > 0,
+		}
+		v.mu.Unlock()
+		return m
+	}
+	v.mu.Unlock()
+	if pr, ok := v.sess.Profile(); ok {
+		return ProfileMeta{Name: pr.Name, AppleID: pending, HasPhoto: len(pr.Photo) > 0}
+	}
+	return ProfileMeta{AppleID: pending}
+}
+
+func (v *Vault) SignOut() error {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	err := appleservices.Logout(v.store)
+	v.lockLocked()
+	if rmErr := removeVaultFile(v.base); rmErr != nil {
+		return rmErr
+	}
+	return err
+}
+
+func (v *Vault) photoBytes() ([]byte, string) {
+	v.mu.Lock()
+	p := v.p
+	if p != nil {
+		b, t := p.ProfilePhoto, p.ProfilePhotoType
+		v.mu.Unlock()
+		return cloneBytes(b), t
+	}
+	v.mu.Unlock()
+	if pr, ok := v.sess.Profile(); ok {
+		return cloneBytes(pr.Photo), pr.PhotoType
+	}
+	return nil, ""
+}
+
+func cloneBytes(b []byte) []byte {
+	if len(b) == 0 {
+		return nil
+	}
+	out := make([]byte, len(b))
+	copy(out, b)
+	return out
+}
+
+func (v *Vault) ProfilePhoto() ([]byte, string) {
+	return v.photoBytes()
+}
+
+func (v *Vault) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasPrefix(r.URL.Path, "/profile") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		photo, ptype := v.photoBytes()
+		if len(photo) == 0 {
+			http.Error(w, "no profile photo", http.StatusNotFound)
+			return
+		}
+		if ptype == "" {
+			ptype = http.DetectContentType(photo)
+		}
+		w.Header().Set("Content-Type", ptype)
+		w.Header().Set("Content-Length", fmt.Sprint(len(photo)))
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
+		_, _ = w.Write(photo)
+	})
+}
+
+func fetchCaches(src keychainSource, p *payload) error {
+	items, err := src.Items()
+	if err != nil {
+		return err
+	}
+	wifi, err := src.WiFiPasswords()
+	if err != nil {
+		return err
+	}
+	p.Web = keychain.WebPasswords(items)
+	p.WiFi = wifi
+	p.Passkey = passkeyEntries(items)
+	return nil
+}
+
+func passkeyEntries(items []keychain.Item) []passkeyEntry {
+	found := keychain.Passkeys(items)
+	entries := make([]passkeyEntry, 0, len(found))
+	for _, k := range found {
+		e, err := newPasskeyEntry(k)
+		if err != nil {
+			continue
+		}
+		entries = append(entries, e)
+	}
+	return entries
+}
+
+func prunePwned(p *payload) {
+	if len(p.Pwned) == 0 {
+		return
+	}
+	if slices.ContainsFunc(p.Pwned, func(s string) bool { return strings.HasPrefix(s, string(KindWeb)+":") }) {
+		p.Pwned = nil
+		p.PwnedAt = time.Time{}
+		return
+	}
+	live := make([]string, 0, len(p.Pwned))
+	for _, w := range p.Web {
+		if key := webKey(w); slices.Contains(p.Pwned, key) {
+			live = append(live, key)
+		}
+	}
+	slices.Sort(live)
+	p.Pwned = live
+}
+
+func copyCaches(dst, src *payload) {
+	dst.Web = src.Web
+	dst.WiFi = src.WiFi
+	dst.Passkey = src.Passkey
+	dst.ProfileName = src.ProfileName
+	dst.ProfilePhoto = src.ProfilePhoto
+	dst.ProfilePhotoType = src.ProfilePhotoType
+	prunePwned(dst)
+}

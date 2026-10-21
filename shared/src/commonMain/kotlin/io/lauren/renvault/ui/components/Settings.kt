@@ -1,0 +1,449 @@
+package io.lauren.renvault.ui.components
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.toShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import io.lauren.renvault.lib.RvStrings
+import io.lauren.renvault.lib.relativeOf
+import io.lauren.renvault.ui.LocalLocale
+import io.lauren.renvault.ui.theme.RenVault
+import io.lauren.renvault.ui.theme.RvTone
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.delay
+
+private const val ClockTickMs = 30_000L
+
+data class RvSettingsState(
+    val profileName: String = "",
+    val appleId: String = "",
+    val appName: String = "RenVault",
+    val version: String = "",
+    val autoLockMinutes: Int = 5,
+    val autoLockChoices: List<Int> = emptyList(),
+    val pending: Int = 0,
+    val syncedAt: Long = 0L,
+    val anisette: String = "",
+)
+
+@Composable
+fun RvSettingsScreen(
+    state: RvSettingsState,
+    photo: ImageBitmap?,
+    busy: Boolean,
+    strings: RvStrings,
+    dialog: Boolean,
+    onClose: () -> Unit,
+    onAutoLock: (Int) -> Unit,
+    onLockNow: () -> Unit,
+    onCheckPwned: () -> Unit,
+    onSignOut: () -> Unit,
+    modifier: Modifier = Modifier,
+    onAnisette: suspend (String) -> Boolean = { true },
+) {
+    var language by remember { mutableStateOf(false) }
+    val motion = MaterialTheme.motionScheme
+
+    RvBackHandler(enabled = language) { language = false }
+
+    AnimatedContent(
+        targetState = language,
+        modifier = modifier,
+        transitionSpec = {
+            val spatial = motion.defaultSpatialSpec<IntOffset>()
+            val forward = targetState
+            (slideInHorizontally(spatial) { if (forward) it / 3 else -it / 3 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
+                (slideOutHorizontally(spatial) { if (forward) -it / 3 else it / 3 } + fadeOut(motion.fastEffectsSpec()))
+        },
+        label = "settingsPage",
+    ) { deep ->
+        if (deep) {
+            LanguagePage(strings = strings, dialog = dialog, onBack = { language = false })
+        } else {
+            RootPage(
+                state = state,
+                photo = photo,
+                strings = strings,
+                dialog = dialog,
+                onClose = onClose,
+                onLanguage = { language = true },
+                onAutoLock = onAutoLock,
+                onLockNow = onLockNow,
+                onCheckPwned = onCheckPwned,
+                onSignOut = onSignOut,
+                onAnisette = onAnisette,
+            )
+        }
+    }
+
+    RvLoadingDialog(shown = busy)
+}
+
+@Composable
+fun RvSettingsDialog(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(
+            modifier = Modifier
+                .widthIn(max = 560.dp)
+                .fillMaxWidth(0.9f)
+                .heightIn(max = 760.dp)
+                .fillMaxSize(0.88f),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+        ) {
+            content()
+        }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun RootPage(
+    state: RvSettingsState,
+    photo: ImageBitmap?,
+    strings: RvStrings,
+    dialog: Boolean,
+    onClose: () -> Unit,
+    onLanguage: () -> Unit,
+    onAutoLock: (Int) -> Unit,
+    onLockNow: () -> Unit,
+    onCheckPwned: () -> Unit,
+    onSignOut: () -> Unit,
+    onAnisette: suspend (String) -> Boolean,
+) {
+    val locale = LocalLocale.current
+    val accents = RenVault.accents
+    val list = rememberLazyListState()
+    val scrolled by list.scrolledPast()
+    val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
+
+    var lockOpen by remember { mutableStateOf(false) }
+    var signOutOpen by remember { mutableStateOf(false) }
+    var anisetteOpen by remember { mutableStateOf(false) }
+
+    var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(ClockTickMs)
+            now = Clock.System.now().toEpochMilliseconds()
+        }
+    }
+
+    val synced = relativeOf(state.syncedAt, now)?.let { strings.relativeTime(it) } ?: strings.settingsSyncedNever
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = background,
+        topBar = {
+            RvPageBar(
+                title = strings.settingsTitle,
+                scrolled = scrolled,
+                background = background,
+                navigationIcon = {
+                    IconButton(onClick = onClose, shapes = IconButtonDefaults.shapes()) {
+                        Icon(if (dialog) RvCloseIcon else RvBackIcon, contentDescription = strings.settingsClose)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            state = list,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = RvLayout.gutter,
+                end = RvLayout.gutter,
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 32.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+        ) {
+            item { RvPageTitle(strings.settingsTitle) }
+
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    RvProfileAvatar(size = 96.dp, photo = photo, shape = MaterialShapes.Cookie12Sided.toShape())
+                    Text(
+                        text = state.profileName.ifEmpty { state.appName },
+                        style = MaterialTheme.typography.headlineSmallEmphasized,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 10.dp),
+                    )
+                    if (state.appleId.isNotEmpty()) {
+                        Text(
+                            text = state.appleId,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+
+            item {
+                RvSection(title = strings.settingsGeneralTitle) {
+                    RvSegment(
+                        index = 0,
+                        count = 1,
+                        onClick = onLanguage,
+                        leading = { SettingBadge(RvLanguageIcon, accents.blue) },
+                        supporting = { Text(locale.nameOf(locale.current)) },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.settingsLanguage)
+                    }
+                }
+            }
+
+            item {
+                RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
+                    RvSegment(
+                        index = 0,
+                        count = 3,
+                        onClick = { lockOpen = true },
+                        leading = { SettingBadge(RvTimerIcon, accents.teal) },
+                        supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
+                    ) {
+                        Text(strings.settingsAutoLock)
+                    }
+                    RvSegment(
+                        index = 1,
+                        count = 3,
+                        onClick = onLockNow,
+                        leading = { SettingBadge(RvLockIcon, accents.yellow) },
+                    ) {
+                        Text(strings.settingsLockNow)
+                    }
+                    RvSegment(
+                        index = 2,
+                        count = 3,
+                        onClick = onCheckPwned,
+                        leading = { SettingBadge(RvVerifiedIcon, accents.green) },
+                    ) {
+                        Text(strings.settingsCheckPwned)
+                    }
+                }
+            }
+
+            item {
+                RvSection(title = strings.settingsAdvancedTitle) {
+                    RvSegment(
+                        index = 0,
+                        count = 1,
+                        onClick = { anisetteOpen = true },
+                        leading = { SettingBadge(RvServerIcon, accents.red) },
+                        supporting = {
+                            Text(state.anisette.ifEmpty { strings.anisetteDefault }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.anisetteTitle)
+                    }
+                }
+            }
+
+            item {
+                RvSection(
+                    title = strings.settingsAboutTitle,
+                    footer = if (state.pending > 0) strings.settingsPending(state.pending) else null,
+                ) {
+                    RvSegment(
+                        index = 0,
+                        count = 2,
+                        leading = { SettingBadge(RvSyncIcon, accents.orange) },
+                        supporting = { Text(synced) },
+                    ) {
+                        Text(strings.settingsLastSync)
+                    }
+                    RvSegment(
+                        index = 1,
+                        count = 2,
+                        leading = { SettingBadge(RvInfoIcon, accents.blue) },
+                        supporting = { Text(listOf(state.appName, state.version).filter { it.isNotEmpty() }.joinToString(" ")) },
+                    ) {
+                        Text(strings.settingsVersion)
+                    }
+                }
+            }
+
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RvButton(
+                        text = strings.settingsSignOut,
+                        onClick = { signOutOpen = true },
+                        kind = RvButtonKind.DangerTonal,
+                        icon = RvLogoutIcon,
+                    )
+                    Text(
+                        text = strings.settingsSignOutNote,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                }
+            }
+        }
+    }
+
+    RvChoiceDialog(
+        open = lockOpen,
+        onOpenChange = { lockOpen = it },
+        title = strings.settingsAutoLock,
+        choices = state.autoLockChoices,
+        selected = state.autoLockMinutes,
+        label = { lockLabel(it, strings) },
+        cancel = strings.cancel,
+        onSelect = onAutoLock,
+    )
+
+    RvAnisetteDialog(
+        open = anisetteOpen,
+        onOpenChange = { anisetteOpen = it },
+        current = state.anisette,
+        strings = strings,
+        onSave = onAnisette,
+    )
+
+    RvConfirmDialog(
+        open = signOutOpen,
+        onOpenChange = { signOutOpen = it },
+        title = strings.settingsSignOutTitle,
+        description = strings.settingsSignOutDesc,
+        confirm = strings.settingsSignOut,
+        cancel = strings.cancel,
+        danger = true,
+        icon = RvLogoutIcon,
+        onConfirm = onSignOut,
+    )
+}
+
+@Composable
+private fun SettingBadge(icon: androidx.compose.ui.graphics.vector.ImageVector, tone: RvTone) {
+    RvShapeBadge(icon = icon, tone = tone, polygon = MaterialShapes.Circle, size = 40.dp, iconSize = 22.dp)
+}
+
+@Composable
+private fun LanguagePage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
+    val locale = LocalLocale.current
+    var query by remember { mutableStateOf("") }
+    val choices = locale.search(query)
+    val list = rememberLazyListState()
+    val scrolled by list.scrolledPast()
+    val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = background,
+        topBar = {
+            RvPageBar(
+                title = strings.settingsLanguage,
+                scrolled = scrolled,
+                background = background,
+                navigationIcon = {
+                    IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
+                        Icon(RvBackIcon, contentDescription = strings.navBack)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            state = list,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = RvLayout.gutter,
+                end = RvLayout.gutter,
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 32.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item { RvPageTitle(strings.settingsLanguage) }
+
+            item {
+                RvSearchInput(
+                    query = query,
+                    onQuery = { query = it },
+                    placeholder = strings.searchPlaceholder,
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                )
+            }
+
+            item {
+                if (choices.isEmpty()) {
+                    Text(
+                        text = strings.searchEmpty(query.trim()),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                    )
+                } else {
+                    RvSection {
+                        choices.forEachIndexed { index, tag ->
+                            val picked = tag == locale.current
+                            RvSegment(
+                                index = index,
+                                count = choices.size,
+                                selected = picked,
+                                onClick = { locale.choose(tag) },
+                                leading = { RadioButton(selected = picked, onClick = null) },
+                            ) {
+                                Text(locale.nameOf(tag))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun lockLabel(value: Int, strings: RvStrings): String = when {
+    value <= 0 -> strings.settingsAutoLockNever
+    value == 1 -> strings.settingsAutoLockMinute
+    value == 60 -> strings.settingsAutoLockHour
+    else -> strings.settingsAutoLockMinutes(value)
+}
