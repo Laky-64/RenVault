@@ -27,6 +27,15 @@ internal data class SortRequest(
 )
 
 @Serializable
+data class NameSwap(
+    @SerialName("from") val from: String = "",
+    @SerialName("to") val to: String = "",
+)
+
+@Serializable
+internal data class NamesPayload(@SerialName("names") val names: List<NameSwap> = emptyList())
+
+@Serializable
 internal data class AutoLockRequest(@SerialName("minutes") val minutes: Int)
 
 @Serializable

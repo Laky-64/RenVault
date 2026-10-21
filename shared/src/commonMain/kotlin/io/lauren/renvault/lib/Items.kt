@@ -184,7 +184,7 @@ fun viewOf(item: RvItem, strings: RvStrings): RvItemView = when (item) {
 }
 
 sealed interface RvFieldValue {
-    data class Shown(val text: String) : RvFieldValue
+    data class Shown(val text: String, val raw: String = text) : RvFieldValue
     data class Secret(val load: suspend () -> String) : RvFieldValue
     data class Code(val load: suspend () -> String) : RvFieldValue
 }
@@ -205,6 +205,9 @@ val RvDetailField.code: (suspend () -> String)?
 
 val RvDetailField.plain: String?
     get() = (value as? RvFieldValue.Shown)?.text
+
+val RvDetailField.raw: String?
+    get() = (value as? RvFieldValue.Shown)?.raw
 
 interface RvSecretSource {
     suspend fun password(id: String): String
@@ -352,8 +355,45 @@ private fun haystack(item: RvItem): List<String> = when (item) {
     is RvWifiItem -> listOf(item.entry.ssid)
 }
 
-fun matchesQuery(item: RvItem, query: String): Boolean {
+fun matchesQuery(item: RvItem, query: String, names: RvNameMask = RvNameMask.None): Boolean {
     val needle = normalized(query)
     if (needle.isEmpty()) return true
-    return haystack(item).any { it.isNotEmpty() && normalized(it).contains(needle) }
+    return haystack(item).any { text ->
+        text.isNotEmpty() && (normalized(text).contains(needle) || normalized(names.mask(text)).contains(needle))
+    }
+}
+
+fun hidesName(item: RvItem, names: RvNameMask): Boolean {
+    if (!names.active) return false
+    val texts = haystack(item) + when (item) {
+        is RvWebItem -> listOf(item.entry.note)
+        is RvPasskeyItem -> listOf(item.linked?.entry?.note.orEmpty())
+        is RvWifiItem -> emptyList()
+    }
+    return texts.any { names.hides(it) }
+}
+
+fun RvItemView.masked(names: RvNameMask): RvItemView {
+    if (!names.active) return this
+    return copy(
+        title = names.mask(title),
+        subtitle = names.mask(subtitle),
+        icon = when (icon) {
+            is RvItemIcon.Favicon -> icon.copy(fallback = names.mask(icon.fallback))
+            RvItemIcon.WifiGlyph -> icon
+        },
+    )
+}
+
+fun RvItemDetail.masked(names: RvNameMask): RvItemDetail {
+    if (!names.active) return this
+    return copy(
+        title = names.mask(title),
+        fields = fields.map { field ->
+            when (val value = field.value) {
+                is RvFieldValue.Shown -> field.copy(value = value.copy(text = names.mask(value.text)))
+                else -> field
+            }
+        },
+    )
 }

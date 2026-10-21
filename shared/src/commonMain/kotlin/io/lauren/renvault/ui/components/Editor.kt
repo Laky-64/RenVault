@@ -45,6 +45,7 @@ import io.lauren.renvault.lib.isDomain
 import io.lauren.renvault.lib.strengthOf
 import io.lauren.renvault.lib.titleOf
 import kotlinx.coroutines.launch
+import io.lauren.renvault.ui.theme.RvTone
 
 @Composable
 fun RvItemEditor(
@@ -55,6 +56,7 @@ fun RvItemEditor(
     strings: RvStrings,
     onChangePassword: (String) -> Unit,
     onDelete: () -> Unit,
+    hidesName: Boolean = false,
 ) {
     var websitesOpen by remember { mutableStateOf(false) }
     var totpOpen by remember { mutableStateOf(false) }
@@ -71,6 +73,16 @@ fun RvItemEditor(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        if (hidesName) {
+            NoticeCard(
+                icon = RvBadgeIcon,
+                tone = RvTone(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer),
+                title = strings.itemNameHiddenTitle,
+                description = strings.editorNameHidden,
+                action = null,
+                onAction = {},
+            )
+        }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             RvTextField(
                 value = draft.title,

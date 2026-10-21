@@ -238,4 +238,32 @@
         <item quantity="one">%1$d password compromessa trovata</item>
         <item quantity="other">%1$d password compromesse trovate</item>
     </plurals>
+    <string name="settings_identity_title">Identità</string>
+    <string name="names_title">Nome scelto</string>
+    <string name="names_off">Nascondi un deadname ovunque nell’app</string>
+    <string name="names_on">Attivo</string>
+    <string name="names_intro">Scegli un nome da nascondere e quello da mostrare al suo posto. RenVault cambia solo ciò che vedi: i dati salvati e ciò che copi restano invariati.</string>
+    <string name="names_entry">Nasconde un nome · tocca per modificare</string>
+    <string name="names_notice">Mostra avviso negli elementi</string>
+    <string name="names_notice_desc">Ti avvisa quando un elemento contiene un nome nascosto</string>
+    <string name="names_add">Aggiungi un nome</string>
+    <string name="names_dialog_title">Nascondi un nome</string>
+    <string name="names_hidden_label">Nome da nascondere</string>
+    <string name="names_shown_label">Nome da mostrare</string>
+    <string name="names_remove">Rimuovi</string>
+    <string name="names_where_title">Dove compare</string>
+    <string name="names_where_empty">Non compare in nessun elemento</string>
+    <string name="names_where_footer">Quando puoi, aggiorna questi account: così il nome sparirà anche da lì.</string>
+    <string name="names_note">Salvato cifrato nell’archivio. Prima dello sblocco, la pagina di accesso può ancora mostrare il nome del tuo account Apple.</string>
+    <string name="item_name_hidden_title">Contiene un nome che hai nascosto</string>
+    <string name="item_name_hidden_desc">Stai vedendo il nome che hai scelto. I dati salvati non sono cambiati.</string>
+    <string name="item_name_original_desc">Stai vedendo i valori originali salvati in questo elemento.</string>
+    <string name="item_name_show_original">Mostra originale</string>
+    <string name="item_name_hide_original">Mostra nome scelto</string>
+    <string name="editor_name_hidden">Questo elemento contiene un nome che hai nascosto. Qui vedi i valori originali, così puoi modificarli.</string>
+    <string name="field_copied_original">Copiato il valore originale</string>
+    <plurals name="names_found">
+        <item quantity="one">Attivo · in %1$d elemento</item>
+        <item quantity="other">Attivo · in %1$d elementi</item>
+    </plurals>
 </resources>

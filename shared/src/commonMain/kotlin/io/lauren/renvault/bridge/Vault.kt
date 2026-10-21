@@ -54,6 +54,10 @@ object Vault {
 
     suspend fun setAutoLock(minutes: Int) = send(Op.VAULT_SET_AUTO_LOCK, AutoLockRequest(minutes))
 
+    suspend fun names(): List<NameSwap> = receive<NamesPayload>(Op.VAULT_NAMES).names
+
+    suspend fun setNames(names: List<NameSwap>) = send(Op.VAULT_SET_NAMES, NamesPayload(names))
+
     suspend fun autoLockChoices(): List<Int> = receive<MinutesResponse>(Op.VAULT_AUTO_LOCK_CHOICES).minutes
 
     suspend fun signOut() = send(Op.VAULT_SIGN_OUT)

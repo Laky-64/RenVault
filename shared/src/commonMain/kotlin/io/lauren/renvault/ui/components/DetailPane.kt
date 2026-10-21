@@ -71,6 +71,12 @@ import io.lauren.renvault.lib.titleOf
 import io.lauren.renvault.lib.viewOf
 import io.lauren.renvault.ui.theme.RvTone
 import kotlinx.coroutines.launch
+import io.lauren.renvault.ui.LocalNameMask
+import io.lauren.renvault.lib.raw
+import io.lauren.renvault.lib.masked
+import io.lauren.renvault.lib.hidesName
+import io.lauren.renvault.lib.RvNameMask
+import io.lauren.renvault.ui.LocalNameNotice
 
 @Composable
 fun RvDetailPane(
@@ -102,8 +108,14 @@ fun RvDetailPane(
         return
     }
 
-    val view = remember(item, strings) { viewOf(item, strings) }
-    val detail = remember(item, secrets, strings) { detailOf(item, secrets, strings) }
+    val names = LocalNameMask.current
+    val hidden = remember(item, names) { hidesName(item, names) } && LocalNameNotice.current
+    var original by remember(item.id) { mutableStateOf(false) }
+    val shownNames = if (original) RvNameMask.None else names
+    val view = remember(item, strings, shownNames) { viewOf(item, strings).masked(shownNames) }
+    val detail = remember(item, secrets, strings, shownNames) {
+        detailOf(item, secrets, strings).masked(shownNames)
+    }
     val glyph = if (view.icon is RvItemIcon.WifiGlyph) RvWifiIcon else null
     val icon = (view.icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) }
     val scroll = rememberScrollState()
@@ -172,7 +184,7 @@ fun RvDetailPane(
             ) {
                 Header(
                     title = if (editing) titleOf(draft).ifEmpty { "?" } else detail.title,
-                    subtitle = if (editing) null else (item as? RvWebItem)?.let(::siteOf)?.takeIf { it.isNotEmpty() },
+                    subtitle = if (editing) null else (item as? RvWebItem)?.let(::siteOf)?.takeIf { it.isNotEmpty() }?.let(shownNames::mask),
                     glyph = glyph,
                     favicon = icon,
                     fallback = view.title,
@@ -191,6 +203,7 @@ fun RvDetailPane(
                             RvItemEditor(
                                 draft = draft,
                                 onDraft = onDraft,
+                                hidesName = hidden,
                                 hasTotp = view.hasTotp,
                                 codeLoad = detail.fields.firstNotNullOfOrNull { it.code },
                                 strings = strings,
@@ -203,6 +216,10 @@ fun RvDetailPane(
                                 zone = zone.kind,
                                 fields = detail.fields,
                                 strings = strings,
+                                names = shownNames,
+                                hidesName = hidden,
+                                original = original,
+                                onOriginal = { original = it },
                                 onCopy = onCopy,
                                 onChangePassword = onChangePassword,
                                 onLearnMore = onLearnMore,
@@ -261,6 +278,10 @@ private fun ItemView(
     zone: RvZoneKind,
     fields: List<RvDetailField>,
     strings: RvStrings,
+    names: RvNameMask,
+    hidesName: Boolean,
+    original: Boolean,
+    onOriginal: (Boolean) -> Unit,
     onCopy: (String) -> Unit,
     onChangePassword: (String) -> Unit,
     onLearnMore: () -> Unit,
@@ -280,9 +301,20 @@ private fun ItemView(
                 icon = RvWarningIcon,
                 tone = RvTone(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer),
                 title = if (zone == RvZoneKind.Security) strings.securityChangeTitle else strings.itemCompromised,
-                description = strings.securityChangeDesc(labelOf(web)),
+                description = strings.securityChangeDesc(names.mask(labelOf(web))),
                 action = if (site.isNotEmpty()) strings.securityChangeAction else null,
                 onAction = { onChangePassword(site) },
+            )
+        }
+
+        if (hidesName) {
+            NoticeCard(
+                icon = RvBadgeIcon,
+                tone = RvTone(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer),
+                title = strings.itemNameHiddenTitle,
+                description = if (original) strings.itemNameOriginalDesc else strings.itemNameHiddenDesc,
+                action = if (original) strings.itemNameHideOriginal else strings.itemNameShowOriginal,
+                onAction = { onOriginal(!original) },
             )
         }
 
@@ -370,7 +402,7 @@ private fun FieldRow(
 
     val copy: () -> Unit = {
         scope.launch {
-            val text = field.plain ?: revealed ?: (secret ?: code)?.let { load -> runCatching { load() }.getOrNull() }
+            val text = field.raw ?: revealed ?: (secret ?: code)?.let { load -> runCatching { load() }.getOrNull() }
             if (!text.isNullOrEmpty()) onCopy(text)
         }
     }

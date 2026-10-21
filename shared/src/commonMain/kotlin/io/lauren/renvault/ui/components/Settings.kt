@@ -49,9 +49,11 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.relativeOf
 import io.lauren.renvault.ui.LocalLocale
+import io.lauren.renvault.ui.LocalNameMask
 import io.lauren.renvault.ui.theme.LocalThemeController
 import io.lauren.renvault.ui.theme.RenVault
 import io.lauren.renvault.ui.theme.RvTone
@@ -72,7 +74,12 @@ data class RvSettingsState(
     val syncedAt: Long = 0L,
     val anisette: String = "",
     val pwnedCheckedAt: Long = 0L,
+    val names: List<RvNameSwap> = emptyList(),
+    val nameMatches: List<RvNameMatch> = emptyList(),
+    val nameNotice: Boolean = true,
 )
+
+private enum class SettingsPage { Root, Language, Names }
 
 @Composable
 fun RvSettingsScreen(
@@ -89,33 +96,47 @@ fun RvSettingsScreen(
     modifier: Modifier = Modifier,
     onAnisette: suspend (String) -> Boolean = { true },
     onShowPwned: () -> Unit = {},
+    onNames: suspend (List<RvNameSwap>) -> Unit = {},
+    onOpenItem: (String) -> Unit = {},
+    onNameNotice: (Boolean) -> Unit = {},
 ) {
-    var language by remember { mutableStateOf(false) }
+    var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
 
-    RvBackHandler(enabled = language) { language = false }
+    RvBackHandler(enabled = page != SettingsPage.Root) { page = SettingsPage.Root }
 
     AnimatedContent(
-        targetState = language,
+        targetState = page,
         modifier = modifier,
         transitionSpec = {
             val spatial = motion.defaultSpatialSpec<IntOffset>()
-            val forward = targetState
+            val forward = targetState != SettingsPage.Root
             (slideInHorizontally(spatial) { if (forward) it / 3 else -it / 3 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
                 (slideOutHorizontally(spatial) { if (forward) -it / 3 else it / 3 } + fadeOut(motion.fastEffectsSpec()))
         },
         label = "settingsPage",
-    ) { deep ->
-        if (deep) {
-            LanguagePage(strings = strings, dialog = dialog, onBack = { language = false })
-        } else {
-            RootPage(
+    ) { shown ->
+        when (shown) {
+            SettingsPage.Language -> LanguagePage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })
+            SettingsPage.Names -> NamesPage(
+                names = state.names,
+                matches = state.nameMatches,
+                notice = state.nameNotice,
+                onNotice = onNameNotice,
+                strings = strings,
+                dialog = dialog,
+                onBack = { page = SettingsPage.Root },
+                onNames = onNames,
+                onOpenItem = onOpenItem,
+            )
+            SettingsPage.Root -> RootPage(
                 state = state,
                 photo = photo,
                 strings = strings,
                 dialog = dialog,
                 onClose = onClose,
-                onLanguage = { language = true },
+                onLanguage = { page = SettingsPage.Language },
+                onNames = { page = SettingsPage.Names },
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -155,6 +176,7 @@ private fun RootPage(
     dialog: Boolean,
     onClose: () -> Unit,
     onLanguage: () -> Unit,
+    onNames: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -251,14 +273,14 @@ private fun RootPage(
                 ) {
                     RvProfileAvatar(size = 96.dp, photo = photo, shape = MaterialShapes.Cookie12Sided.toShape())
                     Text(
-                        text = state.profileName.ifEmpty { state.appName },
+                        text = LocalNameMask.current.mask(state.profileName).ifEmpty { state.appName },
                         style = MaterialTheme.typography.headlineSmallEmphasized,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 10.dp),
                     )
                     if (state.appleId.isNotEmpty()) {
                         Text(
-                            text = state.appleId,
+                            text = LocalNameMask.current.mask(state.appleId),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -288,6 +310,29 @@ private fun RootPage(
                     }
                     RvSegment(index = 2, count = 3) {
                         RvThemeButtons()
+                    }
+                }
+            }
+
+            item {
+                RvSection(title = strings.settingsIdentityTitle) {
+                    RvSegment(
+                        index = 0,
+                        count = 1,
+                        onClick = onNames,
+                        leading = { SettingBadge(RvBadgeIcon, accents.teal) },
+                        supporting = {
+                            Text(
+                                when {
+                                    state.names.isEmpty() -> strings.namesOff
+                                    state.nameMatches.isEmpty() -> strings.namesOn
+                                    else -> strings.namesFound(state.nameMatches.size)
+                                },
+                            )
+                        },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.namesTitle)
                     }
                 }
             }
@@ -422,7 +467,7 @@ private fun RootPage(
 }
 
 @Composable
-private fun SettingBadge(icon: androidx.compose.ui.graphics.vector.ImageVector, tone: RvTone) {
+internal fun SettingBadge(icon: androidx.compose.ui.graphics.vector.ImageVector, tone: RvTone) {
     RvShapeBadge(icon = icon, tone = tone, polygon = MaterialShapes.Circle, size = 40.dp, iconSize = 22.dp)
 }
 

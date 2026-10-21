@@ -161,6 +161,31 @@ import io.lauren.renvault.resources.settings_sign_out_title
 import io.lauren.renvault.resources.settings_sign_out_desc
 import io.lauren.renvault.resources.settings_open_label
 import io.lauren.renvault.resources.relative_now
+import io.lauren.renvault.resources.settings_identity_title
+import io.lauren.renvault.resources.names_title
+import io.lauren.renvault.resources.names_off
+import io.lauren.renvault.resources.names_on
+import io.lauren.renvault.resources.names_intro
+import io.lauren.renvault.resources.names_add
+import io.lauren.renvault.resources.names_notice
+import io.lauren.renvault.resources.names_notice_desc
+import io.lauren.renvault.resources.names_entry
+import io.lauren.renvault.resources.names_dialog_title
+import io.lauren.renvault.resources.names_hidden_label
+import io.lauren.renvault.resources.names_shown_label
+import io.lauren.renvault.resources.names_remove
+import io.lauren.renvault.resources.names_where_title
+import io.lauren.renvault.resources.names_where_empty
+import io.lauren.renvault.resources.names_where_footer
+import io.lauren.renvault.resources.names_note
+import io.lauren.renvault.resources.item_name_hidden_title
+import io.lauren.renvault.resources.item_name_hidden_desc
+import io.lauren.renvault.resources.item_name_original_desc
+import io.lauren.renvault.resources.item_name_show_original
+import io.lauren.renvault.resources.item_name_hide_original
+import io.lauren.renvault.resources.editor_name_hidden
+import io.lauren.renvault.resources.field_copied_original
+import io.lauren.renvault.resources.names_found
 import io.lauren.renvault.resources.settings_theme
 import io.lauren.renvault.resources.theme_system
 import io.lauren.renvault.resources.theme_light
@@ -368,6 +393,30 @@ private val TextResources = listOf(
     Res.string.zone_security_empty,
     Res.string.zone_security_name,
     Res.string.zone_security_no_selection,
+    Res.string.settings_identity_title,
+    Res.string.names_title,
+    Res.string.names_off,
+    Res.string.names_on,
+    Res.string.names_intro,
+    Res.string.names_add,
+    Res.string.names_notice,
+    Res.string.names_notice_desc,
+    Res.string.names_entry,
+    Res.string.names_dialog_title,
+    Res.string.names_hidden_label,
+    Res.string.names_shown_label,
+    Res.string.names_remove,
+    Res.string.names_where_title,
+    Res.string.names_where_empty,
+    Res.string.names_where_footer,
+    Res.string.names_note,
+    Res.string.item_name_hidden_title,
+    Res.string.item_name_hidden_desc,
+    Res.string.item_name_original_desc,
+    Res.string.item_name_show_original,
+    Res.string.item_name_hide_original,
+    Res.string.editor_name_hidden,
+    Res.string.field_copied_original,
     Res.string.settings_theme,
     Res.string.theme_system,
     Res.string.theme_light,
@@ -382,6 +431,7 @@ private val TextResources = listOf(
 )
 
 private val PluralResources = listOf(
+    Res.plurals.names_found,
     Res.plurals.pwned_found,
     Res.plurals.auth_master_too_short,
     Res.plurals.settings_auto_lock_minutes,
@@ -492,6 +542,30 @@ private class ResourceStrings(
     override val settingsAutoLockNote: String get() = text(Res.string.settings_auto_lock_note)
     override val settingsLockNow: String get() = text(Res.string.settings_lock_now)
     override val settingsCheckPwned: String get() = text(Res.string.settings_check_pwned)
+    override val settingsIdentityTitle: String get() = text(Res.string.settings_identity_title)
+    override val namesTitle: String get() = text(Res.string.names_title)
+    override val namesOff: String get() = text(Res.string.names_off)
+    override val namesOn: String get() = text(Res.string.names_on)
+    override val namesIntro: String get() = text(Res.string.names_intro)
+    override val namesAdd: String get() = text(Res.string.names_add)
+    override val namesNotice: String get() = text(Res.string.names_notice)
+    override val namesNoticeDesc: String get() = text(Res.string.names_notice_desc)
+    override val namesEntry: String get() = text(Res.string.names_entry)
+    override val namesDialogTitle: String get() = text(Res.string.names_dialog_title)
+    override val namesHiddenLabel: String get() = text(Res.string.names_hidden_label)
+    override val namesShownLabel: String get() = text(Res.string.names_shown_label)
+    override val namesRemove: String get() = text(Res.string.names_remove)
+    override val namesWhereTitle: String get() = text(Res.string.names_where_title)
+    override val namesWhereEmpty: String get() = text(Res.string.names_where_empty)
+    override val namesWhereFooter: String get() = text(Res.string.names_where_footer)
+    override val namesNote: String get() = text(Res.string.names_note)
+    override val itemNameHiddenTitle: String get() = text(Res.string.item_name_hidden_title)
+    override val itemNameHiddenDesc: String get() = text(Res.string.item_name_hidden_desc)
+    override val itemNameOriginalDesc: String get() = text(Res.string.item_name_original_desc)
+    override val itemNameShowOriginal: String get() = text(Res.string.item_name_show_original)
+    override val itemNameHideOriginal: String get() = text(Res.string.item_name_hide_original)
+    override val editorNameHidden: String get() = text(Res.string.editor_name_hidden)
+    override val fieldCopiedOriginal: String get() = text(Res.string.field_copied_original)
     override val settingsTheme: String get() = text(Res.string.settings_theme)
     override val themeSystem: String get() = text(Res.string.theme_system)
     override val themeLight: String get() = text(Res.string.theme_light)
@@ -616,6 +690,7 @@ private class ResourceStrings(
         many(Res.plurals.settings_auto_lock_minutes, count, count)
 
     override fun settingsPending(count: Int): String = many(Res.plurals.settings_pending, count, count)
+    override fun namesFound(count: Int): String = many(Res.plurals.names_found, count, count)
     override fun settingsPwnedLast(time: String): String = text(Res.string.settings_pwned_last, time)
     override fun pwnedFound(count: Int): String = many(Res.plurals.pwned_found, count, count)
 

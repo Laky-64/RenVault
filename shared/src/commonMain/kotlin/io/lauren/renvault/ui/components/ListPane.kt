@@ -60,6 +60,8 @@ import io.lauren.renvault.lib.RvSortField
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.viewOf
+import io.lauren.renvault.ui.LocalNameMask
+import io.lauren.renvault.lib.masked
 
 @Composable
 fun RvListPane(
@@ -273,7 +275,8 @@ private fun ItemRow(
     open: Boolean,
     onClick: () -> Unit,
 ) {
-    val view = remember(entry, strings) { viewOf(entry, strings) }
+    val names = LocalNameMask.current
+    val view = remember(entry, strings, names) { viewOf(entry, strings).masked(names) }
     val icon = view.icon
     val compromised = zone == RvZoneKind.Security
     val code = if (zone == RvZoneKind.Codes && view.hasTotp) {

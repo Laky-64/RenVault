@@ -242,4 +242,32 @@
         <item quantity="one">%1$d compromised password found</item>
         <item quantity="other">%1$d compromised passwords found</item>
     </plurals>
+    <string name="settings_identity_title">Identity</string>
+    <string name="names_title">Chosen name</string>
+    <string name="names_off">Hide a deadname everywhere in the app</string>
+    <string name="names_on">On</string>
+    <string name="names_intro">Choose a name to hide and the name to show in its place. RenVault only changes what you see: your saved data and what you copy stay the same.</string>
+    <string name="names_entry">Hides a name · tap to edit</string>
+    <string name="names_notice">Show a notice in items</string>
+    <string name="names_notice_desc">Tells you when an item contains a hidden name</string>
+    <string name="names_add">Add a name</string>
+    <string name="names_dialog_title">Hide a name</string>
+    <string name="names_hidden_label">Name to hide</string>
+    <string name="names_shown_label">Name to show</string>
+    <string name="names_remove">Remove</string>
+    <string name="names_where_title">Where it appears</string>
+    <string name="names_where_empty">It doesn’t appear in any item</string>
+    <string name="names_where_footer">When you can, update these accounts so the name disappears from them too.</string>
+    <string name="names_note">Saved encrypted in your vault. Before the vault is unlocked, the sign-in page may still show the name on your Apple account.</string>
+    <string name="item_name_hidden_title">Contains a name you’ve hidden</string>
+    <string name="item_name_hidden_desc">You’re seeing your chosen name. The saved data hasn’t changed.</string>
+    <string name="item_name_original_desc">You’re seeing the original values saved in this item.</string>
+    <string name="item_name_show_original">Show original</string>
+    <string name="item_name_hide_original">Show chosen name</string>
+    <string name="editor_name_hidden">This item contains a name you’ve hidden. Here you see the original values so you can edit them.</string>
+    <string name="field_copied_original">Original value copied</string>
+    <plurals name="names_found">
+        <item quantity="one">On · in %1$d item</item>
+        <item quantity="other">On · in %1$d items</item>
+    </plurals>
 </resources>

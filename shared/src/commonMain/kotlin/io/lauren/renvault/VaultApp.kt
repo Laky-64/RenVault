@@ -26,6 +26,14 @@ import io.lauren.renvault.bridge.Profile
 import io.lauren.renvault.bridge.Settings
 import io.lauren.renvault.bridge.SyncState
 import io.lauren.renvault.bridge.Vault
+import io.lauren.renvault.lib.writePreference
+import io.lauren.renvault.lib.readPreference
+import io.lauren.renvault.ui.LocalNameNotice
+import androidx.compose.runtime.CompositionLocalProvider
+import io.lauren.renvault.ui.LocalNameMask
+import io.lauren.renvault.lib.RvNameMask
+import io.lauren.renvault.lib.RvNameSwap
+import io.lauren.renvault.bridge.NameSwap
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.RvSecretSource
@@ -84,6 +92,8 @@ fun RvVaultApp(
     var revision by remember { mutableStateOf(0) }
     var anisette by remember { mutableStateOf("") }
     var pwnedAt by remember { mutableStateOf(0L) }
+    var names by remember { mutableStateOf(emptyList<RvNameSwap>()) }
+    var nameNotice by remember { mutableStateOf(readPreference(NameNoticeKey) != "off") }
 
     val icons = remember { mutableStateMapOf<String, Painter?>() }
     val wanted = remember { mutableStateListOf<String>() }
@@ -116,6 +126,7 @@ fun RvVaultApp(
         settings = runCatching { Vault.settings() }.getOrDefault(Settings())
         choices = runCatching { Vault.autoLockChoices() }.getOrDefault(emptyList())
         pwnedAt = runCatching { Vault.pwnedInfo().checkedAt }.getOrDefault(0L)
+        names = runCatching { Vault.names() }.getOrDefault(emptyList()).map { RvNameSwap(it.from, it.to) }
         photo = if (profile.hasPhoto) {
             val raw = runCatching { Vault.profilePhoto() }.getOrNull()
             raw?.let {
@@ -248,77 +259,90 @@ fun RvVaultApp(
             )
         },
         home = {
-            Box(modifier = Modifier.fillMaxSize()) {
-                RvHomePage(
-                    zones = zones,
-                    secrets = secrets,
-                    title = title,
-                    photo = photo,
-                    favicon = favicon,
-                    settings = RvSettingsState(
-                        profileName = profile.name,
-                        appleId = profile.appleId,
-                        version = version,
-                        autoLockMinutes = settings.autoLockMinutes,
-                        autoLockChoices = choices,
-                        pending = sync.pending,
-                        syncedAt = sync.syncedAt,
-                        anisette = anisette,
-                        pwnedCheckedAt = pwnedAt,
-                    ),
-                    sortField = sortFieldOf(settings.sortField),
-                    sortAscending = settings.sortAscending,
-                    strings = strings,
-                    onSort = { field, ascending ->
-                        settings = settings.copy(
-                            sortField = sortKeyOf(field),
-                            sortAscending = ascending,
-                        )
-                        scope.launch {
-                            runCatching { Vault.setSort(sortKeyOf(field), ascending) }
-                        }
+            val mask = remember(names) { RvNameMask(names) }
+            CompositionLocalProvider(LocalNameMask provides mask, LocalNameNotice provides nameNotice) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    RvHomePage(
+                        zones = zones,
+                        secrets = secrets,
+                        title = title,
+                        photo = photo,
+                        favicon = favicon,
+                        settings = RvSettingsState(
+                            profileName = profile.name,
+                            appleId = profile.appleId,
+                            version = version,
+                            autoLockMinutes = settings.autoLockMinutes,
+                            autoLockChoices = choices,
+                            pending = sync.pending,
+                            syncedAt = sync.syncedAt,
+                            anisette = anisette,
+                            pwnedCheckedAt = pwnedAt,
+                            names = names,
+                        nameNotice = nameNotice,
+                        ),
+                        sortField = sortFieldOf(settings.sortField),
+                        sortAscending = settings.sortAscending,
+                        strings = strings,
+                        onSort = { field, ascending ->
+                            settings = settings.copy(
+                                sortField = sortKeyOf(field),
+                                sortAscending = ascending,
+                            )
+                            scope.launch {
+                                runCatching { Vault.setSort(sortKeyOf(field), ascending) }
+                            }
+                        },
+                        onCopy = copy,
+                        onChangePassword = { domain ->
+                            scope.launch {
+                                val target = runCatching { Vault.changePasswordUrl(domain) }.getOrNull()
+                                if (!target.isNullOrEmpty()) openUrl(target)
+                            }
+                        },
+                        onLearnMore = { openUrl(PasskeyUrl) },
+                        onCreate = { draft -> create(draft); revision++ },
+                        onSave = { item, draft -> save(item, draft).also { revision++ } },
+                        onDelete = { id -> Vault.deletePasswords(listOf(id)); revision++ },
+                        onRestore = { id -> Vault.restorePassword(id); revision++ },
+                        onPurge = { id -> Vault.purgePasswords(listOf(id)); revision++ },
+                        onDeleteMany = { ids, purge ->
+                            if (purge) Vault.purgePasswords(ids) else Vault.deletePasswords(ids)
+                            revision++
+                        },
+                        onAutoLock = { minutes ->
+                            settings = settings.copy(autoLockMinutes = minutes)
+                            scope.launch { runCatching { Vault.setAutoLock(minutes) } }
+                        },
+                        onLockNow = {
+                            scope.launch {
+                                runCatching { Vault.lock() }
+                                unlocked = false
+                            }
+                        },
+                        onCheckPwned = {
+                            val report = Vault.checkPwned()
+                            pwnedAt = report.checkedAt
+                            revision++
+                            report.pwned
+                        },
+                        onAnisette = chooseAnisette,
+                        onNames = { next ->
+                            Vault.setNames(next.map { NameSwap(it.from, it.to) })
+                            names = Vault.names().map { RvNameSwap(it.from, it.to) }
+                        },
+                        onNameNotice = { shown ->
+                        nameNotice = shown
+                        writePreference(NameNoticeKey, if (shown) "on" else "off")
                     },
-                    onCopy = copy,
-                    onChangePassword = { domain ->
-                        scope.launch {
-                            val target = runCatching { Vault.changePasswordUrl(domain) }.getOrNull()
-                            if (!target.isNullOrEmpty()) openUrl(target)
-                        }
-                    },
-                    onLearnMore = { openUrl(PasskeyUrl) },
-                    onCreate = { draft -> create(draft); revision++ },
-                    onSave = { item, draft -> save(item, draft).also { revision++ } },
-                    onDelete = { id -> Vault.deletePasswords(listOf(id)); revision++ },
-                    onRestore = { id -> Vault.restorePassword(id); revision++ },
-                    onPurge = { id -> Vault.purgePasswords(listOf(id)); revision++ },
-                    onDeleteMany = { ids, purge ->
-                        if (purge) Vault.purgePasswords(ids) else Vault.deletePasswords(ids)
-                        revision++
-                    },
-                    onAutoLock = { minutes ->
-                        settings = settings.copy(autoLockMinutes = minutes)
-                        scope.launch { runCatching { Vault.setAutoLock(minutes) } }
-                    },
-                    onLockNow = {
-                        scope.launch {
-                            runCatching { Vault.lock() }
-                            unlocked = false
-                        }
-                    },
-                    onCheckPwned = {
-                        val report = Vault.checkPwned()
-                        pwnedAt = report.checkedAt
-                        revision++
-                        report.pwned
-                    },
-                    onAnisette = chooseAnisette,
                     onSignOut = {
-                        scope.launch {
-                            runCatching { Vault.signOut() }
-                            unlocked = false
-                        }
-                    },
-                )
+                            scope.launch {
+                                runCatching { Vault.signOut() }
+                                unlocked = false
+                            }
+                        },
+                    )
+                }
             }
         },
     )
@@ -331,6 +355,8 @@ private const val PrivacyUrl = "https://www.apple.com/legal/privacy/data/en/appl
 private const val PasskeyUrl = "https://support.apple.com/en-us/102195"
 
 private const val DeviceArtTimeoutMs = 4_000L
+
+private const val NameNoticeKey = "name_notice"
 
 private suspend fun create(draft: RvEditorDraft) {
     runCatching {

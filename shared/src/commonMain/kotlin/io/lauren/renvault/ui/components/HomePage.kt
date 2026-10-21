@@ -54,6 +54,12 @@ import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.theme.RenVault
 import io.lauren.renvault.ui.theme.RvTone
 import kotlinx.coroutines.launch
+import io.lauren.renvault.ui.LocalNameMask
+import io.lauren.renvault.lib.viewOf
+import io.lauren.renvault.lib.masked
+import io.lauren.renvault.lib.hidesName
+import io.lauren.renvault.lib.RvNameSwap
+import io.lauren.renvault.ui.LocalNameNotice
 
 data class RvHomeZone(
     val kind: RvZoneKind,
@@ -127,6 +133,8 @@ fun RvHomePage(
     onCheckPwned: suspend () -> Int = { 0 },
     onSignOut: () -> Unit = {},
     onAnisette: suspend (String) -> Boolean = { true },
+    onNames: suspend (List<RvNameSwap>) -> Unit = {},
+    onNameNotice: (Boolean) -> Unit = {},
 ) {
     if (zones.isEmpty()) return
 
@@ -154,8 +162,10 @@ fun RvHomePage(
     val listStates = remember { HashMap<RvZoneKind, LazyListState>() }
     val listState = listStates.getOrPut(active.kind) { LazyListState() }
 
-    val found = remember(active, query) {
-        if (query.isBlank()) active.items else active.items.filter { matchesQuery(it, query) }
+    val names = LocalNameMask.current
+    val notice = LocalNameNotice.current
+    val found = remember(active, query, names) {
+        if (query.isBlank()) active.items else active.items.filter { matchesQuery(it, query, names) }
     }
     val items = remember(found, sortField, sortAscending, strings) {
         sortItems(found, sortField, sortAscending, strings)
@@ -202,7 +212,7 @@ fun RvHomePage(
         onCopy(text)
         scope.launch {
             snackbar.currentSnackbarData?.dismiss()
-            snackbar.showSnackbar(strings.fieldCopied)
+            snackbar.showSnackbar(if (notice && names.hides(text)) strings.fieldCopiedOriginal else strings.fieldCopied)
         }
     }
 
@@ -332,9 +342,15 @@ fun RvHomePage(
         )
     }
 
+    val nameMatches = remember(everything, names, strings) {
+        everything.filter { hidesName(it, names) }
+            .map { RvNameMatch(it.id, viewOf(it, strings).masked(names).title) }
+            .sortedBy { it.title.lowercase() }
+    }
+
     val settingsPane: @Composable (Modifier, Boolean) -> Unit = { paneModifier, dialog ->
         RvSettingsScreen(
-            state = settings,
+            state = settings.copy(nameMatches = nameMatches),
             photo = photo,
             busy = settingsBusy,
             strings = strings,
@@ -350,6 +366,13 @@ fun RvHomePage(
                 settingsOpen = false
                 itemId = null
                 zoneKind = RvZoneKind.Security
+            },
+            onNames = onNames,
+            onNameNotice = onNameNotice,
+            onOpenItem = { id ->
+                settingsOpen = false
+                zoneKind = RvZoneKind.All
+                itemId = id
             },
         )
     }

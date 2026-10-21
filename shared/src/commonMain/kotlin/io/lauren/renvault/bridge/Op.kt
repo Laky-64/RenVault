@@ -19,6 +19,8 @@ internal object Op {
     const val VAULT_CHECK_PWNED = 0x100D
     const val VAULT_PWNED_INFO = 0x100E
     const val VAULT_PROFILE_PHOTO = 0x100F
+    const val VAULT_NAMES = 0x1010
+    const val VAULT_SET_NAMES = 0x1011
 
     const val LIST_WEB = 0x1101
     const val LIST_WIFI = 0x1102
