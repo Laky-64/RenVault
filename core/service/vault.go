@@ -89,6 +89,34 @@ func installVault() {
 		return active.SetAutoLockMinutes(request.Minutes)
 	})
 
+	query(bridge.OpVaultNames, func(context.Context) (namesPayload, error) {
+		active, err := opened()
+		if err != nil {
+			return namesPayload{}, err
+		}
+		names, err := active.Names()
+		if err != nil {
+			return namesPayload{}, err
+		}
+		out := namesPayload{Names: make([]nameSwap, len(names))}
+		for i, swap := range names {
+			out.Names[i] = nameSwap(swap)
+		}
+		return out, nil
+	})
+
+	command(bridge.OpVaultSetNames, func(_ context.Context, request namesPayload) error {
+		active, err := opened()
+		if err != nil {
+			return err
+		}
+		names := make([]vault.NameSwap, len(request.Names))
+		for i, swap := range request.Names {
+			names[i] = vault.NameSwap(swap)
+		}
+		return active.SetNames(names)
+	})
+
 	query(bridge.OpVaultAutoLockChoices, func(context.Context) (minutesResponse, error) {
 		return minutesResponse{Minutes: vault.AutoLockChoices()}, nil
 	})

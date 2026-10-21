@@ -65,6 +65,8 @@ type payload struct {
 	ProfilePhotoType string `cbor:"profile_photo_type,omitempty"`
 
 	Settings Settings `cbor:"settings,omitempty"`
+
+	Names []NameSwap `cbor:"names,omitempty"`
 }
 
 type vaultFile struct {

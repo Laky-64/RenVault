@@ -33,6 +33,15 @@ type sortRequest struct {
 	Ascending bool   `cbor:"ascending"`
 }
 
+type nameSwap struct {
+	From string `cbor:"from"`
+	To   string `cbor:"to"`
+}
+
+type namesPayload struct {
+	Names []nameSwap `cbor:"names"`
+}
+
 type autoLockRequest struct {
 	Minutes int `cbor:"minutes"`
 }

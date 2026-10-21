@@ -21,6 +21,8 @@ const (
 	OpVaultCheckPwned      uint32 = 0x100D
 	OpVaultPwnedInfo       uint32 = 0x100E
 	OpVaultProfilePhoto    uint32 = 0x100F
+	OpVaultNames           uint32 = 0x1010
+	OpVaultSetNames        uint32 = 0x1011
 )
 
 const (
