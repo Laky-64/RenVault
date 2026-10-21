@@ -223,6 +223,11 @@
     <string name="anisette_invalid">Non è un indirizzo di server valido.</string>
     <string name="anisette_note">Vale dal prossimo accesso.</string>
     <string name="settings_advanced_title">Avanzate</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
+    <string name="theme_choose">Cambia tema</string>
     <string name="pwned_checking">Controllo delle password in corso…</string>
     <string name="pwned_none">Nessuna password compromessa</string>
     <string name="pwned_failed">Impossibile completare il controllo</string>

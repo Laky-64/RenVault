@@ -5,3 +5,6 @@ import androidx.compose.runtime.Composable
 
 @Composable
 internal actual fun dynamicScheme(dark: Boolean): ColorScheme? = null
+
+@Composable
+internal actual fun SystemBars(dark: Boolean) = Unit

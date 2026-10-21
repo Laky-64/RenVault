@@ -161,6 +161,11 @@ import io.lauren.renvault.resources.settings_sign_out_title
 import io.lauren.renvault.resources.settings_sign_out_desc
 import io.lauren.renvault.resources.settings_open_label
 import io.lauren.renvault.resources.relative_now
+import io.lauren.renvault.resources.settings_theme
+import io.lauren.renvault.resources.theme_system
+import io.lauren.renvault.resources.theme_light
+import io.lauren.renvault.resources.theme_dark
+import io.lauren.renvault.resources.theme_choose
 import io.lauren.renvault.resources.pwned_checking
 import io.lauren.renvault.resources.pwned_none
 import io.lauren.renvault.resources.pwned_failed
@@ -363,6 +368,11 @@ private val TextResources = listOf(
     Res.string.zone_security_empty,
     Res.string.zone_security_name,
     Res.string.zone_security_no_selection,
+    Res.string.settings_theme,
+    Res.string.theme_system,
+    Res.string.theme_light,
+    Res.string.theme_dark,
+    Res.string.theme_choose,
     Res.string.pwned_checking,
     Res.string.pwned_none,
     Res.string.pwned_failed,
@@ -482,6 +492,11 @@ private class ResourceStrings(
     override val settingsAutoLockNote: String get() = text(Res.string.settings_auto_lock_note)
     override val settingsLockNow: String get() = text(Res.string.settings_lock_now)
     override val settingsCheckPwned: String get() = text(Res.string.settings_check_pwned)
+    override val settingsTheme: String get() = text(Res.string.settings_theme)
+    override val themeSystem: String get() = text(Res.string.theme_system)
+    override val themeLight: String get() = text(Res.string.theme_light)
+    override val themeDark: String get() = text(Res.string.theme_dark)
+    override val themeChoose: String get() = text(Res.string.theme_choose)
     override val pwnedChecking: String get() = text(Res.string.pwned_checking)
     override val pwnedNone: String get() = text(Res.string.pwned_none)
     override val pwnedFailed: String get() = text(Res.string.pwned_failed)

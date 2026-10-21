@@ -657,6 +657,8 @@ fun RvAuthFlow(
             }
         }
 
+        RvThemeMenuButton(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
+
         AnimatedVisibility(
             visible = busy,
             enter = fadeIn(tween(VeilMs.toInt())),

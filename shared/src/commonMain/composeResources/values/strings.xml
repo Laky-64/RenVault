@@ -227,6 +227,11 @@
     <string name="anisette_invalid">That is not a valid server address.</string>
     <string name="anisette_note">It applies from the next sign-in.</string>
     <string name="settings_advanced_title">Advanced</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_choose">Change theme</string>
     <string name="pwned_checking">Checking your passwords…</string>
     <string name="pwned_none">No compromised passwords found</string>
     <string name="pwned_failed">Couldn’t complete the check</string>

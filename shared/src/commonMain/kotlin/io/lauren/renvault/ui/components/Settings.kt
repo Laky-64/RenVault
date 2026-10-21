@@ -52,6 +52,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.relativeOf
 import io.lauren.renvault.ui.LocalLocale
+import io.lauren.renvault.ui.theme.LocalThemeController
 import io.lauren.renvault.ui.theme.RenVault
 import io.lauren.renvault.ui.theme.RvTone
 import kotlin.time.Clock
@@ -269,13 +270,24 @@ private fun RootPage(
                 RvSection(title = strings.settingsGeneralTitle) {
                     RvSegment(
                         index = 0,
-                        count = 1,
+                        count = 3,
                         onClick = onLanguage,
                         leading = { SettingBadge(RvLanguageIcon, accents.blue) },
                         supporting = { Text(locale.nameOf(locale.current)) },
                         trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.settingsLanguage)
+                    }
+                    RvSegment(
+                        index = 1,
+                        count = 3,
+                        leading = { SettingBadge(RvPaletteIcon, accents.orange) },
+                        supporting = { Text(LocalThemeController.current.mode.label(strings)) },
+                    ) {
+                        Text(strings.settingsTheme)
+                    }
+                    RvSegment(index = 2, count = 3) {
+                        RvThemeButtons()
                     }
                 }
             }

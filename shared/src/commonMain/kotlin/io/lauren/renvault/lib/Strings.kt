@@ -63,6 +63,11 @@ interface RvStrings {
     val settingsAutoLockNote: String
     val settingsLockNow: String
     val settingsCheckPwned: String
+    val settingsTheme: String
+    val themeSystem: String
+    val themeLight: String
+    val themeDark: String
+    val themeChoose: String
     val pwnedChecking: String
     val pwnedNone: String
     val pwnedFailed: String
