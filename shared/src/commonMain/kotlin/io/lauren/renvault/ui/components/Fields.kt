@@ -84,52 +84,66 @@ fun RvTextField(
     var ownShown by remember { mutableStateOf(false) }
     val visible = shown ?: ownShown
     val reveal: (Boolean) -> Unit = onShownChange ?: { ownShown = it }
+    val note = error ?: supporting
 
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = if (lines == 1) FieldHeight else 0.dp)
-            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
-        enabled = enabled,
-        label = { Text(label) },
-        leadingIcon = leading?.let { icon -> { Icon(icon, contentDescription = null) } },
-        trailingIcon = when {
-            trailing != null -> trailing
-            secret -> {
-                {
-                    IconButton(
-                        onClick = { reveal(!visible) },
-                        shapes = IconButtonDefaults.shapes(),
-                    ) {
-                        Icon(
-                            imageVector = if (visible) RvVisibilityOffIcon else RvVisibilityIcon,
-                            contentDescription = null,
-                        )
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = if (lines == 1) FieldHeight else 0.dp)
+                .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
+            enabled = enabled,
+            label = { Text(label) },
+            leadingIcon = leading?.let { icon -> { Icon(icon, contentDescription = null) } },
+            trailingIcon = when {
+                trailing != null -> trailing
+                secret -> {
+                    {
+                        IconButton(
+                            onClick = { reveal(!visible) },
+                            shapes = IconButtonDefaults.shapes(),
+                        ) {
+                            Icon(
+                                imageVector = if (visible) RvVisibilityOffIcon else RvVisibilityIcon,
+                                contentDescription = null,
+                            )
+                        }
                     }
                 }
-            }
-            else -> null
-        },
-        isError = error != null,
-        supportingText = (error ?: supporting)?.let { text -> { Text(text) } },
-        visualTransformation = if (secret && !visible) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        },
-        keyboardOptions = KeyboardOptions(
-            capitalization = capitalization,
-            autoCorrectEnabled = !secret && keyboard == KeyboardType.Text && lines > 1,
-            keyboardType = if (secret) KeyboardType.Password else keyboard,
-            imeAction = if (onDone != null) ImeAction.Done else imeAction,
-        ),
-        keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
-        singleLine = lines == 1,
-        minLines = lines,
-        shape = MaterialTheme.shapes.large,
-    )
+                else -> null
+            },
+            isError = error != null,
+            visualTransformation = if (secret && !visible) {
+                PasswordVisualTransformation()
+            } else {
+                VisualTransformation.None
+            },
+            keyboardOptions = KeyboardOptions(
+                capitalization = capitalization,
+                autoCorrectEnabled = !secret && keyboard == KeyboardType.Text && lines > 1,
+                keyboardType = if (secret) KeyboardType.Password else keyboard,
+                imeAction = if (onDone != null) ImeAction.Done else imeAction,
+            ),
+            keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
+            singleLine = lines == 1,
+            minLines = lines,
+            shape = MaterialTheme.shapes.large,
+        )
+        if (note != null) {
+            Text(
+                text = note,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (error != null) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+            )
+        }
+    }
 }
 
 @Composable
