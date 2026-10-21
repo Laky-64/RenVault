@@ -379,7 +379,9 @@ fun RvAuthFlow(
 
     RvBackHandler(enabled = canGoBack, onBack = goBack)
 
-    val avatar: @Composable () -> Unit = { RvProfileAvatar(size = 112.dp, photo = face) }
+    val avatar: @Composable () -> Unit = {
+        RvProfileAvatar(size = 112.dp, photo = face, shape = MaterialShapes.Cookie12Sided.toShape())
+    }
 
     val page = here?.let { "step:${it.name}" } ?: "entry:${entry.name}"
     val depth = steps.size
