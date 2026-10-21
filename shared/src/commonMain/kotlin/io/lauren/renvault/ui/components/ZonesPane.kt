@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -196,6 +197,7 @@ private fun ZonesRail(
             icon = { Icon(RvAddIcon, contentDescription = null) },
             onClick = onAdd,
             modifier = Modifier.padding(start = 4.dp, bottom = 20.dp),
+            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
         )
 
         RvSection {
