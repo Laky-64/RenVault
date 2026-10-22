@@ -294,8 +294,19 @@ private fun ItemRow(
         checked = if (selecting) checked else null,
         selected = if (!selecting) open else null,
         leading = {
+            val siteIcon: @Composable () -> Unit = {
+                RvSiteIcon(
+                    fallback = view.title,
+                    glyph = if (icon is RvItemIcon.WifiGlyph) RvWifiIcon else null,
+                    favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
+                )
+            }
+            if (!selecting) {
+                siteIcon()
+                return@RvSegment
+            }
             AnimatedContent(
-                targetState = selecting && checked,
+                targetState = checked,
                 transitionSpec = {
                     (scaleIn(motion.fastSpatialSpec(), initialScale = 0.6f) + fadeIn()) togetherWith
                         (scaleOut(motion.fastSpatialSpec(), targetScale = 0.6f) + fadeOut())
@@ -312,11 +323,7 @@ private fun ItemRow(
                         Icon(RvCheckIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 } else {
-                    RvSiteIcon(
-                        fallback = view.title,
-                        glyph = if (icon is RvItemIcon.WifiGlyph) RvWifiIcon else null,
-                        favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
-                    )
+                    siteIcon()
                 }
             }
         },
