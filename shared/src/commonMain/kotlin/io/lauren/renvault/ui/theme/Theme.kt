@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -94,12 +95,16 @@ private fun ThemeReveal(
     var frozen by remember { mutableStateOf<ImageBitmap?>(null) }
     var origin by remember { mutableStateOf(Offset.Zero) }
     var bounds by remember { mutableStateOf(IntSize.Zero) }
+    var capturing by remember { mutableStateOf(false) }
 
     LaunchedEffect(theme) {
         snapshotFlow { theme.reveal }.filterNotNull().collect { request ->
             val changes = request.mode.isDark(currentSystem) != theme.mode.isDark(currentSystem)
             val before = if (changes && bounds != IntSize.Zero) {
-                runCatching { layer.toImageBitmap() }.getOrNull()
+                capturing = true
+                withFrameNanos { }
+                withFrameNanos { }
+                runCatching { layer.toImageBitmap() }.getOrNull().also { capturing = false }
             } else {
                 null
             }
@@ -119,8 +124,12 @@ private fun ThemeReveal(
             .fillMaxSize()
             .onSizeChanged { bounds = it }
             .drawWithContent {
-                layer.record { this@drawWithContent.drawContent() }
-                drawLayer(layer)
+                if (capturing) {
+                    layer.record { this@drawWithContent.drawContent() }
+                    drawLayer(layer)
+                } else {
+                    drawContent()
+                }
                 val image = frozen ?: return@drawWithContent
                 val hole = Path().apply { addOval(Rect(origin, radius.value)) }
                 clipPath(hole, ClipOp.Difference) { drawImage(image) }
