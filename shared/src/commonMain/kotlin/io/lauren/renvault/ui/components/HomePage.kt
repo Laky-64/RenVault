@@ -156,7 +156,9 @@ fun RvHomePage(
     var saving by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(RvDraft()) }
 
-    val shownKind = zoneKind ?: RvZoneKind.All
+    val lastZone = remember { arrayOf(RvZoneKind.All) }
+    zoneKind?.let { lastZone[0] = it }
+    val shownKind = zoneKind ?: if (compact) lastZone[0] else RvZoneKind.All
     val active = zones.firstOrNull { it.kind == shownKind } ?: zones.first()
 
     val listStates = remember { HashMap<RvZoneKind, LazyListState>() }
@@ -180,11 +182,12 @@ fun RvHomePage(
     val pickedWeb = items.filter { it is RvWebItem && it.id in picked }
     val draftOk = canSave(draft)
 
-    LaunchedEffect(active.kind) {
+    LaunchedEffect(active.kind, zoneKind == null) {
+        if (zoneKind == null && compact) return@LaunchedEffect
         query = ""
         searching = false
     }
-    LaunchedEffect(selecting, active.kind) { picked = emptySet() }
+    LaunchedEffect(selecting, active.kind, zoneKind == null) { picked = emptySet() }
     LaunchedEffect(itemId) { editing = false }
     LaunchedEffect(current) { if (current != null) lastOpen = current }
 
@@ -315,7 +318,7 @@ fun RvHomePage(
     val detailPane: @Composable (Modifier) -> Unit = { paneModifier ->
         RvDetailPane(
             zone = active,
-            item = current,
+            item = if (compact) current ?: lastOpen else current,
             secrets = secrets,
             strings = strings,
             favicon = favicon,
