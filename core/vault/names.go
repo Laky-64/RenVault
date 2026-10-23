@@ -59,5 +59,11 @@ func (v *Vault) SetNames(names []NameSwap) error {
 		return nil
 	}
 	v.p.Names = next
+	if v.sh != nil {
+		if err := v.localNamesLocked(next); err != nil {
+			return err
+		}
+		go v.kick()
+	}
 	return v.saveLocked()
 }

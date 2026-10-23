@@ -9,7 +9,7 @@ import (
 
 func installVault() {
 	command(bridge.OpVaultInit, func(_ context.Context, request initRequest) error {
-		start(request.Base)
+		start(request.Base, request.Secret)
 		return nil
 	})
 
@@ -48,6 +48,7 @@ func installVault() {
 			Name:     profile.Name,
 			AppleID:  profile.AppleID,
 			HasPhoto: profile.HasPhoto,
+			Local:    profile.Local,
 		}, nil
 	})
 

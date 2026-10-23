@@ -14,14 +14,24 @@ var (
 	tiles   = icons.New()
 )
 
-func start(base string) {
+func start(base string, secret []byte) {
 	if base == "" {
 		base = vault.DefaultBase()
+	}
+	vault.SetPlatformSecret(secret)
+
+	mu.RLock()
+	running := current != nil && current.Base() == base
+	mu.RUnlock()
+	if running {
+		return
 	}
 
 	opened := vault.New(base)
 	opened.SetOnLock(func() { bridge.Emit(bridge.EventLocked, none{}) })
 	opened.SetOnSync(func() { bridge.Emit(bridge.EventSyncChanged, syncStateOf(opened)) })
+	opened.SetOnProfile(func() { bridge.Emit(bridge.EventProfile, none{}) })
+	opened.SetOnPeers(func() { bridge.Emit(bridge.EventDevices, none{}) })
 
 	mu.Lock()
 	defer mu.Unlock()

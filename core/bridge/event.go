@@ -12,6 +12,8 @@ const (
 	EventLocked        uint32 = 0x0002
 	EventSignRequested uint32 = 0x0003
 	EventAgentProgress uint32 = 0x0004
+	EventProfile       uint32 = 0x0005
+	EventDevices       uint32 = 0x0006
 )
 
 const queueDepth = 64

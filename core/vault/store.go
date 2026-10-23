@@ -67,6 +67,8 @@ type payload struct {
 	Settings Settings `cbor:"settings,omitempty"`
 
 	Names []NameSwap `cbor:"names,omitempty"`
+
+	Local *localKeys `cbor:"local,omitempty"`
 }
 
 type vaultFile struct {

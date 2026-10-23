@@ -23,6 +23,20 @@ const (
 	OpVaultProfilePhoto    uint32 = 0x100F
 	OpVaultNames           uint32 = 0x1010
 	OpVaultSetNames        uint32 = 0x1011
+	OpVaultLocalSetup      uint32 = 0x1012
+	OpVaultSetProfile      uint32 = 0x1013
+)
+
+const (
+	OpDevices      uint32 = 0x1201
+	OpDeviceRemove uint32 = 0x1202
+	OpPairStart    uint32 = 0x1203
+	OpPairWait     uint32 = 0x1204
+	OpPairJoin     uint32 = 0x1205
+	OpNetInfo      uint32 = 0x1206
+	OpNetAddresses uint32 = 0x1207
+	OpNetPeerSeen  uint32 = 0x1208
+	OpPeersSync    uint32 = 0x1209
 )
 
 const (
@@ -54,4 +68,5 @@ const (
 const (
 	OpIconTile  uint32 = 0x3001
 	OpIconImage uint32 = 0x3002
+	OpPickImage uint32 = 0x3003
 )

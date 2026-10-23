@@ -38,7 +38,9 @@ func (v *Vault) stopSyncLocked() {
 func (v *Vault) kick() {
 	v.mu.Lock()
 	s := v.syncer
+	n := v.net
 	v.mu.Unlock()
+	n.kick()
 	if s == nil {
 		return
 	}

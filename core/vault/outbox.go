@@ -214,6 +214,13 @@ func (v *Vault) SyncState() SyncStatus {
 		st.Pending = len(v.p.Outbox)
 		st.SyncedAt = v.p.SyncedAt
 	}
+	if v.sh != nil {
+		for _, peer := range v.sh.Peers {
+			if peer.SyncedAt.After(st.SyncedAt) {
+				st.SyncedAt = peer.SyncedAt
+			}
+		}
+	}
 	return st
 }
 

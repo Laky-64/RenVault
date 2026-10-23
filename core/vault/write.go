@@ -21,6 +21,10 @@ func (v *Vault) keychainSession() (*appleservices.KeychainVault, error) {
 		v.mu.Unlock()
 		return nil, errLocked
 	}
+	if v.sh != nil {
+		v.mu.Unlock()
+		return nil, errAppleOnly
+	}
 	creds := v.p.Credentials
 	peer := v.p.Peer
 	session := v.p.Session
@@ -99,6 +103,9 @@ func (v *Vault) AddPassword(title, website, username, password, note string) err
 		entry.Domains = []string{domain}
 	}
 	return v.mutate(func(p *payload) error {
+		if v.sh != nil {
+			return v.localPut("", entry)
+		}
 		p.Web = append(p.Web, entry)
 		pushOp(p, outboxOp{
 			Kind:     opAdd,
@@ -171,7 +178,7 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 		if !rewrite && totp == "" && !drop && !setNote && !setTitle && !setDomains {
 			return nil
 		}
-		pushEdit(p, outboxOp{
+		op := outboxOp{
 			Kind:        opEdit,
 			Domain:      w.Domain,
 			Username:    w.Username,
@@ -188,8 +195,8 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			DropTOTP:    drop,
 			Manual:      unsite,
 			Rewrite:     rewrite,
-		}, v.inflight)
-		e := &p.Web[i]
+		}
+		e := w
 		if setTitle {
 			e.Name = title
 		}
@@ -213,8 +220,17 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			e.Domains = assoc
 		}
 		e.Modified = time.Now().UTC()
-		repointPwned(p, webKey(w), webKey(*e))
-		next = webID(*e)
+		repointPwned(p, webKey(w), webKey(e))
+		next = webID(e)
+		if v.sh != nil {
+			rec := v.recordOfLocked(id)
+			if rec == "" {
+				return errNotFound
+			}
+			return v.localPut(rec, e)
+		}
+		pushEdit(p, op, v.inflight)
+		p.Web[i] = e
 		return nil
 	})
 	if err != nil {
@@ -245,6 +261,9 @@ func (v *Vault) eachWeb(p *payload, ids []string, run func(*payload, string) err
 }
 
 func (v *Vault) deleteWeb(p *payload, id string) error {
+	if v.sh != nil {
+		return v.localTrash(id, true)
+	}
 	i := webIndex(p, id)
 	if i < 0 {
 		return errNotFound
@@ -266,6 +285,9 @@ func (v *Vault) deleteWeb(p *payload, id string) error {
 
 func (v *Vault) RestorePassword(id string) error {
 	return v.mutate(func(p *payload) error {
+		if v.sh != nil {
+			return v.localTrash(id, false)
+		}
 		i := webIndex(p, id)
 		if i < 0 {
 			return errNotFound
@@ -298,6 +320,9 @@ func (v *Vault) PurgePasswords(ids []string) error {
 }
 
 func (v *Vault) purgeWeb(p *payload, id string) error {
+	if v.sh != nil {
+		return v.localPurge(id)
+	}
 	i := webIndex(p, id)
 	if i < 0 {
 		return errNotFound

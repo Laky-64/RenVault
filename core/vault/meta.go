@@ -132,6 +132,7 @@ type ProfileMeta struct {
 	Name     string `json:"name"`
 	AppleID  string `json:"appleId"`
 	HasPhoto bool   `json:"hasPhoto"`
+	Local    bool   `json:"local"`
 }
 
 func hashID(prefix Kind, material ...string) string {

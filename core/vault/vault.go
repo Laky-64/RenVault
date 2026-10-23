@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -22,6 +23,10 @@ func zeroPayloadSecrets(p *payload) {
 		return
 	}
 	zero(p.Peer.PrivateKey)
+	if p.Local != nil {
+		zero(p.Local.Key)
+		zero(p.Local.Identity)
+	}
 	for i := range p.Passkey {
 		zero(p.Passkey[i].PrivateKeyD)
 	}
@@ -30,28 +35,59 @@ func zeroPayloadSecrets(p *payload) {
 type Vault struct {
 	base string
 
-	mu       sync.Mutex
-	vf       *vaultFile
-	k        []byte
-	p        *payload
-	store    *appleStore
-	sess     *apple.Session
-	pending  appleservices.Credentials
-	autoLock time.Duration
-	timer    *time.Timer
-	timerGen uint64
-	onLock   func()
-	onSync   func()
-	syncer   *syncer
-	inflight uint64
-	lastErr  error
+	mu        sync.Mutex
+	vf        *vaultFile
+	k         []byte
+	p         *payload
+	store     *appleStore
+	sess      *apple.Session
+	pending   appleservices.Credentials
+	autoLock  time.Duration
+	timer     *time.Timer
+	timerGen  uint64
+	onLock    func()
+	onSync    func()
+	onProfile func()
+	onPeers   func()
+	ips       []string
+	seen      map[string]seenHost
+	pairing   *pairing
+	sh        *share
+	net       *peerNet
+	recIDs    []string
+	syncer    *syncer
+	inflight  uint64
+	lastErr   error
 }
 
 func New(base string) *Vault {
 	st := newAppleStore(base)
 	sess := apple.NewSession(st)
 	sess.SetAnisetteServer(loadAnisette(base))
-	return &Vault{base: base, store: st, sess: sess}
+	v := &Vault{base: base, store: st, sess: sess}
+	if sh, err := loadShare(base); err != nil {
+		log.Printf("vault: local vault: %v", err)
+	} else if sh != nil {
+		v.sh = sh
+		v.startNetLocked()
+	}
+	return v
+}
+
+func (v *Vault) Base() string {
+	return v.base
+}
+
+func (v *Vault) attachLocked() {
+	if v.sh == nil {
+		v.startSyncLocked(false)
+		return
+	}
+	if v.sh.identity == nil && v.p.Local != nil {
+		v.sh.identity = slices.Clone(v.p.Local.Identity)
+	}
+	v.rebuildShareLocked()
+	v.startNetLocked()
 }
 
 func (v *Vault) Configured() bool {
@@ -93,7 +129,7 @@ func (v *Vault) UnlockWithPassword(masterPassword string) error {
 	v.p = &pc
 	v.applyAutoLockLocked()
 	v.resetTimerLocked()
-	v.startSyncLocked(false)
+	v.attachLocked()
 	return nil
 }
 
@@ -107,6 +143,18 @@ func (v *Vault) SetOnSync(fn func()) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	v.onSync = fn
+}
+
+func (v *Vault) SetOnProfile(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onProfile = fn
+}
+
+func (v *Vault) SetOnPeers(fn func()) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	v.onPeers = fn
 }
 
 func (v *Vault) notify() {
@@ -173,6 +221,8 @@ func (v *Vault) lockLocked() {
 	v.p = nil
 	v.vf = nil
 	v.pending = appleservices.Credentials{}
+	v.pairing = nil
+	v.recIDs = nil
 	v.sess.Close()
 	v.store.clear()
 	v.stopSyncLocked()
@@ -364,7 +414,18 @@ func (v *Vault) saveLocked() error {
 	if v.vf == nil || v.k == nil || v.p == nil {
 		return errLocked
 	}
-	nvf, err := v.vf.reencryptPayload(v.k, *v.p)
+	stored := *v.p
+	if v.sh != nil {
+		if err := saveShare(v.base, v.sh); err != nil {
+			return err
+		}
+		stored.Web = nil
+		stored.Names = nil
+		stored.ProfileName = ""
+		stored.ProfilePhoto = nil
+		stored.ProfilePhotoType = ""
+	}
+	nvf, err := v.vf.reencryptPayload(v.k, stored)
 	if err != nil {
 		return err
 	}
@@ -437,7 +498,10 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 		p.Session = sess
 	}
 	p.SyncedAt = time.Now().UTC()
+	return v.install(masterPassword, p, true)
+}
 
+func (v *Vault) install(masterPassword string, p *payload, fresh bool) error {
 	k, err := genKey()
 	if err != nil {
 		zeroPayloadSecrets(p)
@@ -469,11 +533,18 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 	v.p = p
 	v.applyAutoLockLocked()
 	v.resetTimerLocked()
-	v.startSyncLocked(true)
+	if v.sh != nil {
+		v.attachLocked()
+	} else {
+		v.startSyncLocked(fresh)
+	}
 	return nil
 }
 
 func (v *Vault) Sync() (bool, error) {
+	if v.Local() {
+		return false, v.syncPeers()
+	}
 	src, err := v.keychainSession()
 	if errors.Is(err, apple.ErrTwoFactorRequired) {
 		return true, nil
@@ -570,6 +641,7 @@ func (v *Vault) ProfileInfo() ProfileMeta {
 			Name:     p.ProfileName,
 			AppleID:  p.Credentials.AppleID,
 			HasPhoto: len(p.ProfilePhoto) > 0,
+			Local:    v.sh != nil,
 		}
 		v.mu.Unlock()
 		return m
@@ -582,10 +654,19 @@ func (v *Vault) ProfileInfo() ProfileMeta {
 }
 
 func (v *Vault) SignOut() error {
+	v.leave()
 	v.mu.Lock()
 	defer v.mu.Unlock()
-	err := appleservices.Logout(v.store)
+	var err error
+	if v.sh == nil {
+		err = appleservices.Logout(v.store)
+	}
 	v.lockLocked()
+	if v.sh != nil {
+		v.stopNetLocked()
+		v.sh = nil
+		removeShare(v.base)
+	}
 	if rmErr := removeVaultFile(v.base); rmErr != nil {
 		return rmErr
 	}

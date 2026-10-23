@@ -9,7 +9,8 @@ import (
 )
 
 type initRequest struct {
-	Base string `cbor:"base"`
+	Base   string `cbor:"base"`
+	Secret []byte `cbor:"secret"`
 }
 
 type secretRequest struct {
@@ -132,6 +133,62 @@ type profileResponse struct {
 	Name     string `cbor:"name"`
 	AppleID  string `cbor:"apple_id"`
 	HasPhoto bool   `cbor:"has_photo"`
+	Local    bool   `cbor:"local"`
+}
+
+type localSetupRequest struct {
+	Secret string `cbor:"secret"`
+	Name   string `cbor:"name"`
+	Device string `cbor:"device"`
+	Photo  []byte `cbor:"photo"`
+}
+
+type profileRequest struct {
+	Name     string `cbor:"name"`
+	Photo    []byte `cbor:"photo"`
+	SetPhoto bool   `cbor:"set_photo"`
+}
+
+type deviceEntry struct {
+	ID       string `cbor:"id"`
+	Name     string `cbor:"name"`
+	Self     bool   `cbor:"self"`
+	SyncedAt int64  `cbor:"synced_at"`
+}
+
+type pairResponse struct {
+	Code    string `cbor:"code"`
+	Payload string `cbor:"payload"`
+	Size    int    `cbor:"size"`
+	Modules []byte `cbor:"modules"`
+}
+
+type pickRequest struct {
+	Title  string `cbor:"title"`
+	Filter string `cbor:"filter"`
+}
+
+type joinRequest struct {
+	Text string `cbor:"text"`
+}
+
+type nameResponse struct {
+	Name string `cbor:"name"`
+}
+
+type netInfoResponse struct {
+	Node string `cbor:"node"`
+	Port int    `cbor:"port"`
+}
+
+type addressesRequest struct {
+	IPs []string `cbor:"ips"`
+}
+
+type peerSeenRequest struct {
+	Node string `cbor:"node"`
+	Host string `cbor:"host"`
+	Port int    `cbor:"port"`
 }
 
 type syncResponse struct {
