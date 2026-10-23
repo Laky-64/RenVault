@@ -23,6 +23,9 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvLan
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.app_name
+import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.components.RvDevice
 import io.lauren.renvault.ui.components.RvDeviceActions
 import io.lauren.renvault.ui.components.RvPairCode
@@ -72,7 +75,7 @@ import kotlin.math.roundToInt
 @Composable
 fun RvVaultApp(
     modifier: Modifier = Modifier,
-    title: String = "RenVault",
+    title: String = stringResource(Res.string.app_name),
     version: String = RvAppVersion,
     strings: RvStrings = LocalStrings.current,
     titleBar: @Composable (() -> Unit)? = null,
@@ -363,6 +366,7 @@ fun RvVaultApp(
                         photo = photo,
                         favicon = favicon,
                         settings = RvSettingsState(
+                            appName = title,
                             profileName = profile.name,
                             appleId = profile.appleId,
                             version = version,

@@ -1,5 +1,9 @@
 package io.lauren.renvault.lib
 
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.app_name
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.NetworkInterface
@@ -19,7 +23,7 @@ internal actual object RvLan {
         System.getenv("COMPUTERNAME")
             ?: System.getenv("HOSTNAME")
             ?: runCatching { InetAddress.getLocalHost().hostName }.getOrNull()
-            ?: "RenVault"
+            ?: runBlocking { getString(Res.string.app_name) }
 
     @Synchronized
     actual fun start(node: String, port: Int, onSeen: (node: String, host: String, port: Int) -> Unit) {

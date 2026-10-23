@@ -52,6 +52,9 @@ import io.lauren.renvault.lib.matchesQuery
 import io.lauren.renvault.lib.sortItems
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.theme.RenVault
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.app_name
+import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.theme.RvTone
 import kotlinx.coroutines.launch
 import io.lauren.renvault.ui.LocalNameMask
@@ -113,7 +116,7 @@ fun RvHomePage(
     title: String = "",
     photo: ImageBitmap? = null,
     favicon: (domain: String) -> Painter? = { null },
-    settings: RvSettingsState = RvSettingsState(),
+    settings: RvSettingsState = RvSettingsState(appName = stringResource(Res.string.app_name)),
     settingsBusy: Boolean = false,
     sortField: RvSortField = RvSortField.Title,
     sortAscending: Boolean = true,

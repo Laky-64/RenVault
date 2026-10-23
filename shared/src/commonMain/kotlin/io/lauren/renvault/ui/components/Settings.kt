@@ -68,7 +68,7 @@ private const val ClockTickMs = 30_000L
 data class RvSettingsState(
     val profileName: String = "",
     val appleId: String = "",
-    val appName: String = "RenVault",
+    val appName: String,
     val version: String = "",
     val autoLockMinutes: Int = 5,
     val autoLockChoices: List<Int> = emptyList(),

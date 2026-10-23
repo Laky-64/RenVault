@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_name" translatable="false">RenVault</string>
     <string name="auth_sign_in_title">Sign in with your Apple ID</string>
     <string name="auth_sign_in_hint">Sign in with an email or phone number to use RenVault</string>
     <string name="auth_email_placeholder">Email or phone number</string>

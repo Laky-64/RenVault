@@ -11,6 +11,7 @@ dependencies {
 
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.material3)
+    implementation(libs.compose.components.resources)
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
@@ -29,8 +30,14 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "io.lauren.renvault"
+            packageName = "RenVault"
             packageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
+            macOS {
+                bundleID = "io.lauren.renvault"
+            }
+            linux {
+                packageName = "io.lauren.renvault"
+            }
         }
     }
 }
