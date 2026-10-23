@@ -251,19 +251,25 @@ private fun MutableList<RvDetailField>.pushPasskeyCreated(created: Long, strings
     )
 }
 
+private fun MutableList<RvDetailField>.pushUsername(username: String, strings: RvStrings) {
+    if (username.isBlank()) return
+    add(
+        RvDetailField(
+            label = strings.fieldUsername,
+            value = RvFieldValue.Shown(username),
+            copyable = true,
+        ),
+    )
+}
+
 fun detailOf(
     item: RvItem,
     secrets: RvSecretSource,
     strings: RvStrings,
 ): RvItemDetail = when (item) {
     is RvWebItem -> {
-        val fields = mutableListOf(
-            RvDetailField(
-                label = strings.fieldUsername,
-                value = RvFieldValue.Shown(item.entry.username),
-                copyable = true,
-            ),
-        )
+        val fields = mutableListOf<RvDetailField>()
+        fields.pushUsername(item.entry.username, strings)
         if (item.entry.hasPassword) {
             fields += RvDetailField(
                 label = strings.fieldPassword,
@@ -309,13 +315,8 @@ fun detailOf(
 
     is RvPasskeyItem -> {
         val linked = item.linked
-        val fields = mutableListOf(
-            RvDetailField(
-                label = strings.fieldUsername,
-                value = RvFieldValue.Shown(item.entry.username),
-                copyable = true,
-            ),
-        )
+        val fields = mutableListOf<RvDetailField>()
+        fields.pushUsername(item.entry.username, strings)
         if (linked != null) {
             fields += RvDetailField(
                 label = strings.fieldPassword,
