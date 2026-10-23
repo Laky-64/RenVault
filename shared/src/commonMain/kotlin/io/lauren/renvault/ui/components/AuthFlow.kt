@@ -78,14 +78,20 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.strengthOf
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.theme.RenVault
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val VeilMs = 220L
 private val BodyMax = 440.dp
 private const val DeviceArtFill = 0.64f
 
-private enum class AuthStep { TwoFactor, TrustedDevices, DevicePasscode, MasterSetup }
+private enum class AuthStep { TwoFactor, TrustedDevices, DevicePasscode, LocalChoice, LocalProfile, MasterSetup, LocalJoin }
+
+private enum class LocalMode { New, Join }
 
 private enum class AuthEntry { Deciding, Credentials, Master }
 
@@ -115,6 +121,8 @@ fun RvAuthFlow(
     loadProfile: suspend () -> RvAuthProfile = { RvAuthProfile() },
     recoverDevice: suspend (Int, String) -> Unit = { _, _ -> },
     finishSetup: suspend (String) -> Unit = {},
+    finishLocal: suspend (String, String, ByteArray?) -> Unit = { _, _, _ -> },
+    joinPairing: suspend (String) -> String = { "" },
     unlock: suspend (String) -> Unit = {},
     onPrivacy: () -> Unit = {},
     anisette: String = "",
@@ -146,6 +154,12 @@ fun RvAuthFlow(
     var face by remember { mutableStateOf(photo) }
     var anisetteOpen by remember { mutableStateOf(false) }
     var owner by remember { mutableStateOf("") }
+    var local by remember { mutableStateOf<LocalMode?>(null) }
+    var profileName by remember { mutableStateOf("") }
+    var profilePhoto by remember { mutableStateOf<ByteArray?>(null) }
+    var profileFace by remember { mutableStateOf<ImageBitmap?>(null) }
+    var joinCode by remember { mutableStateOf("") }
+    var joinError by remember { mutableStateOf("") }
 
     val signInShake = remember { Animatable(0f) }
     val passcodeShake = remember { Animatable(0f) }
@@ -195,6 +209,49 @@ fun RvAuthFlow(
     }
 
     val canContinue = email.trim().isNotEmpty() && password.isNotEmpty()
+
+    val pickPhoto = rememberPhotoPicker { bytes ->
+        scope.launch {
+            val image = withContext(Dispatchers.Default) { runCatching { bytes.decodeToImageBitmap() }.getOrNull() }
+            if (image != null) {
+                profilePhoto = bytes
+                profileFace = image
+            }
+        }
+    }
+
+    val openMaster: () -> Unit = {
+        master = ""
+        masterRepeat = ""
+        masterError = ""
+        steps += AuthStep.MasterSetup
+    }
+
+    val chooseLocal: (LocalMode) -> Unit = { mode ->
+        local = mode
+        if (mode == LocalMode.New) steps += AuthStep.LocalProfile else openMaster()
+    }
+
+    val submitJoin: (String) -> Unit = { text ->
+        if (text.isNotBlank() && !busy) {
+            scope.launch {
+                joinError = ""
+                busyTitle = strings.busyJoiningTitle
+                busyLabel = strings.busyJoining
+                busy = true
+                try {
+                    joinPairing(text)
+                    onDone()
+                    return@launch
+                } catch (failure: Throwable) {
+                    joinError = describe(failure)
+                }
+                busy = false
+            }
+        }
+    }
+
+    val scanJoin = rememberQrScanner(onScanned = submitJoin)
 
     val submitCredentials: () -> Unit = {
         if (canContinue && !busy) {
@@ -309,7 +366,18 @@ fun RvAuthFlow(
                 master = ""
                 masterRepeat = ""
                 try {
-                    finishSetup(entered)
+                    when (local) {
+                        null -> finishSetup(entered)
+                        LocalMode.New -> finishLocal(entered, profileName, profilePhoto)
+                        LocalMode.Join -> finishLocal(entered, "", null)
+                    }
+                    if (local == LocalMode.Join) {
+                        joinCode = ""
+                        joinError = ""
+                        steps += AuthStep.LocalJoin
+                        busy = false
+                        return@launch
+                    }
                     onDone()
                     return@launch
                 } catch (failure: Throwable) {
@@ -369,11 +437,20 @@ fun RvAuthFlow(
         busy = false
     }
 
-    val canGoBack = !busy && here == AuthStep.DevicePasscode && AuthStep.TrustedDevices in steps
+    val canGoBack = !busy && when (here) {
+        AuthStep.DevicePasscode -> AuthStep.TrustedDevices in steps
+        AuthStep.LocalChoice, AuthStep.LocalProfile -> true
+        AuthStep.MasterSetup -> local != null
+        else -> false
+    }
     val goBack = {
         passcode = ""
         passcodeError = ""
+        master = ""
+        masterRepeat = ""
+        masterError = ""
         steps.removeLastOrNull()
+        if (steps.lastOrNull() == AuthStep.LocalChoice) local = null
         Unit
     }
 
@@ -466,6 +543,13 @@ fun RvAuthFlow(
                             text = strings.authSignInAction,
                             onClick = submitCredentials,
                             enabled = canContinue,
+                        )
+                        RvButton(
+                            text = strings.authLocalAction,
+                            onClick = { steps += AuthStep.LocalChoice },
+                            kind = RvButtonKind.Tonal,
+                            enabled = !busy,
+                            icon = RvCloudOffIcon,
                         )
                     },
                     extra = {
@@ -582,6 +666,100 @@ fun RvAuthFlow(
                             onClick = submitPasscode,
                             enabled = passcode.isNotEmpty(),
                         )
+                    },
+                )
+
+                "step:${AuthStep.LocalChoice.name}" -> AuthPage(
+                    hero = { AuthHero(RvCloudOffIcon, MaterialShapes.Cookie9Sided) },
+                    title = strings.authLocalTitle,
+                    hint = strings.authLocalHint,
+                    body = {
+                        RvSection {
+                            RvSegment(
+                                index = 0,
+                                count = 2,
+                                onClick = { chooseLocal(LocalMode.New) },
+                                leading = { SettingBadge(RvAddIcon, RenVault.accents.blue) },
+                                supporting = { Text(strings.authLocalNewDesc) },
+                                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                            ) {
+                                Text(strings.authLocalNew)
+                            }
+                            RvSegment(
+                                index = 1,
+                                count = 2,
+                                onClick = { chooseLocal(LocalMode.Join) },
+                                leading = { SettingBadge(RvDevicesIcon, RenVault.accents.teal) },
+                                supporting = { Text(strings.authLocalJoinDesc) },
+                                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                            ) {
+                                Text(strings.authLocalJoin)
+                            }
+                        }
+                    },
+                    actions = {},
+                )
+
+                "step:${AuthStep.LocalProfile.name}" -> AuthPage(
+                    hero = {
+                        Box {
+                            RvProfileAvatar(size = 112.dp, photo = profileFace, shape = MaterialShapes.Cookie12Sided.toShape())
+                            if (pickPhoto != null) {
+                                FilledTonalIconButton(
+                                    onClick = pickPhoto,
+                                    shapes = IconButtonDefaults.shapes(),
+                                    modifier = Modifier.align(Alignment.BottomEnd),
+                                ) {
+                                    Icon(RvAddPhotoIcon, contentDescription = strings.profilePhotoPick)
+                                }
+                            }
+                        }
+                    },
+                    title = strings.authProfileTitle,
+                    hint = strings.authProfileHint,
+                    body = {
+                        RvTextField(
+                            value = profileName,
+                            onValueChange = { profileName = it },
+                            label = strings.profileName,
+                            leading = RvPersonIcon,
+                            capitalization = KeyboardCapitalization.Words,
+                            onDone = openMaster,
+                        )
+                    },
+                    actions = {
+                        RvButton(text = strings.authContinueAction, onClick = openMaster)
+                    },
+                )
+
+                "step:${AuthStep.LocalJoin.name}" -> AuthPage(
+                    hero = { AuthHero(RvQrScanIcon, MaterialShapes.Gem) },
+                    title = strings.authJoinTitle,
+                    hint = strings.pairJoinHint,
+                    body = {
+                        PairJoinForm(
+                            code = joinCode,
+                            onCode = { joinCode = it },
+                            failure = joinError.ifEmpty { null },
+                            onScan = scanJoin,
+                            onSubmit = { submitJoin(joinCode) },
+                            strings = strings,
+                            enabled = !busy,
+                        )
+                    },
+                    actions = {
+                        RvButton(
+                            text = strings.pairJoinAction,
+                            onClick = { submitJoin(joinCode) },
+                            enabled = joinCode.isNotBlank(),
+                        )
+                        TextButton(
+                            onClick = onDone,
+                            shapes = ButtonDefaults.shapes(),
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        ) {
+                            Text(strings.authJoinSkip)
+                        }
                     },
                 )
 

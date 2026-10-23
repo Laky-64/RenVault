@@ -21,6 +21,18 @@ internal object Op {
     const val VAULT_PROFILE_PHOTO = 0x100F
     const val VAULT_NAMES = 0x1010
     const val VAULT_SET_NAMES = 0x1011
+    const val VAULT_LOCAL_SETUP = 0x1012
+    const val VAULT_SET_PROFILE = 0x1013
+
+    const val DEVICES = 0x1201
+    const val DEVICE_REMOVE = 0x1202
+    const val PAIR_START = 0x1203
+    const val PAIR_WAIT = 0x1204
+    const val PAIR_JOIN = 0x1205
+    const val NET_INFO = 0x1206
+    const val NET_ADDRESSES = 0x1207
+    const val NET_PEER_SEEN = 0x1208
+    const val PEERS_SYNC = 0x1209
 
     const val LIST_WEB = 0x1101
     const val LIST_WIFI = 0x1102
@@ -45,6 +57,7 @@ internal object Op {
 
     const val ICON_TILE = 0x3001
     const val ICON_IMAGE = 0x3002
+    const val PICK_IMAGE = 0x3003
 }
 
 internal object FailureKind {
@@ -68,4 +81,6 @@ object EventKind {
     const val LOCKED = 0x0002
     const val SIGN_REQUESTED = 0x0003
     const val AGENT_PROGRESS = 0x0004
+    const val PROFILE = 0x0005
+    const val DEVICES = 0x0006
 }

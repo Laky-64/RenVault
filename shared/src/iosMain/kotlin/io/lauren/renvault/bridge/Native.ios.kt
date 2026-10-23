@@ -21,6 +21,8 @@ internal actual object Native {
 }
 
 actual object PlatformStorage {
+    actual fun secret(): ByteArray? = null
+
     actual fun base(): String {
         val directories = NSFileManager.defaultManager.URLsForDirectory(
             NSDocumentDirectory,

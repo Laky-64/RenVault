@@ -24,11 +24,18 @@ actual object PlatformStorage {
     @Volatile
     private var directory: String = ""
 
+    @Volatile
+    internal var context: Context? = null
+        private set
+
     fun attach(context: Context) {
         directory = context.filesDir.absolutePath
+        this.context = context.applicationContext
     }
 
     actual fun base(): String = directory
+
+    actual fun secret(): ByteArray? = context?.let(DeviceSecret::load)
 }
 
 internal actual fun ioDispatcher(): CoroutineDispatcher = Dispatchers.IO

@@ -10,6 +10,58 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.unescape
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.RvZoneText
+import io.lauren.renvault.resources.photo_filter
+import io.lauren.renvault.resources.settings_sync_title
+import io.lauren.renvault.resources.auth_local_action
+import io.lauren.renvault.resources.auth_local_title
+import io.lauren.renvault.resources.auth_local_hint
+import io.lauren.renvault.resources.auth_local_new
+import io.lauren.renvault.resources.auth_local_new_desc
+import io.lauren.renvault.resources.auth_local_join
+import io.lauren.renvault.resources.auth_local_join_desc
+import io.lauren.renvault.resources.auth_profile_title
+import io.lauren.renvault.resources.auth_profile_hint
+import io.lauren.renvault.resources.profile_name
+import io.lauren.renvault.resources.profile_photo_pick
+import io.lauren.renvault.resources.profile_photo_remove
+import io.lauren.renvault.resources.profile_edit_title
+import io.lauren.renvault.resources.auth_join_title
+import io.lauren.renvault.resources.auth_join_skip
+import io.lauren.renvault.resources.pair_join_hint
+import io.lauren.renvault.resources.pair_scan
+import io.lauren.renvault.resources.pair_code_label
+import io.lauren.renvault.resources.pair_join_action
+import io.lauren.renvault.resources.pair_host_hint
+import io.lauren.renvault.resources.pair_waiting
+import io.lauren.renvault.resources.pair_done
+import io.lauren.renvault.resources.pair_retry
+import io.lauren.renvault.resources.pair_close
+import io.lauren.renvault.resources.busy_joining_title
+import io.lauren.renvault.resources.busy_joining
+import io.lauren.renvault.resources.devices_title
+import io.lauren.renvault.resources.devices_count
+import io.lauren.renvault.resources.devices_intro
+import io.lauren.renvault.resources.devices_this
+import io.lauren.renvault.resources.devices_synced
+import io.lauren.renvault.resources.devices_never
+import io.lauren.renvault.resources.devices_add
+import io.lauren.renvault.resources.devices_join
+import io.lauren.renvault.resources.devices_sync_now
+import io.lauren.renvault.resources.devices_sync_done
+import io.lauren.renvault.resources.devices_sync_failed
+import io.lauren.renvault.resources.devices_remove
+import io.lauren.renvault.resources.devices_remove_title
+import io.lauren.renvault.resources.devices_remove_desc
+import io.lauren.renvault.resources.devices_footer
+import io.lauren.renvault.resources.settings_local_vault
+import io.lauren.renvault.resources.settings_delete_vault
+import io.lauren.renvault.resources.settings_delete_vault_title
+import io.lauren.renvault.resources.settings_delete_vault_desc
+import io.lauren.renvault.resources.settings_delete_vault_note
+import io.lauren.renvault.resources.failure_pair_refused
+import io.lauren.renvault.resources.failure_pair_missing
+import io.lauren.renvault.resources.failure_no_network
+import io.lauren.renvault.resources.failure_bad_photo
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.settings_advanced_title
 import io.lauren.renvault.resources.anisette_title
@@ -428,6 +480,57 @@ private val TextResources = listOf(
     Res.string.pwned_show,
     Res.string.settings_pwned_never,
     Res.string.settings_pwned_last,
+    Res.string.auth_local_action,
+    Res.string.auth_local_title,
+    Res.string.auth_local_hint,
+    Res.string.auth_local_new,
+    Res.string.auth_local_new_desc,
+    Res.string.auth_local_join,
+    Res.string.auth_local_join_desc,
+    Res.string.auth_profile_title,
+    Res.string.auth_profile_hint,
+    Res.string.profile_name,
+    Res.string.profile_photo_pick,
+    Res.string.profile_photo_remove,
+    Res.string.profile_edit_title,
+    Res.string.auth_join_title,
+    Res.string.auth_join_skip,
+    Res.string.pair_join_hint,
+    Res.string.pair_scan,
+    Res.string.pair_code_label,
+    Res.string.pair_join_action,
+    Res.string.pair_host_hint,
+    Res.string.pair_waiting,
+    Res.string.pair_done,
+    Res.string.pair_retry,
+    Res.string.pair_close,
+    Res.string.busy_joining_title,
+    Res.string.busy_joining,
+    Res.string.devices_title,
+    Res.string.devices_intro,
+    Res.string.devices_this,
+    Res.string.devices_synced,
+    Res.string.devices_never,
+    Res.string.devices_add,
+    Res.string.devices_join,
+    Res.string.devices_sync_now,
+    Res.string.devices_sync_done,
+    Res.string.devices_sync_failed,
+    Res.string.devices_remove,
+    Res.string.devices_remove_title,
+    Res.string.devices_remove_desc,
+    Res.string.devices_footer,
+    Res.string.settings_local_vault,
+    Res.string.settings_delete_vault,
+    Res.string.settings_delete_vault_title,
+    Res.string.settings_delete_vault_desc,
+    Res.string.settings_delete_vault_note,
+    Res.string.failure_pair_refused,
+    Res.string.failure_pair_missing,
+    Res.string.failure_no_network,
+    Res.string.failure_bad_photo,
+    Res.string.settings_sync_title,
+    Res.string.photo_filter,
 )
 
 private val PluralResources = listOf(
@@ -449,6 +552,7 @@ private val PluralResources = listOf(
     Res.plurals.field_website_more,
     Res.plurals.list_selected_count,
     Res.plurals.zone_item_count,
+    Res.plurals.devices_count,
 )
 
 private suspend fun loadStrings(environment: ResourceEnvironment): RvStrings = ResourceStrings(
@@ -641,6 +745,54 @@ private class ResourceStrings(
     override val strengthStrong: String get() = text(Res.string.strength_strong)
 
     override val failureGeneric: String get() = text(Res.string.failure_generic)
+    override val photoFilter: String get() = text(Res.string.photo_filter)
+    override val settingsSyncTitle: String get() = text(Res.string.settings_sync_title)
+    override val authLocalAction: String get() = text(Res.string.auth_local_action)
+    override val authLocalTitle: String get() = text(Res.string.auth_local_title)
+    override val authLocalHint: String get() = text(Res.string.auth_local_hint)
+    override val authLocalNew: String get() = text(Res.string.auth_local_new)
+    override val authLocalNewDesc: String get() = text(Res.string.auth_local_new_desc)
+    override val authLocalJoin: String get() = text(Res.string.auth_local_join)
+    override val authLocalJoinDesc: String get() = text(Res.string.auth_local_join_desc)
+    override val authProfileTitle: String get() = text(Res.string.auth_profile_title)
+    override val authProfileHint: String get() = text(Res.string.auth_profile_hint)
+    override val profileName: String get() = text(Res.string.profile_name)
+    override val profilePhotoPick: String get() = text(Res.string.profile_photo_pick)
+    override val profilePhotoRemove: String get() = text(Res.string.profile_photo_remove)
+    override val profileEditTitle: String get() = text(Res.string.profile_edit_title)
+    override val authJoinTitle: String get() = text(Res.string.auth_join_title)
+    override val authJoinSkip: String get() = text(Res.string.auth_join_skip)
+    override val pairJoinHint: String get() = text(Res.string.pair_join_hint)
+    override val pairScan: String get() = text(Res.string.pair_scan)
+    override val pairCodeLabel: String get() = text(Res.string.pair_code_label)
+    override val pairJoinAction: String get() = text(Res.string.pair_join_action)
+    override val pairHostHint: String get() = text(Res.string.pair_host_hint)
+    override val pairWaiting: String get() = text(Res.string.pair_waiting)
+    override val pairRetry: String get() = text(Res.string.pair_retry)
+    override val pairClose: String get() = text(Res.string.pair_close)
+    override val busyJoiningTitle: String get() = text(Res.string.busy_joining_title)
+    override val busyJoining: String get() = text(Res.string.busy_joining)
+    override val devicesTitle: String get() = text(Res.string.devices_title)
+    override val devicesIntro: String get() = text(Res.string.devices_intro)
+    override val devicesThis: String get() = text(Res.string.devices_this)
+    override val devicesNever: String get() = text(Res.string.devices_never)
+    override val devicesAdd: String get() = text(Res.string.devices_add)
+    override val devicesJoin: String get() = text(Res.string.devices_join)
+    override val devicesSyncNow: String get() = text(Res.string.devices_sync_now)
+    override val devicesSyncDone: String get() = text(Res.string.devices_sync_done)
+    override val devicesSyncFailed: String get() = text(Res.string.devices_sync_failed)
+    override val devicesRemove: String get() = text(Res.string.devices_remove)
+    override val devicesRemoveDesc: String get() = text(Res.string.devices_remove_desc)
+    override val devicesFooter: String get() = text(Res.string.devices_footer)
+    override val settingsLocalVault: String get() = text(Res.string.settings_local_vault)
+    override val settingsDeleteVault: String get() = text(Res.string.settings_delete_vault)
+    override val settingsDeleteVaultTitle: String get() = text(Res.string.settings_delete_vault_title)
+    override val settingsDeleteVaultDesc: String get() = text(Res.string.settings_delete_vault_desc)
+    override val settingsDeleteVaultNote: String get() = text(Res.string.settings_delete_vault_note)
+    override val failurePairRefused: String get() = text(Res.string.failure_pair_refused)
+    override val failurePairMissing: String get() = text(Res.string.failure_pair_missing)
+    override val failureNoNetwork: String get() = text(Res.string.failure_no_network)
+    override val failureBadPhoto: String get() = text(Res.string.failure_bad_photo)
     override val failureBadCredentials: String get() = text(Res.string.failure_bad_credentials)
     override val failureAccountLocked: String get() = text(Res.string.failure_account_locked)
     override val failureWrongPasscode: String get() = text(Res.string.failure_wrong_passcode)
@@ -691,6 +843,10 @@ private class ResourceStrings(
 
     override fun settingsPending(count: Int): String = many(Res.plurals.settings_pending, count, count)
     override fun namesFound(count: Int): String = many(Res.plurals.names_found, count, count)
+    override fun pairDone(name: String): String = text(Res.string.pair_done, name)
+    override fun devicesCount(count: Int): String = many(Res.plurals.devices_count, count, count)
+    override fun devicesSynced(time: String): String = text(Res.string.devices_synced, time)
+    override fun devicesRemoveTitle(name: String): String = text(Res.string.devices_remove_title, name)
     override fun settingsPwnedLast(time: String): String = text(Res.string.settings_pwned_last, time)
     override fun pwnedFound(count: Int): String = many(Res.plurals.pwned_found, count, count)
 

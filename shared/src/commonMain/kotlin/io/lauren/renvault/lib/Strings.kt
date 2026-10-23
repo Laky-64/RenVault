@@ -160,6 +160,54 @@ interface RvStrings {
     val strengthStrong: String
 
     val failureGeneric: String
+    val photoFilter: String
+    val settingsSyncTitle: String
+    val authLocalAction: String
+    val authLocalTitle: String
+    val authLocalHint: String
+    val authLocalNew: String
+    val authLocalNewDesc: String
+    val authLocalJoin: String
+    val authLocalJoinDesc: String
+    val authProfileTitle: String
+    val authProfileHint: String
+    val profileName: String
+    val profilePhotoPick: String
+    val profilePhotoRemove: String
+    val profileEditTitle: String
+    val authJoinTitle: String
+    val authJoinSkip: String
+    val pairJoinHint: String
+    val pairScan: String
+    val pairCodeLabel: String
+    val pairJoinAction: String
+    val pairHostHint: String
+    val pairWaiting: String
+    val pairRetry: String
+    val pairClose: String
+    val busyJoiningTitle: String
+    val busyJoining: String
+    val devicesTitle: String
+    val devicesIntro: String
+    val devicesThis: String
+    val devicesNever: String
+    val devicesAdd: String
+    val devicesJoin: String
+    val devicesSyncNow: String
+    val devicesSyncDone: String
+    val devicesSyncFailed: String
+    val devicesRemove: String
+    val devicesRemoveDesc: String
+    val devicesFooter: String
+    val settingsLocalVault: String
+    val settingsDeleteVault: String
+    val settingsDeleteVaultTitle: String
+    val settingsDeleteVaultDesc: String
+    val settingsDeleteVaultNote: String
+    val failurePairRefused: String
+    val failurePairMissing: String
+    val failureNoNetwork: String
+    val failureBadPhoto: String
     val failureBadCredentials: String
     val failureAccountLocked: String
     val failureWrongPasscode: String
@@ -187,6 +235,10 @@ interface RvStrings {
     fun namesFound(count: Int): String
     fun settingsPwnedLast(time: String): String
     fun pwnedFound(count: Int): String
+    fun pairDone(name: String): String
+    fun devicesCount(count: Int): String
+    fun devicesSynced(time: String): String
+    fun devicesRemoveTitle(name: String): String
     fun relativeTime(value: RvRelative): String
     fun zoneText(kind: RvZoneKind, empty: Boolean): RvZoneText
 }

@@ -9,4 +9,5 @@ internal expect object Native {
 
 expect object PlatformStorage {
     fun base(): String
+    fun secret(): ByteArray?
 }

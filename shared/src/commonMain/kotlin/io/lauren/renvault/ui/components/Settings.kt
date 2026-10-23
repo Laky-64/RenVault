@@ -23,7 +23,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes
@@ -77,9 +79,11 @@ data class RvSettingsState(
     val names: List<RvNameSwap> = emptyList(),
     val nameMatches: List<RvNameMatch> = emptyList(),
     val nameNotice: Boolean = true,
+    val local: Boolean = false,
+    val devices: List<RvDevice> = emptyList(),
 )
 
-private enum class SettingsPage { Root, Language, Names }
+private enum class SettingsPage { Root, Language, Names, Devices }
 
 @Composable
 fun RvSettingsScreen(
@@ -99,6 +103,7 @@ fun RvSettingsScreen(
     onNames: suspend (List<RvNameSwap>) -> Unit = {},
     onOpenItem: (String) -> Unit = {},
     onNameNotice: (Boolean) -> Unit = {},
+    devices: RvDeviceActions? = null,
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
@@ -129,6 +134,15 @@ fun RvSettingsScreen(
                 onNames = onNames,
                 onOpenItem = onOpenItem,
             )
+            SettingsPage.Devices -> devices?.let { actions ->
+                DevicesPage(
+                    devices = state.devices,
+                    actions = actions,
+                    strings = strings,
+                    dialog = dialog,
+                    onBack = { page = SettingsPage.Root },
+                )
+            }
             SettingsPage.Root -> RootPage(
                 state = state,
                 photo = photo,
@@ -137,6 +151,8 @@ fun RvSettingsScreen(
                 onClose = onClose,
                 onLanguage = { page = SettingsPage.Language },
                 onNames = { page = SettingsPage.Names },
+                onDevices = { page = SettingsPage.Devices },
+                devices = devices,
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -177,6 +193,8 @@ private fun RootPage(
     onClose: () -> Unit,
     onLanguage: () -> Unit,
     onNames: () -> Unit,
+    onDevices: () -> Unit,
+    devices: RvDeviceActions?,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -196,6 +214,8 @@ private fun RootPage(
     var lockOpen by remember { mutableStateOf(false) }
     var signOutOpen by remember { mutableStateOf(false) }
     var anisetteOpen by remember { mutableStateOf(false) }
+    var profileOpen by remember { mutableStateOf(false) }
+    val editable = state.local && devices != null
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
@@ -278,12 +298,43 @@ private fun RootPage(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 10.dp),
                     )
-                    if (state.appleId.isNotEmpty()) {
+                    val account = if (state.local) strings.settingsLocalVault else LocalNameMask.current.mask(state.appleId)
+                    if (account.isNotEmpty()) {
                         Text(
-                            text = LocalNameMask.current.mask(state.appleId),
+                            text = account,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                    if (editable) {
+                        OutlinedButton(
+                            onClick = { profileOpen = true },
+                            shapes = ButtonDefaults.shapes(),
+                            modifier = Modifier.padding(top = 8.dp),
+                        ) {
+                            Icon(RvEditIcon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                            Text(strings.profileEditTitle, modifier = Modifier.padding(start = ButtonDefaults.IconSpacing))
+                        }
+                    }
+                }
+            }
+
+            if (editable) {
+                item {
+                    val lastPeer = relativeOf(state.syncedAt, now)?.let { strings.devicesSynced(strings.relativeTime(it)) }
+                    RvSection(title = strings.settingsSyncTitle) {
+                        RvSegment(
+                            index = 0,
+                            count = 1,
+                            onClick = onDevices,
+                            leading = { SettingBadge(RvDevicesIcon, accents.blue) },
+                            supporting = {
+                                Text(strings.devicesCount(state.devices.size) + " · " + (lastPeer ?: strings.devicesNever))
+                            },
+                            trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                        ) {
+                            Text(strings.devicesTitle)
+                        }
                     }
                 }
             }
@@ -374,7 +425,7 @@ private fun RootPage(
                 }
             }
 
-            item {
+            if (!state.local) item {
                 RvSection(title = strings.settingsAdvancedTitle) {
                     RvSegment(
                         index = 0,
@@ -418,13 +469,13 @@ private fun RootPage(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     RvButton(
-                        text = strings.settingsSignOut,
+                        text = if (state.local) strings.settingsDeleteVault else strings.settingsSignOut,
                         onClick = { signOutOpen = true },
                         kind = RvButtonKind.DangerTonal,
-                        icon = RvLogoutIcon,
+                        icon = if (state.local) RvDeleteIcon else RvLogoutIcon,
                     )
                     Text(
-                        text = strings.settingsSignOutNote,
+                        text = if (state.local) strings.settingsDeleteVaultNote else strings.settingsSignOutNote,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -456,14 +507,24 @@ private fun RootPage(
     RvConfirmDialog(
         open = signOutOpen,
         onOpenChange = { signOutOpen = it },
-        title = strings.settingsSignOutTitle,
-        description = strings.settingsSignOutDesc,
-        confirm = strings.settingsSignOut,
+        title = if (state.local) strings.settingsDeleteVaultTitle else strings.settingsSignOutTitle,
+        description = if (state.local) strings.settingsDeleteVaultDesc else strings.settingsSignOutDesc,
+        confirm = if (state.local) strings.settingsDeleteVault else strings.settingsSignOut,
         cancel = strings.cancel,
         danger = true,
-        icon = RvLogoutIcon,
+        icon = if (state.local) RvDeleteIcon else RvLogoutIcon,
         onConfirm = onSignOut,
     )
+
+    if (profileOpen && devices != null) {
+        ProfileDialog(
+            name = state.profileName,
+            photo = photo,
+            actions = devices,
+            strings = strings,
+            onDismiss = { profileOpen = false },
+        )
+    }
 }
 
 @Composable

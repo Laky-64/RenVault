@@ -79,6 +79,11 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.play.services.codeScanner)
+            implementation(libs.androidx.work.runtime)
+        }
+        jvmMain.dependencies {
+            implementation(libs.jmdns)
         }
         commonMain.get().kotlin.srcDir(generateVersion)
         commonMain.dependencies {

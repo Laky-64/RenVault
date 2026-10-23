@@ -22,3 +22,9 @@
 -keep class io.lauren.renvault.bridge.Native {
     native <methods>;
 }
+
+-keep class * implements com.google.firebase.components.ComponentRegistrar { <init>(); }
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+-keep class * extends androidx.work.ListenableWorker {
+    <init>(android.content.Context, androidx.work.WorkerParameters);
+}

@@ -12,6 +12,10 @@ enum class FailureReason {
     WrongMasterPassword,
     NoDevices,
     Rejected,
+    PairRefused,
+    PairMissing,
+    NoNetwork,
+    BadPhoto,
     Generic,
 }
 
@@ -56,6 +60,10 @@ private fun classify(raw: String): FailureReason {
     }
 
     if (BAD_MASTER.containsMatchIn(raw)) return FailureReason.WrongMasterPassword
+    if ("pairing was refused" in raw) return FailureReason.PairRefused
+    if ("no pairing in progress" in raw) return FailureReason.PairMissing
+    if ("not connected to a network" in raw) return FailureReason.NoNetwork
+    if ("must be a JPEG or PNG" in raw) return FailureReason.BadPhoto
 
     return FailureReason.Generic
 }

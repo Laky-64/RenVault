@@ -2,7 +2,10 @@
 
 package io.lauren.renvault.bridge
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -35,7 +38,7 @@ object Vault {
     fun cancel(token: Long) = Native.cancel(token)
 
     suspend fun init(base: String = PlatformStorage.base()) =
-        send(Op.VAULT_INIT, InitRequest(base))
+        send(Op.VAULT_INIT, InitRequest(base, PlatformStorage.secret() ?: ByteArray(0)))
 
     suspend fun state(): VaultState = receive(Op.VAULT_STATE)
 
@@ -57,6 +60,39 @@ object Vault {
     suspend fun names(): List<NameSwap> = receive<NamesPayload>(Op.VAULT_NAMES).names
 
     suspend fun setNames(names: List<NameSwap>) = send(Op.VAULT_SET_NAMES, NamesPayload(names))
+
+    suspend fun localSetup(password: String, name: String, device: String, photo: ByteArray?) =
+        send(Op.VAULT_LOCAL_SETUP, LocalSetupRequest(password, name, device, photo ?: ByteArray(0)))
+
+    suspend fun setProfile(name: String, photo: ByteArray?, setPhoto: Boolean) =
+        send(Op.VAULT_SET_PROFILE, ProfileRequest(name, photo ?: ByteArray(0), setPhoto))
+
+    suspend fun devices(): List<Device> = receive(Op.DEVICES)
+
+    suspend fun removeDevice(id: String) = send(Op.DEVICE_REMOVE, IdentifierRequest(id))
+
+    suspend fun startPairing(): Pairing = receive(Op.PAIR_START)
+
+    suspend fun waitPairing(): String = withToken { token ->
+        receive<NameResponse>(Op.PAIR_WAIT, token).name
+    }
+
+    suspend fun joinPairing(text: String): String = withToken { token ->
+        exchange<JoinRequest, NameResponse>(Op.PAIR_JOIN, JoinRequest(text), token).name
+    }
+
+    suspend fun pickImage(title: String, filter: String): ByteArray = withToken { token ->
+        exchange<PickRequest, BytesResponse>(Op.PICK_IMAGE, PickRequest(title, filter), token).data
+    }
+
+    suspend fun syncPeers() = send(Op.PEERS_SYNC)
+
+    suspend fun netInfo(): NetInfo = receive(Op.NET_INFO)
+
+    suspend fun setAddresses(ips: List<String>) = send(Op.NET_ADDRESSES, AddressesRequest(ips))
+
+    suspend fun peerSeen(node: String, host: String, port: Int) =
+        send(Op.NET_PEER_SEEN, PeerSeenRequest(node, host, port))
 
     suspend fun autoLockChoices(): List<Int> = receive<MinutesResponse>(Op.VAULT_AUTO_LOCK_CHOICES).minutes
 
@@ -156,6 +192,19 @@ object Vault {
             cbor.decodeFromByteArray(EventEnvelope.serializer(), raw)
         } ?: return
         _events.emit(Event(envelope.kind, envelope.payload))
+    }
+
+    private suspend fun <T> withToken(block: suspend (Long) -> T): T {
+        val token = nextToken()
+        return coroutineScope {
+            val running = async { block(token) }
+            try {
+                running.await()
+            } catch (cancelled: CancellationException) {
+                Native.cancel(token)
+                throw cancelled
+            }
+        }
     }
 
     private suspend fun send(op: Int, token: Long = 0) {

@@ -5,8 +5,15 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.cbor.ByteString
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-internal data class InitRequest(@SerialName("base") val base: String)
+internal data class InitRequest(
+    @SerialName("base") val base: String,
+    @ByteString @SerialName("secret") val secret: ByteArray,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = base.hashCode()
+}
 
 @Serializable
 internal data class SecretRequest(@SerialName("secret") val secret: String)
@@ -147,6 +154,78 @@ data class Profile(
     @SerialName("name") val name: String = "",
     @SerialName("apple_id") val appleId: String = "",
     @SerialName("has_photo") val hasPhoto: Boolean = false,
+    @SerialName("local") val local: Boolean = false,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+internal data class LocalSetupRequest(
+    @SerialName("secret") val secret: String,
+    @SerialName("name") val name: String,
+    @SerialName("device") val device: String,
+    @ByteString @SerialName("photo") val photo: ByteArray,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = photo.contentHashCode()
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+internal data class ProfileRequest(
+    @SerialName("name") val name: String,
+    @ByteString @SerialName("photo") val photo: ByteArray,
+    @SerialName("set_photo") val setPhoto: Boolean,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = photo.contentHashCode()
+}
+
+@Serializable
+data class Device(
+    @SerialName("id") val id: String = "",
+    @SerialName("name") val name: String = "",
+    @SerialName("self") val self: Boolean = false,
+    @SerialName("synced_at") val syncedAt: Long = 0,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+data class Pairing(
+    @SerialName("code") val code: String = "",
+    @SerialName("payload") val payload: String = "",
+    @SerialName("size") val size: Int = 0,
+    @ByteString @SerialName("modules") val modules: ByteArray = ByteArray(0),
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = code.hashCode()
+}
+
+@Serializable
+internal data class PickRequest(
+    @SerialName("title") val title: String,
+    @SerialName("filter") val filter: String,
+)
+
+@Serializable
+internal data class JoinRequest(@SerialName("text") val text: String)
+
+@Serializable
+internal data class NameResponse(@SerialName("name") val name: String = "")
+
+@Serializable
+data class NetInfo(
+    @SerialName("node") val node: String = "",
+    @SerialName("port") val port: Int = 0,
+)
+
+@Serializable
+internal data class AddressesRequest(@SerialName("ips") val ips: List<String>)
+
+@Serializable
+internal data class PeerSeenRequest(
+    @SerialName("node") val node: String,
+    @SerialName("host") val host: String,
+    @SerialName("port") val port: Int,
 )
 
 @Serializable

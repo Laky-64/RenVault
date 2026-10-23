@@ -21,6 +21,12 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.EventKind
+import io.lauren.renvault.bridge.NetInfo
+import io.lauren.renvault.lib.RvLan
+import io.lauren.renvault.ui.components.RvDevice
+import io.lauren.renvault.ui.components.RvDeviceActions
+import io.lauren.renvault.ui.components.RvPairCode
+import kotlinx.coroutines.delay
 import io.lauren.renvault.bridge.EditPassword
 import io.lauren.renvault.bridge.Profile
 import io.lauren.renvault.bridge.Settings
@@ -94,6 +100,9 @@ fun RvVaultApp(
     var pwnedAt by remember { mutableStateOf(0L) }
     var names by remember { mutableStateOf(emptyList<RvNameSwap>()) }
     var nameNotice by remember { mutableStateOf(readPreference(NameNoticeKey) != "off") }
+    var devices by remember { mutableStateOf(emptyList<RvDevice>()) }
+    var lanOpen by remember { mutableStateOf(false) }
+    var leaving by remember { mutableStateOf(false) }
 
     val icons = remember { mutableStateMapOf<String, Painter?>() }
     val wanted = remember { mutableStateListOf<String>() }
@@ -121,8 +130,18 @@ fun RvVaultApp(
         }
     }
 
+    suspend fun loadDevices() {
+        devices = if (profile.local) {
+            runCatching { Vault.devices() }.getOrDefault(emptyList())
+                .map { RvDevice(it.id, it.name, it.self, it.syncedAt) }
+        } else {
+            emptyList()
+        }
+    }
+
     suspend fun loadAccount() {
         profile = runCatching { Vault.profile() }.getOrDefault(Profile())
+        loadDevices()
         settings = runCatching { Vault.settings() }.getOrDefault(Settings())
         choices = runCatching { Vault.autoLockChoices() }.getOrDefault(emptyList())
         pwnedAt = runCatching { Vault.pwnedInfo().checkedAt }.getOrDefault(0L)
@@ -146,6 +165,10 @@ fun RvVaultApp(
         ready = true
     }
 
+    LaunchedEffect(unlocked, profile.local) {
+        if (unlocked && profile.local) RvLan.schedule(true)
+    }
+
     LaunchedEffect(unlocked, revision) {
         if (!unlocked) return@LaunchedEffect
         loadAccount()
@@ -159,8 +182,16 @@ fun RvVaultApp(
     LaunchedEffect(Unit) {
         Vault.events.collect { event ->
             when (event.kind) {
-                EventKind.LOCKED -> unlocked = false
+                EventKind.LOCKED -> {
+                    unlocked = false
+                    lanOpen = false
+                }
                 EventKind.SYNC_CHANGED -> if (unlocked) loadItems()
+                EventKind.PROFILE -> if (unlocked) loadAccount()
+                EventKind.DEVICES -> if (unlocked) {
+                    loadDevices()
+                    sync = runCatching { Vault.syncState() }.getOrDefault(sync)
+                }
             }
         }
     }
@@ -199,6 +230,64 @@ fun RvVaultApp(
             Vault.setAnisetteServer(url)
             anisette = Vault.anisetteServer().url
         }.isSuccess
+    }
+
+    LaunchedEffect(ready, unlocked, lanOpen) {
+        if (!ready) return@LaunchedEffect
+        var announced = NetInfo()
+        try {
+            while (true) {
+                withContext(Dispatchers.Default) {
+                    val info = runCatching { Vault.netInfo() }.getOrDefault(NetInfo())
+                    if (info.port > 0) runCatching { Vault.setAddresses(RvLan.addresses()) }
+                    if (info.port == 0 && announced.port > 0) {
+                        announced = info
+                        RvLan.stop()
+                    }
+                    if (info.port > 0 && info != announced) {
+                        announced = info
+                        RvLan.start(info.node, info.port) { node, host, port ->
+                            scope.launch { runCatching { Vault.peerSeen(node, host, port) } }
+                        }
+                    }
+                }
+                delay(LanRefreshMs)
+            }
+        } finally {
+            RvLan.stop()
+        }
+    }
+
+    val deviceActions = remember(strings) {
+        object : RvDeviceActions {
+            override suspend fun startPairing(): RvPairCode {
+                runCatching { Vault.setAddresses(RvLan.addresses()) }
+                val pairing = Vault.startPairing()
+                return RvPairCode(pairing.code, pairing.size, pairing.modules)
+            }
+
+            override suspend fun waitPairing(): String = Vault.waitPairing().also { loadDevices() }
+
+            override suspend fun join(text: String): String = Vault.joinPairing(text).also { revision++ }
+
+            override suspend fun remove(id: String) {
+                Vault.removeDevice(id)
+                loadDevices()
+            }
+
+            override suspend fun syncNow() {
+                Vault.sync()
+                loadDevices()
+                sync = runCatching { Vault.syncState() }.getOrDefault(sync)
+            }
+
+            override suspend fun setProfile(name: String, photo: ByteArray?, setPhoto: Boolean) {
+                Vault.setProfile(name, photo, setPhoto)
+                loadAccount()
+            }
+
+            override fun describe(failure: Throwable): String = strings.failureText(failure)
+        }
     }
 
     val linked = remember(web, passkeys) { linkItems(web, passkeys) }
@@ -251,6 +340,11 @@ fun RvVaultApp(
                 },
                 recoverDevice = { index, passcode -> Vault.recoverBottle(index, passcode) },
                 finishSetup = { secret -> Vault.finishSetup(secret) },
+                finishLocal = { secret, name, picture ->
+                    Vault.localSetup(secret, name, withContext(Dispatchers.Default) { RvLan.deviceName() }, picture)
+                    lanOpen = true
+                },
+                joinPairing = { text -> Vault.joinPairing(text) },
                 unlock = { secret -> Vault.unlock(secret) },
                 onPrivacy = { openUrl(PrivacyUrl) },
                 anisette = anisette,
@@ -279,11 +373,14 @@ fun RvVaultApp(
                             anisette = anisette,
                             pwnedCheckedAt = pwnedAt,
                             names = names,
-                        nameNotice = nameNotice,
+                            nameNotice = nameNotice,
+                            local = profile.local,
+                            devices = devices,
                         ),
                         sortField = sortFieldOf(settings.sortField),
                         sortAscending = settings.sortAscending,
                         strings = strings,
+                        settingsBusy = leaving,
                         onSort = { field, ascending ->
                             settings = settings.copy(
                                 sortField = sortKeyOf(field),
@@ -335,9 +432,13 @@ fun RvVaultApp(
                         nameNotice = shown
                         writePreference(NameNoticeKey, if (shown) "on" else "off")
                     },
+                    devices = if (profile.local) deviceActions else null,
                     onSignOut = {
                             scope.launch {
+                                leaving = true
+                                if (profile.local) RvLan.schedule(false)
                                 runCatching { Vault.signOut() }
+                                leaving = false
                                 unlocked = false
                             }
                         },
@@ -357,6 +458,8 @@ private const val PasskeyUrl = "https://support.apple.com/en-us/102195"
 private const val DeviceArtTimeoutMs = 4_000L
 
 private const val NameNoticeKey = "name_notice"
+
+private const val LanRefreshMs = 30_000L
 
 private suspend fun create(draft: RvEditorDraft) {
     runCatching {

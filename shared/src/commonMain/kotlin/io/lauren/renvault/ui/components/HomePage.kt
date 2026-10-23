@@ -135,6 +135,7 @@ fun RvHomePage(
     onAnisette: suspend (String) -> Boolean = { true },
     onNames: suspend (List<RvNameSwap>) -> Unit = {},
     onNameNotice: (Boolean) -> Unit = {},
+    devices: RvDeviceActions? = null,
 ) {
     if (zones.isEmpty()) return
 
@@ -372,6 +373,7 @@ fun RvHomePage(
             },
             onNames = onNames,
             onNameNotice = onNameNotice,
+            devices = devices,
             onOpenItem = { id ->
                 settingsOpen = false
                 zoneKind = RvZoneKind.All

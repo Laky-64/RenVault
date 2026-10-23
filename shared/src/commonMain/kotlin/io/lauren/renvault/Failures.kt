@@ -14,6 +14,10 @@ fun RvStrings.failureText(cause: Throwable): String {
         FailureReason.WrongMasterPassword -> failureWrongMasterPassword
         FailureReason.NoDevices -> failureNoDevices
         FailureReason.Rejected -> failure.detail ?: failureGeneric
+        FailureReason.PairRefused -> failurePairRefused
+        FailureReason.PairMissing -> failurePairMissing
+        FailureReason.NoNetwork -> failureNoNetwork
+        FailureReason.BadPhoto -> failureBadPhoto
         else -> failureGeneric
     }
 }

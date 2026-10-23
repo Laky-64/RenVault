@@ -23,6 +23,8 @@ internal actual object Native {
 
 actual object PlatformStorage {
     actual fun base(): String = ""
+
+    actual fun secret(): ByteArray? = null
 }
 
 internal actual fun ioDispatcher(): CoroutineDispatcher = Dispatchers.IO
