@@ -25,6 +25,9 @@ func defaultSettings() Settings {
 
 func (s Settings) sanitized() Settings {
 	d := defaultSettings()
+	if s == (Settings{}) {
+		return d
+	}
 	switch {
 	case s.SortField == "":
 		s.SortField = d.SortField
@@ -57,7 +60,7 @@ func (v *Vault) SetAutoLockMinutes(m int) error {
 	if v.p == nil {
 		return errLocked
 	}
-	next := v.p.Settings
+	next := v.p.Settings.sanitized()
 	next.AutoLockMinutes = m
 	next = next.sanitized()
 	v.autoLock = next.autoLock()
@@ -83,7 +86,10 @@ func (v *Vault) SetSort(field string, ascending bool) error {
 		return errLocked
 	}
 	v.resetTimerLocked()
-	next := Settings{SortField: field, SortAscending: ascending}.sanitized()
+	next := v.p.Settings.sanitized()
+	next.SortField = field
+	next.SortAscending = ascending
+	next = next.sanitized()
 	if v.p.Settings == next {
 		return nil
 	}
