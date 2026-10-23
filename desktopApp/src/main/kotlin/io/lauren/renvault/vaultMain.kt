@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,7 +34,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.window.Tray
 import com.jetbrains.JBR
@@ -66,6 +70,8 @@ fun main() {
 
 private fun vaultApplication() = application {
     val state = rememberWindowState(size = StartSize)
+    // Let AppKit provide the traffic lights and the corner shape for this macOS version.
+    val nativeDecorations = remember { System.getProperty("os.name").startsWith("Mac", ignoreCase = true) }
     val tray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
     var visible by remember { mutableStateOf(true) }
     val strings = rememberStrings(currentLocaleTag())
@@ -92,7 +98,7 @@ private fun vaultApplication() = application {
         state = state,
         visible = visible,
         title = "RenVault",
-        undecorated = true,
+        undecorated = !nativeDecorations,
     ) {
         LaunchedEffect(visible) {
             if (!visible) return@LaunchedEffect
@@ -112,27 +118,41 @@ private fun vaultApplication() = application {
         }
 
         RenVaultTheme {
+            if (nativeDecorations) {
+                val surface = MaterialTheme.colorScheme.surface
+                SideEffect {
+                    window.rootPane.putClientProperty(
+                        "apple.awt.windowAppearance",
+                        if (surface.luminance() < 0.5f) "NSAppearanceNameDarkAqua" else "NSAppearanceNameAqua",
+                    )
+                    window.rootPane.putClientProperty("apple.awt.transparentTitleBar", true)
+                    window.background = java.awt.Color(surface.toArgb(), true)
+                }
+            }
+
             Box(modifier = Modifier.fillMaxSize()) {
                 RvVaultApp(
                     title = "RenVault",
                     titleBar = {
-                        TitleDrag(
-                            maximised = maximised,
-                            onRestore = { state.placement = WindowPlacement.Floating },
-                        ) {
-                            RvTitleBar(
-                                title = "RenVault",
+                        if (!nativeDecorations) {
+                            TitleDrag(
                                 maximised = maximised,
-                                onMinimise = { state.isMinimized = true },
-                                onToggleMaximise = {
-                                    state.placement = if (maximised) {
-                                        WindowPlacement.Floating
-                                    } else {
-                                        WindowPlacement.Maximized
-                                    }
-                                },
-                                onClose = close,
-                            )
+                                onRestore = { state.placement = WindowPlacement.Floating },
+                            ) {
+                                RvTitleBar(
+                                    title = "RenVault",
+                                    maximised = maximised,
+                                    onMinimise = { state.isMinimized = true },
+                                    onToggleMaximise = {
+                                        state.placement = if (maximised) {
+                                            WindowPlacement.Floating
+                                        } else {
+                                            WindowPlacement.Maximized
+                                        }
+                                    },
+                                    onClose = close,
+                                )
+                            }
                         }
                     },
                     onOpenUrl = { target ->
@@ -140,7 +160,7 @@ private fun vaultApplication() = application {
                     },
                 )
 
-                if (!maximised) ResizeFrame()
+                if (!nativeDecorations && !maximised) ResizeFrame()
             }
         }
     }
