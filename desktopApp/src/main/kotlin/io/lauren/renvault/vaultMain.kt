@@ -27,7 +27,19 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.window.Tray
 import com.jetbrains.JBR
+import io.lauren.renvault.lib.currentLocaleTag
+import io.lauren.renvault.ui.components.RvLockIcon
+import io.lauren.renvault.ui.rememberStrings
+import java.awt.SystemTray
 import io.lauren.renvault.ui.components.RvTitleBar
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Cursor
@@ -47,15 +59,48 @@ private val StartSize = DpSize(1000.dp, 670.dp)
 
 private val EdgeGrip = 6.dp
 
-fun main() = application {
+fun main() {
+    if (!RvInstance.claim()) return
+    vaultApplication()
+}
+
+private fun vaultApplication() = application {
     val state = rememberWindowState(size = StartSize)
+    val tray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
+    var visible by remember { mutableStateOf(true) }
+    val strings = rememberStrings(currentLocaleTag())
+    val close: () -> Unit = { if (tray) visible = false else exitApplication() }
+
+    LaunchedEffect(Unit) {
+        RvInstance.listen { visible = true }
+    }
+
+    if (tray) {
+        Tray(
+            icon = rememberTrayIcon(),
+            tooltip = "RenVault",
+            onAction = { visible = true },
+            menu = {
+                Item(strings.trayOpen, onClick = { visible = true })
+                Item(strings.trayQuit, onClick = ::exitApplication)
+            },
+        )
+    }
 
     Window(
-        onCloseRequest = ::exitApplication,
+        onCloseRequest = close,
         state = state,
+        visible = visible,
         title = "RenVault",
         undecorated = true,
     ) {
+        LaunchedEffect(visible) {
+            if (!visible) return@LaunchedEffect
+            state.isMinimized = false
+            window.toFront()
+            window.requestFocus()
+        }
+
         var maximised by remember { mutableStateOf(state.placement == WindowPlacement.Maximized) }
         maximised = state.placement == WindowPlacement.Maximized
 
@@ -86,7 +131,7 @@ fun main() = application {
                                         WindowPlacement.Maximized
                                     }
                                 },
-                                onClose = ::exitApplication,
+                                onClose = close,
                             )
                         }
                     },
@@ -100,6 +145,33 @@ fun main() = application {
         }
     }
 }
+
+@Composable
+private fun rememberTrayIcon(): Painter {
+    val glyph = rememberVectorPainter(RvLockIcon)
+    return remember(glyph) {
+        object : Painter() {
+            override val intrinsicSize = Size(TrayIconSize, TrayIconSize)
+
+            override fun DrawScope.onDraw() {
+                drawCircle(TrayBackground)
+                val inset = size.minDimension * 0.22f
+                translate(inset, inset) {
+                    with(glyph) {
+                        draw(
+                            size = Size(size.width - inset * 2, size.height - inset * 2),
+                            colorFilter = ColorFilter.tint(Color.White),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private const val TrayIconSize = 64f
+
+private val TrayBackground = Color(0xFF3F5BA9)
 
 @Composable
 private fun FrameWindowScope.TitleDrag(

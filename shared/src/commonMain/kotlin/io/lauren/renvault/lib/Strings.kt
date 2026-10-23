@@ -160,6 +160,8 @@ interface RvStrings {
     val strengthStrong: String
 
     val failureGeneric: String
+    val trayOpen: String
+    val trayQuit: String
     val photoFilter: String
     val settingsSyncTitle: String
     val authLocalAction: String

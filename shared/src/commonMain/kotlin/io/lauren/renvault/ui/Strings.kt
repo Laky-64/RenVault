@@ -10,6 +10,8 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.unescape
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.RvZoneText
+import io.lauren.renvault.resources.tray_open
+import io.lauren.renvault.resources.tray_quit
 import io.lauren.renvault.resources.photo_filter
 import io.lauren.renvault.resources.settings_sync_title
 import io.lauren.renvault.resources.auth_local_action
@@ -531,6 +533,8 @@ private val TextResources = listOf(
     Res.string.failure_bad_photo,
     Res.string.settings_sync_title,
     Res.string.photo_filter,
+    Res.string.tray_open,
+    Res.string.tray_quit,
 )
 
 private val PluralResources = listOf(
@@ -745,6 +749,8 @@ private class ResourceStrings(
     override val strengthStrong: String get() = text(Res.string.strength_strong)
 
     override val failureGeneric: String get() = text(Res.string.failure_generic)
+    override val trayOpen: String get() = text(Res.string.tray_open)
+    override val trayQuit: String get() = text(Res.string.tray_quit)
     override val photoFilter: String get() = text(Res.string.photo_filter)
     override val settingsSyncTitle: String get() = text(Res.string.settings_sync_title)
     override val authLocalAction: String get() = text(Res.string.auth_local_action)

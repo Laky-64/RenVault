@@ -321,4 +321,6 @@
     <string name="failure_bad_photo">Questa foto non si può usare.</string>
     <string name="settings_sync_title">Sincronizzazione</string>
     <string name="photo_filter">Immagini</string>
+    <string name="tray_open">Apri RenVault</string>
+    <string name="tray_quit">Esci da RenVault</string>
 </resources>
