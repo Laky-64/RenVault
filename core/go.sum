@@ -1,7 +1,7 @@
 filippo.io/cpace v0.0.0-20210101143347-24d601e2e469 h1:+gAICE3DIgwMKUzUuVCjd5R4ws+HFL19bKegPYkcgmQ=
 filippo.io/cpace v0.0.0-20210101143347-24d601e2e469/go.mod h1:b8UFwXF0HGYD8OWBGJEPwu3IMDHqTpzCtGFtY2xRwTU=
-github.com/Laky-64/appleservices v1.0.14 h1:uf3Yuyq0hHb8Q4yZb0S+v3W+KLCrlJH6z/u6o+9bLqc=
-github.com/Laky-64/appleservices v1.0.14/go.mod h1:9IpTOHsPL8bQWR4IakKvMJte+94kLywazRbRDR2Q8Vg=
+github.com/Laky-64/appleservices v1.0.15 h1:eBFqt5oBBBG3fZNjrCIu+cHLpa3kAuHwD0PWyVx1Fdg=
+github.com/Laky-64/appleservices v1.0.15/go.mod h1:9IpTOHsPL8bQWR4IakKvMJte+94kLywazRbRDR2Q8Vg=
 github.com/Laky-64/http v1.0.8 h1:Z5K58TpUQmP5IHPHvRePjFdfQNA9g3AgQcNFYpIpzxA=
 github.com/Laky-64/http v1.0.8/go.mod h1:yGueTjBWWSpjqbXZ8xplPXFVlKcbCKGobrwIcshbedI=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
