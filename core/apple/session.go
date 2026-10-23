@@ -1,6 +1,7 @@
 package apple
 
 import (
+	"bytes"
 	"strings"
 	"sync"
 
@@ -162,15 +163,21 @@ func (s *Session) Profile() (appleservices.Profile, bool) {
 	return *s.profile, true
 }
 
-func (s *Session) TakePeer() (appleservices.PeerKey, bool) {
+func (s *Session) CopyPeer() (appleservices.PeerKey, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.peer == nil {
 		return appleservices.PeerKey{}, false
 	}
 	pk := *s.peer
-	s.peer = nil
+	pk.PrivateKey = bytes.Clone(s.peer.PrivateKey)
 	return pk, true
+}
+
+func (s *Session) ClearPeer() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.clearPeerLocked()
 }
 
 func (s *Session) Keychain(peer appleservices.PeerKey) (*appleservices.KeychainVault, error) {

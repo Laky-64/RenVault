@@ -471,7 +471,7 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 		return apple.ErrNoLogin
 	}
 
-	peer, ok := v.sess.TakePeer()
+	peer, ok := v.sess.CopyPeer()
 	if !ok {
 		return apple.ErrNoPeer
 	}
@@ -494,11 +494,14 @@ func (v *Vault) FinishSetup(masterPassword string) error {
 	p.ProfileName = pr.Name
 	p.ProfilePhoto = pr.Photo
 	p.ProfilePhotoType = pr.PhotoType
-	if sess, ok := v.store.take(); ok {
-		p.Session = sess
-	}
+	p.Session, _ = v.store.LoadSession()
 	p.SyncedAt = time.Now().UTC()
-	return v.install(masterPassword, p, true)
+	if err := v.install(masterPassword, p, true); err != nil {
+		return err
+	}
+	v.store.take()
+	v.sess.ClearPeer()
+	return nil
 }
 
 func (v *Vault) install(masterPassword string, p *payload, fresh bool) error {
