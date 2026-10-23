@@ -28,9 +28,9 @@ compose.desktop {
         javaHome = runtime.get().metadata.installationPath.asFile.absolutePath
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "io.lauren.renvault"
-            packageVersion = "1.0.0"
+            packageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
         }
     }
 }

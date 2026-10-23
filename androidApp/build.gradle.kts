@@ -11,6 +11,14 @@ plugins {
 
 val goJniLibs = extensions.getByType<RenVaultNativeExtension>().androidJniLibs()
 
+fun signingValue(env: String, property: String) =
+    providers.environmentVariable(env).orElse(providers.gradleProperty(property))
+
+val signingStore = signingValue("RENVAULT_SIGNING_STORE", "renvault.signing.store")
+val signingStorePassword = signingValue("RENVAULT_SIGNING_STORE_PASSWORD", "renvault.signing.store_password")
+val signingKeyAlias = signingValue("RENVAULT_SIGNING_KEY_ALIAS", "renvault.signing.key_alias")
+val signingKeyPassword = signingValue("RENVAULT_SIGNING_KEY_PASSWORD", "renvault.signing.key_password")
+
 androidComponents {
     onVariants { variant ->
         variant.sources.jniLibs?.addGeneratedSourceDirectory(goJniLibs, GoJniLibsTask::outputDirectory)
@@ -48,6 +56,16 @@ android {
             abiFilters += setOf("arm64-v8a", "x86_64")
         }
     }
+    signingConfigs {
+        if (signingStore.isPresent) {
+            create("release") {
+                storeFile = file(signingStore.get())
+                storePassword = signingStorePassword.get()
+                keyAlias = signingKeyAlias.get()
+                keyPassword = signingKeyPassword.get()
+            }
+        }
+    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -61,7 +79,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
     compileOptions {
