@@ -282,6 +282,7 @@
     <string name="auth_join_title">Collega questo dispositivo</string>
     <string name="auth_join_skip">Salta per ora</string>
     <string name="pair_join_hint">Sull\'altro dispositivo apri Impostazioni › Dispositivi › Collega un dispositivo, poi scansiona il codice QR o scrivi il codice.</string>
+    <string name="pair_join_manual_hint">Sull\'altro dispositivo apri Impostazioni › Dispositivi › Collega un dispositivo, poi inserisci qui il codice di 8 cifre.</string>
     <string name="pair_scan">Scansiona codice QR</string>
     <string name="pair_code_label">Codice di abbinamento</string>
     <string name="pair_join_action">Collega</string>

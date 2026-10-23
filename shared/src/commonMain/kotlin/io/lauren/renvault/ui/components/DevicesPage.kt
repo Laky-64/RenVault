@@ -364,7 +364,7 @@ private fun PairJoinDialog(actions: RvDeviceActions, strings: RvStrings, onDismi
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { Icon(RvQrScanIcon, contentDescription = null) },
+        icon = { Icon(if (scan != null) RvQrScanIcon else RvKeyIcon, contentDescription = null) },
         title = { Text(strings.devicesJoin) },
         text = {
             Column(

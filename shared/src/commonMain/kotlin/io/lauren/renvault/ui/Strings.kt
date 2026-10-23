@@ -30,6 +30,7 @@ import io.lauren.renvault.resources.profile_edit_title
 import io.lauren.renvault.resources.auth_join_title
 import io.lauren.renvault.resources.auth_join_skip
 import io.lauren.renvault.resources.pair_join_hint
+import io.lauren.renvault.resources.pair_join_manual_hint
 import io.lauren.renvault.resources.pair_scan
 import io.lauren.renvault.resources.pair_code_label
 import io.lauren.renvault.resources.pair_join_action
@@ -498,6 +499,7 @@ private val TextResources = listOf(
     Res.string.auth_join_title,
     Res.string.auth_join_skip,
     Res.string.pair_join_hint,
+    Res.string.pair_join_manual_hint,
     Res.string.pair_scan,
     Res.string.pair_code_label,
     Res.string.pair_join_action,
@@ -769,6 +771,7 @@ private class ResourceStrings(
     override val authJoinTitle: String get() = text(Res.string.auth_join_title)
     override val authJoinSkip: String get() = text(Res.string.auth_join_skip)
     override val pairJoinHint: String get() = text(Res.string.pair_join_hint)
+    override val pairJoinManualHint: String get() = text(Res.string.pair_join_manual_hint)
     override val pairScan: String get() = text(Res.string.pair_scan)
     override val pairCodeLabel: String get() = text(Res.string.pair_code_label)
     override val pairJoinAction: String get() = text(Res.string.pair_join_action)

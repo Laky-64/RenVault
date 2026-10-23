@@ -180,6 +180,7 @@ interface RvStrings {
     val authJoinTitle: String
     val authJoinSkip: String
     val pairJoinHint: String
+    val pairJoinManualHint: String
     val pairScan: String
     val pairCodeLabel: String
     val pairJoinAction: String

@@ -286,6 +286,7 @@
     <string name="auth_join_title">Connect this device</string>
     <string name="auth_join_skip">Skip for now</string>
     <string name="pair_join_hint">On the other device open Settings › Devices › Connect a device, then scan the QR code or type the code.</string>
+    <string name="pair_join_manual_hint">On the other device open Settings › Devices › Connect a device, then enter its 8-digit code here.</string>
     <string name="pair_scan">Scan QR code</string>
     <string name="pair_code_label">Pairing code</string>
     <string name="pair_join_action">Connect</string>
