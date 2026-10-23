@@ -42,7 +42,7 @@ android {
         applicationId = "io.lauren.renvault"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
+        versionCode = providers.gradleProperty("renvault.version_code").get().toInt()
         versionName = providers.gradleProperty("renvault.version").get()
         ndk {
             abiFilters += setOf("arm64-v8a", "x86_64")
