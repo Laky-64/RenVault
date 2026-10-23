@@ -1,11 +1,14 @@
 package vault
 
-import "slices"
+import (
+	"bytes"
+	"slices"
+)
 
 type digest struct {
-	Records map[string]hlc `cbor:"records"`
-	Profile hlc            `cbor:"profile"`
-	Names   hlc            `cbor:"names"`
+	Records map[string]recordSummary `cbor:"records"`
+	Profile hlc                      `cbor:"profile"`
+	Names   hlc                      `cbor:"names"`
 }
 
 type wants struct {
@@ -28,9 +31,9 @@ type mergeResult struct {
 }
 
 func (sh *share) digest() digest {
-	d := digest{Records: make(map[string]hlc, len(sh.Records)), Profile: sh.Profile.Clock, Names: sh.Names.Clock}
+	d := digest{Records: make(map[string]recordSummary, len(sh.Records)), Profile: sh.Profile.Clock, Names: sh.Names.Clock}
 	for _, r := range sh.Records {
-		d.Records[r.ID] = r.Clock
+		d.Records[r.ID] = r.summary()
 	}
 	return d
 }
@@ -42,9 +45,10 @@ func (sh *share) answer(remote digest) delta {
 		mine[r.ID] = struct{}{}
 		theirs, ok := remote.Records[r.ID]
 		switch {
-		case !ok || r.Clock.compare(theirs) > 0:
-			out.Records = append(out.Records, r)
-		case r.Clock.compare(theirs) < 0:
+		case !ok:
+			out.Records = append(out.Records, r.clone())
+		case !bytes.Equal(r.summary().Sum, theirs.Sum):
+			out.Records = append(out.Records, r.clone())
 			out.Want.Records = append(out.Want.Records, r.ID)
 		}
 	}
@@ -72,7 +76,7 @@ func (sh *share) fulfil(w wants) delta {
 	out := delta{Devices: slices.Clone(sh.Devices)}
 	for _, r := range sh.Records {
 		if slices.Contains(w.Records, r.ID) {
-			out.Records = append(out.Records, r)
+			out.Records = append(out.Records, r.clone())
 		}
 	}
 	if w.Profile {
@@ -87,21 +91,22 @@ func (sh *share) fulfil(w wants) delta {
 func (sh *share) merge(in delta) mergeResult {
 	var res mergeResult
 	for _, r := range in.Records {
-		if r.ID == "" || len(r.Box) == 0 {
+		if r.ID == "" {
 			continue
 		}
-		sh.observe(r.Clock)
+		sh.observe(r.latest())
 		i := sh.record(r.ID)
-		switch {
-		case i < 0:
-			sh.Records = append(sh.Records, r)
-		case r.Clock.compare(sh.Records[i].Clock) > 0:
-			sh.Records[i] = r
-		default:
-			continue
+		if i < 0 {
+			sh.Records = append(sh.Records, sealedRecord{ID: r.ID})
+			i = len(sh.Records) - 1
 		}
-		res.changed = true
+		if mergeRecord(&sh.Records[i], r.clone()) {
+			res.changed = true
+		}
 	}
+	sh.Records = slices.DeleteFunc(sh.Records, func(r sealedRecord) bool {
+		return len(r.Fields) == 0 && r.Purge == nil && !r.legacy()
+	})
 	for _, d := range in.Devices {
 		if d.ID == "" || len(d.Key) == 0 {
 			continue

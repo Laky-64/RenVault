@@ -46,13 +46,6 @@ func (c hlc) compare(o hlc) int {
 	)
 }
 
-type sealedRecord struct {
-	ID     string `cbor:"id"`
-	Clock  hlc    `cbor:"clock"`
-	Purged bool   `cbor:"purged,omitempty"`
-	Box    []byte `cbor:"box"`
-}
-
 type sealedDevice struct {
 	ID      string `cbor:"id"`
 	Key     []byte `cbor:"key"`
@@ -165,8 +158,6 @@ func adOf(parts ...any) []byte {
 	return ad
 }
 
-func (r sealedRecord) ad() []byte { return adOf("record", r.ID, r.Clock, r.Purged) }
-
 func (d sealedDevice) ad() []byte { return adOf("device", d.ID, d.Key, d.Clock, d.Removed) }
 
 func blobAD(kind string, clock hlc) []byte { return adOf(kind, clock) }
@@ -220,41 +211,6 @@ func (sh *share) remember(id string, addrs ...string) {
 	sh.Peers[id] = st
 }
 
-func (sh *share) putWeb(key []byte, id string, w keychain.WebPassword) error {
-	plain, err := cborEnc.Marshal(w)
-	if err != nil {
-		return err
-	}
-	r := sealedRecord{ID: id, Clock: sh.tick()}
-	if r.ID == "" {
-		r.ID = newLocalID()
-	}
-	if r.Box, err = sealWith(key, r.ad(), plain); err != nil {
-		return err
-	}
-	if i := sh.record(r.ID); i >= 0 {
-		sh.Records[i] = r
-	} else {
-		sh.Records = append(sh.Records, r)
-	}
-	return nil
-}
-
-func (sh *share) purge(key []byte, id string) error {
-	i := sh.record(id)
-	if i < 0 {
-		return errNotFound
-	}
-	r := sealedRecord{ID: id, Clock: sh.tick(), Purged: true}
-	box, err := sealWith(key, r.ad(), nil)
-	if err != nil {
-		return err
-	}
-	r.Box = box
-	sh.Records[i] = r
-	return nil
-}
-
 func (sh *share) putDevice(key []byte, d sealedDevice, name string) error {
 	d.Clock = sh.tick()
 	d.Box = nil
@@ -306,15 +262,7 @@ func openBlob(key []byte, kind string, b sealedBlob, into any) bool {
 }
 
 func (sh *share) reseal(from, to []byte) {
-	for i, r := range sh.Records {
-		plain, err := openWith(from, r.ad(), r.Box)
-		if err != nil {
-			continue
-		}
-		if box, err := sealWith(to, r.ad(), plain); err == nil {
-			sh.Records[i].Box = box
-		}
-	}
+	sh.resealRecords(from, to)
 	for i, d := range sh.Devices {
 		if name := sh.deviceName(from, d); name != "" {
 			if box, err := sealWith(to, d.ad(), []byte(name)); err == nil {
@@ -390,18 +338,23 @@ func (v *Vault) rebuildShareLocked() {
 	if key == nil {
 		return
 	}
+	migrated := false
+	for _, r := range slices.Clone(v.sh.Records) {
+		if !r.legacy() {
+			continue
+		}
+		if w, ok := openRecord(key, r); ok && v.sh.putWeb(key, r.ID, w) == nil {
+			migrated = true
+		}
+	}
+	if migrated {
+		_ = saveShare(v.base, v.sh)
+	}
 	web := make([]keychain.WebPassword, 0, len(v.sh.Records))
 	ids := make([]string, 0, len(v.sh.Records))
 	for _, r := range v.sh.Records {
-		if r.Purged {
-			continue
-		}
-		plain, err := openWith(key, r.ad(), r.Box)
-		if err != nil {
-			continue
-		}
-		var w keychain.WebPassword
-		if cborDec.Unmarshal(plain, &w) != nil {
+		w, ok := openRecord(key, r)
+		if !ok {
 			continue
 		}
 		web = append(web, w)
