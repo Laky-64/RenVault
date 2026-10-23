@@ -26,7 +26,10 @@ fun rememberFitted(image: ImageBitmap?, size: Dp): Painter? {
     val key = image to target
 
     val painter by produceState(fittedCache[key], key) {
-        if (value != null) return@produceState
+        fittedCache[key]?.let {
+            value = it
+            return@produceState
+        }
         val made = withContext(Dispatchers.Default) { BitmapPainter(image.fitted(target)) }
         fittedCache[key] = made
         if (fittedCache.size > FittedCacheSize) fittedCache.remove(fittedCache.keys.first())
