@@ -8,11 +8,6 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,7 +45,6 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -122,18 +116,15 @@ fun RvSettingsScreen(
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
 
-    RvBackHandler(enabled = page != SettingsPage.Root) { page = SettingsPage.Root }
-
-    AnimatedContent(
-        targetState = page,
-        modifier = modifier,
-        transitionSpec = {
-            val spatial = motion.defaultSpatialSpec<IntOffset>()
-            val forward = targetState != SettingsPage.Root
-            (slideInHorizontally(spatial) { if (forward) it / 3 else -it / 3 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
-                (slideOutHorizontally(spatial) { if (forward) -it / 3 else it / 3 } + fadeOut(motion.fastEffectsSpec()))
-        },
+    val transition = rememberBackTransition(
+        screen = page,
+        previous = SettingsPage.Root.takeIf { page != SettingsPage.Root },
         label = "settingsPage",
+    ) { page = SettingsPage.Root }
+
+    transition.AnimatedContent(
+        modifier = modifier,
+        transitionSpec = { slideBetween(targetState != SettingsPage.Root, motion, 3) },
     ) { shown ->
         when (shown) {
             SettingsPage.Language -> LanguagePage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })

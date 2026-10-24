@@ -7,9 +7,6 @@ import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +64,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withLink
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.RoundedPolygon
 import io.lauren.renvault.lib.MinPassword
@@ -518,7 +514,6 @@ fun RvAuthFlow(
         Unit
     }
 
-    RvBackHandler(enabled = canGoBack, onBack = goBack)
 
     val avatar: @Composable () -> Unit = {
         RvProfileAvatar(size = 112.dp, photo = face, shape = MaterialShapes.Cookie12Sided.toShape())
@@ -529,17 +524,16 @@ fun RvAuthFlow(
     val motion = MaterialTheme.motionScheme
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        AnimatedContent(
-            targetState = page to depth,
-            modifier = Modifier.fillMaxSize(),
-            transitionSpec = {
-                val forward = targetState.second >= initialState.second
-                val spatial = motion.defaultSpatialSpec<IntOffset>()
-                val effects = motion.defaultEffectsSpec<Float>()
-                (slideInHorizontally(spatial) { if (forward) it / 4 else -it / 4 } + fadeIn(effects)) togetherWith
-                    (slideOutHorizontally(spatial) { if (forward) -it / 4 else it / 4 } + fadeOut(effects))
-            },
+        val previousPage = steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
+        val transition = rememberBackTransition(
+            screen = page to depth,
+            previous = (previousPage to depth - 1).takeIf { canGoBack },
             label = "authStep",
+            onBack = goBack,
+        )
+        transition.AnimatedContent(
+            modifier = Modifier.fillMaxSize(),
+            transitionSpec = { slideBetween(targetState.second >= initialState.second, motion, 4) },
         ) { (shown, _) ->
             when (shown) {
                 "entry:${AuthEntry.Master.name}" -> AuthPage(

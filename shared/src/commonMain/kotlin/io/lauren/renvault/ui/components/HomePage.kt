@@ -10,9 +10,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvItem
@@ -114,6 +110,13 @@ fun homeZones(
 }
 
 private enum class Screen { Zones, List, Item, Settings }
+
+private fun screenOf(settings: Boolean, item: Boolean, zone: Boolean): Screen = when {
+    settings -> Screen.Settings
+    item -> Screen.Item
+    zone -> Screen.List
+    else -> Screen.Zones
+}
 
 @Composable
 fun RvHomePage(
@@ -272,7 +275,17 @@ fun RvHomePage(
 
     val canGoBack = editing || (compact && (settingsOpen || itemId != null || zoneKind != null)) ||
         selecting || searching
-    RvBackHandler(enabled = canGoBack, onBack = back)
+    val screen = screenOf(settingsOpen, itemId != null && current != null, zoneKind != null)
+    val previous = when {
+        !compact || editing -> null
+        settingsOpen -> screenOf(false, itemId != null && current != null, zoneKind != null)
+        selecting -> null
+        itemId != null -> screenOf(false, false, zoneKind != null)
+        searching -> null
+        zoneKind != null -> Screen.Zones
+        else -> null
+    }?.takeIf { it != screen }
+    RvBackHandler(enabled = canGoBack && previous == null, onBack = back)
 
     val zonesPane: @Composable (Modifier) -> Unit = { paneModifier ->
         RvZonesPane(
@@ -400,24 +413,12 @@ fun RvHomePage(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (compact) {
-            val screen = when {
-                settingsOpen -> Screen.Settings
-                itemId != null && current != null -> Screen.Item
-                zoneKind != null -> Screen.List
-                else -> Screen.Zones
-            }
             val motion = MaterialTheme.motionScheme
+            val transition = rememberBackTransition(screen, previous, "homeScreen", back)
 
-            AnimatedContent(
-                targetState = screen,
+            transition.AnimatedContent(
                 modifier = Modifier.fillMaxSize(),
-                transitionSpec = {
-                    val forward = targetState.ordinal > initialState.ordinal
-                    val spatial = motion.defaultSpatialSpec<IntOffset>()
-                    (slideInHorizontally(spatial) { if (forward) it / 3 else -it / 3 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
-                        (slideOutHorizontally(spatial) { if (forward) -it / 3 else it / 3 } + fadeOut(motion.fastEffectsSpec()))
-                },
-                label = "homeScreen",
+                transitionSpec = { slideBetween(targetState.ordinal > initialState.ordinal, motion, 3) },
             ) { shown ->
                 val fill = Modifier.fillMaxSize()
                 when (shown) {
