@@ -95,7 +95,7 @@ fun RvDetailPane(
     saving: Boolean,
     onSave: () -> Unit,
     onBack: () -> Unit,
-    onCopy: (String) -> Unit,
+    onCopy: (text: String, sensitive: Boolean) -> Unit,
     onChangePassword: (String) -> Unit,
     onLearnMore: () -> Unit,
     onDelete: () -> Unit,
@@ -282,7 +282,7 @@ private fun ItemView(
     hidesName: Boolean,
     original: Boolean,
     onOriginal: (Boolean) -> Unit,
-    onCopy: (String) -> Unit,
+    onCopy: (text: String, sensitive: Boolean) -> Unit,
     onChangePassword: (String) -> Unit,
     onLearnMore: () -> Unit,
     onRecover: () -> Unit,
@@ -393,7 +393,7 @@ private fun FieldRow(
     field: RvDetailField,
     index: Int,
     count: Int,
-    onCopy: (String) -> Unit,
+    onCopy: (text: String, sensitive: Boolean) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val secret = field.secret
@@ -403,7 +403,7 @@ private fun FieldRow(
     val copy: () -> Unit = {
         scope.launch {
             val text = field.raw ?: revealed ?: (secret ?: code)?.let { load -> runCatching { load() }.getOrNull() }
-            if (!text.isNullOrEmpty()) onCopy(text)
+            if (!text.isNullOrEmpty()) onCopy(text, secret != null || code != null)
         }
     }
 

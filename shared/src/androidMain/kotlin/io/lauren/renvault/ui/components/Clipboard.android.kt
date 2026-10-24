@@ -11,16 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.getSystemService
+import io.lauren.renvault.lib.clipboardClearSeconds
 import kotlin.random.Random
 
 private val clearer = Handler(Looper.getMainLooper())
 
 @Composable
-actual fun rememberClipboardCopy(sensitive: Boolean): (String) -> Unit {
+actual fun rememberClipboardCopy(): (text: String, sensitive: Boolean) -> Unit {
     val context = LocalContext.current
 
-    return remember(context, sensitive) {
-        { text ->
+    return remember(context) {
+        { text, sensitive ->
             val clipboard = context.getSystemService<ClipboardManager>()
             if (clipboard != null) {
                 val label = "RenVault ${Random.nextLong()}"
@@ -31,8 +32,9 @@ actual fun rememberClipboardCopy(sensitive: Boolean): (String) -> Unit {
                     }
                 }
                 clipboard.setPrimaryClip(clip)
-                if (sensitive) {
-                    clearer.postDelayed({ clearIfOurs(clipboard, label) }, ClipboardClearMs)
+                val delay = clipboardClearSeconds() * 1000L
+                if (sensitive && delay > 0) {
+                    clearer.postDelayed({ clearIfOurs(clipboard, label) }, delay)
                 }
             }
         }

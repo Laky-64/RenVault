@@ -367,4 +367,7 @@
     <string name="anisette_insecure_warning">La connessione a questo server non è protetta: chi è sulla tua rete può vedere o alterare i dati anisette. La password dell\'Apple ID non passa mai da qui.</string>
     <string name="settings_autofill">Compilazione automatica</string>
     <string name="settings_autofill_desc">RenVault compila le password in app e browser</string>
+    <string name="settings_clipboard">Svuota password copiate</string>
+    <string name="settings_clipboard_after">Dopo %1$s</string>
+    <string name="settings_seconds">%1$s secondi</string>
 </resources>

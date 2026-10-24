@@ -82,6 +82,9 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_clipboard
+import io.lauren.renvault.resources.settings_clipboard_after
+import io.lauren.renvault.resources.settings_seconds
 import io.lauren.renvault.resources.settings_autofill
 import io.lauren.renvault.resources.settings_autofill_desc
 import io.lauren.renvault.resources.anisette_insecure_warning
@@ -347,6 +350,9 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_clipboard,
+    Res.string.settings_clipboard_after,
+    Res.string.settings_seconds,
     Res.string.settings_autofill,
     Res.string.settings_autofill_desc,
     Res.string.anisette_insecure_warning,
@@ -782,6 +788,9 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsClipboard: String get() = text(Res.string.settings_clipboard)
+    override fun settingsClipboardAfter(time: String): String = text(Res.string.settings_clipboard_after, time)
+    override fun settingsSeconds(count: String): String = text(Res.string.settings_seconds, count)
     override val settingsAutofill: String get() = text(Res.string.settings_autofill)
     override val settingsAutofillDesc: String get() = text(Res.string.settings_autofill_desc)
     override val anisetteInsecureWarning: String get() = text(Res.string.anisette_insecure_warning)

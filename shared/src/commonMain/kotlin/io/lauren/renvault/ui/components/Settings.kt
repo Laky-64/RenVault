@@ -3,6 +3,7 @@ package io.lauren.renvault.ui.components
 import androidx.compose.animation.AnimatedContent
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.SnackbarResult
@@ -36,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,7 +51,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvBiometricCancelled
+import io.lauren.renvault.lib.ClipboardClearChoices
+import io.lauren.renvault.lib.clipboardClearSeconds
 import io.lauren.renvault.lib.rememberAutofillSetup
+import io.lauren.renvault.lib.setClipboardClearSeconds
 import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.relativeOf
@@ -216,6 +221,8 @@ private fun RootPage(
     val snackbar = remember { SnackbarHostState() }
     var checking by remember { mutableStateOf(false) }
     var quickBusy by remember { mutableStateOf(false) }
+    var clipboardOpen by remember { mutableStateOf(false) }
+    var clipboardClear by remember { mutableIntStateOf(clipboardClearSeconds()) }
     val accents = RenVault.accents
     val list = rememberLazyListState()
     val scrolled by list.scrolledPast()
@@ -226,7 +233,7 @@ private fun RootPage(
     var anisetteOpen by remember { mutableStateOf(false) }
     var profileOpen by remember { mutableStateOf(false) }
     val editable = state.local && devices != null
-    val copy = rememberClipboardCopy(sensitive = false)
+    val copy = rememberClipboardCopy()
     val autofill = rememberAutofillSetup()
     val backupFlow = backup?.let {
         rememberBackupFlow(it, strings, onMessage = { text ->
@@ -245,6 +252,7 @@ private fun RootPage(
                 state.commit.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
                 state.platform,
             ).filter { it.isNotEmpty() }.joinToString(" "),
+            false,
         )
         scope.launch {
             snackbar.currentSnackbarData?.dismiss()
@@ -442,7 +450,7 @@ private fun RootPage(
                     if (quick == 1) {
                         RvSegment(
                             index = 0,
-                            count = 3 + quick,
+                            count = 4 + quick,
                             onClick = {
                                 if (!quickBusy) {
                                     scope.launch {
@@ -468,7 +476,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = quick,
-                        count = 3 + quick,
+                        count = 4 + quick,
                         onClick = { lockOpen = true },
                         leading = { SettingBadge(RvTimerIcon, accents.teal) },
                         supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
@@ -477,7 +485,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 1 + quick,
-                        count = 3 + quick,
+                        count = 4 + quick,
                         onClick = onLockNow,
                         leading = { SettingBadge(RvLockIcon, accents.yellow) },
                     ) {
@@ -485,7 +493,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 2 + quick,
-                        count = 3 + quick,
+                        count = 4 + quick,
                         onClick = checkPwned,
                         leading = {
                             if (checking) {
@@ -497,6 +505,23 @@ private fun RootPage(
                         supporting = { Text(if (checking) strings.pwnedChecking else pwnedChecked) },
                     ) {
                         Text(strings.settingsCheckPwned)
+                    }
+                    RvSegment(
+                        index = 3 + quick,
+                        count = 4 + quick,
+                        onClick = { clipboardOpen = true },
+                        leading = { SettingBadge(RvCopyIcon, accents.blue) },
+                        supporting = {
+                            Text(
+                                if (clipboardClear == 0) {
+                                    strings.settingsAutoLockNever
+                                } else {
+                                    strings.settingsClipboardAfter(durationLabel(clipboardClear, strings).lowercase())
+                                },
+                            )
+                        },
+                    ) {
+                        Text(strings.settingsClipboard)
                     }
                 }
             }
@@ -607,6 +632,20 @@ private fun RootPage(
         label = { lockLabel(it, strings) },
         cancel = strings.cancel,
         onSelect = onAutoLock,
+    )
+
+    RvChoiceDialog(
+        open = clipboardOpen,
+        onOpenChange = { clipboardOpen = it },
+        title = strings.settingsClipboard,
+        choices = ClipboardClearChoices,
+        selected = clipboardClear,
+        label = { durationLabel(it, strings) },
+        cancel = strings.cancel,
+        onSelect = {
+            clipboardClear = it
+            setClipboardClearSeconds(it)
+        },
     )
 
     RvAnisetteDialog(
@@ -745,6 +784,13 @@ private fun LanguagePage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit
             }
         }
     }
+}
+
+private fun durationLabel(seconds: Int, strings: RvStrings): String = when {
+    seconds <= 0 -> strings.settingsAutoLockNever
+    seconds < 60 -> strings.settingsSeconds(seconds.toString())
+    seconds == 60 -> strings.settingsAutoLockMinute
+    else -> strings.settingsAutoLockMinutes(seconds / 60)
 }
 
 private fun lockLabel(value: Int, strings: RvStrings): String = when {

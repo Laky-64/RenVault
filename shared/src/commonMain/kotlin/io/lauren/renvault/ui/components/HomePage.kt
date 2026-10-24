@@ -132,7 +132,7 @@ fun RvHomePage(
     sortAscending: Boolean = true,
     strings: RvStrings = LocalStrings.current,
     onSort: (RvSortField, Boolean) -> Unit = { _, _ -> },
-    onCopy: (String) -> Unit = {},
+    onCopy: (text: String, sensitive: Boolean) -> Unit = { _, _ -> },
     onChangePassword: (String) -> Unit = {},
     onLearnMore: () -> Unit = {},
     onCreate: suspend (RvEditorDraft) -> Unit = {},
@@ -228,8 +228,8 @@ fun RvHomePage(
         draft = draft.copy(password = secret)
     }
 
-    val copy: (String) -> Unit = { text ->
-        onCopy(text)
+    val copy: (String, Boolean) -> Unit = { text, sensitive ->
+        onCopy(text, sensitive)
         scope.launch {
             snackbar.currentSnackbarData?.dismiss()
             snackbar.showSnackbar(if (notice && names.hides(text)) strings.fieldCopiedOriginal else strings.fieldCopied)
