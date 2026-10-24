@@ -126,7 +126,7 @@ fun RvAuthFlow(
     joinPairing: suspend (String) -> String = { "" },
     unlock: suspend (String) -> Unit = {},
     quick: RvQuickUnlock? = null,
-    reset: suspend () -> Unit = {},
+    reset: (suspend () -> Unit)? = null,
     onPrivacy: () -> Unit = {},
     anisette: String = "",
     onAnisette: suspend (String) -> Boolean = { true },
@@ -437,7 +437,7 @@ fun RvAuthFlow(
     val confirmReset: () -> Unit = {
         scope.launch {
             busy = true
-            runCatching { reset() }
+            runCatching { reset?.invoke() }
             unlockValue = ""
             unlockError = ""
             quickReady = false
@@ -577,13 +577,15 @@ fun RvAuthFlow(
                                 enabled = !busy,
                             )
                         }
-                        TextButton(
-                            onClick = openReset,
-                            enabled = !busy,
-                            shapes = ButtonDefaults.shapes(),
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
-                        ) {
-                            Text(strings.resetForgot)
+                        if (reset != null) {
+                            TextButton(
+                                onClick = openReset,
+                                enabled = !busy,
+                                shapes = ButtonDefaults.shapes(),
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                            ) {
+                                Text(strings.resetForgot)
+                            }
                         }
                     },
                 )

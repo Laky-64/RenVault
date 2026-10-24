@@ -107,6 +107,8 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val settingsAutofill: String
+    val settingsAutofillDesc: String
     val anisetteInsecureWarning: String
     val anisetteDefaultDesc: String
     val anisetteCustom: String

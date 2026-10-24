@@ -1,0 +1,6 @@
+<resources>
+    <string name="autofill_unlock">Sblocca RenVault</string>
+    <string name="autofill_search">Cerca in RenVault</string>
+    <string name="autofill_search_hint">Cerca</string>
+    <string name="autofill_empty">Nessuna password corrisponde</string>
+</resources>

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">RenVault</string>
+    <string name="autofill_unlock">Unlock RenVault</string>
+    <string name="autofill_search">Search in RenVault</string>
+    <string name="autofill_search_hint">Search</string>
+    <string name="autofill_empty">No passwords match</string>
 </resources>

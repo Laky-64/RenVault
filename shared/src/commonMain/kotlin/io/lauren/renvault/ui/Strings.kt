@@ -82,6 +82,8 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_autofill
+import io.lauren.renvault.resources.settings_autofill_desc
 import io.lauren.renvault.resources.anisette_insecure_warning
 import io.lauren.renvault.resources.anisette_default_desc
 import io.lauren.renvault.resources.anisette_custom
@@ -345,6 +347,8 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_autofill,
+    Res.string.settings_autofill_desc,
     Res.string.anisette_insecure_warning,
     Res.string.anisette_default_desc,
     Res.string.anisette_custom,
@@ -778,6 +782,8 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsAutofill: String get() = text(Res.string.settings_autofill)
+    override val settingsAutofillDesc: String get() = text(Res.string.settings_autofill_desc)
     override val anisetteInsecureWarning: String get() = text(Res.string.anisette_insecure_warning)
     override val anisetteDefaultDesc: String get() = text(Res.string.anisette_default_desc)
     override val anisetteCustom: String get() = text(Res.string.anisette_custom)

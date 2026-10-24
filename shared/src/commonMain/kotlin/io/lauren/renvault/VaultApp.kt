@@ -23,9 +23,6 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
-import io.lauren.renvault.lib.RvBiometricCancelled
-import io.lauren.renvault.bridge.FailureReason
-import io.lauren.renvault.bridge.VaultException
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvLan
 import io.lauren.renvault.lib.quickKey
@@ -40,7 +37,6 @@ import io.lauren.renvault.ui.components.RvAnisetteChoice
 import io.lauren.renvault.ui.components.RvBackupActions
 import io.lauren.renvault.ui.components.RvDeviceActions
 import io.lauren.renvault.ui.components.RvImported
-import io.lauren.renvault.ui.components.RvQuickUnlock
 import io.lauren.renvault.ui.components.RvPairCode
 import kotlinx.coroutines.delay
 import io.lauren.renvault.bridge.EditPassword
@@ -333,38 +329,7 @@ fun RvVaultApp(
         }
     }
 
-    val quickUnlock = remember(strings, biometrics) {
-        object : RvQuickUnlock {
-            private var state = QuickState()
-
-            override val label: String get() = quickLabel(state.method, strings)
-
-            override suspend fun ready(): Boolean {
-                state = Vault.quickState()
-                if (!state.ready) return false
-                val local = biometrics
-                if (local != null && state.method == local.method) return local.available() && local.hasKey()
-                return state.method in state.methods
-            }
-
-            override suspend fun unlock(onVerified: () -> Unit) {
-                val current = Vault.quickState()
-                val local = biometrics
-                if (local == null || current.method != local.method) {
-                    onVerified()
-                    nativeQuick { Vault.unlockQuick(current.method) }
-                    return
-                }
-                val key = local.open(current.sealed, strings.quickPromptTitle, strings.cancel)
-                onVerified()
-                try {
-                    Vault.unlockQuick(current.method, key)
-                } finally {
-                    key.fill(0)
-                }
-            }
-        }
-    }
+    val quickUnlock = rememberQuickUnlock(strings, biometrics)
 
     val setQuick: suspend (Boolean) -> Unit = { on ->
         val local = biometrics
@@ -635,19 +600,3 @@ private suspend fun deviceArt(url: String): ImageBitmap? {
 }
 
 private fun ImportResult.imported(): RvImported = RvImported(added, updated)
-
-private fun quickLabel(method: String, strings: RvStrings): String = when (method) {
-    "android-biometric" -> strings.quickBiometrics
-    "windows-hello" -> "Windows Hello"
-    "touch-id" -> "Touch ID"
-    else -> ""
-}
-
-private suspend fun nativeQuick(block: suspend () -> Unit) {
-    try {
-        block()
-    } catch (failure: VaultException) {
-        if (failure.failure.reason == FailureReason.Cancelled) throw RvBiometricCancelled()
-        throw failure
-    }
-}

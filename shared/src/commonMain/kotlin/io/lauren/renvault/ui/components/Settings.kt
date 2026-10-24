@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvBiometricCancelled
+import io.lauren.renvault.lib.rememberAutofillSetup
 import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.relativeOf
@@ -235,6 +236,7 @@ private fun RootPage(
     var profileOpen by remember { mutableStateOf(false) }
     val editable = state.local && devices != null
     val copy = rememberClipboardCopy(sensitive = false)
+    val autofill = rememberAutofillSetup()
     val backupFlow = backup?.let {
         rememberBackupFlow(it, strings, onMessage = { text ->
             scope.launch {
@@ -383,9 +385,10 @@ private fun RootPage(
 
             item {
                 RvSection(title = strings.settingsGeneralTitle) {
+                    val fill = if (autofill != null) 1 else 0
                     RvSegment(
                         index = 0,
-                        count = 3,
+                        count = 3 + fill,
                         onClick = onLanguage,
                         leading = { SettingBadge(RvLanguageIcon, accents.blue) },
                         supporting = { Text(locale.nameOf(locale.current)) },
@@ -393,15 +396,27 @@ private fun RootPage(
                     ) {
                         Text(strings.settingsLanguage)
                     }
+                    autofill?.let { setup ->
+                        RvSegment(
+                            index = 1,
+                            count = 3 + fill,
+                            onClick = { setup.set(!setup.enabled) },
+                            leading = { SettingBadge(RvAutofillIcon, accents.green) },
+                            supporting = { Text(strings.settingsAutofillDesc) },
+                            trailing = { Switch(checked = setup.enabled, onCheckedChange = null) },
+                        ) {
+                            Text(strings.settingsAutofill)
+                        }
+                    }
                     RvSegment(
-                        index = 1,
-                        count = 3,
+                        index = 1 + fill,
+                        count = 3 + fill,
                         leading = { SettingBadge(RvPaletteIcon, accents.orange) },
                         supporting = { Text(LocalThemeController.current.mode.label(strings)) },
                     ) {
                         Text(strings.settingsTheme)
                     }
-                    RvSegment(index = 2, count = 3) {
+                    RvSegment(index = 2 + fill, count = 3 + fill) {
                         RvThemeButtons()
                     }
                 }
