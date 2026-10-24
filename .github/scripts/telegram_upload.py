@@ -8,10 +8,11 @@ import sys
 CAPTION_LIMIT = 1024
 MAX_COMMITS = 30
 SECTIONS = (
-    ("✨ What's new?", ("Added", "Add", "Implemented", "Introduced")),
-    ("🐞 Bug fixes", ("Fixed", "Fix")),
-    ("🔧 Improvements", ()),
+    ("What's new?", ("Added", "Add", "Implemented", "Introduced")),
+    ("Bug fixes", ("Fixed", "Fix")),
+    ("Improvements", ()),
 )
+ICONS = {"What's new?": "✨", "Bug fixes": "🐞", "Improvements": "🔧"}
 HIDDEN = ("Version Bump", "Merge ")
 
 
@@ -48,8 +49,19 @@ def commit_notes(tag: str, kind: str = "") -> list[str]:
         if lines:
             lines.append("")
         lines.append(title)
-        lines.extend(f"• {s}" for s in picked)
+        lines.extend(f"- {s}" for s in picked)
     return lines
+
+
+def decorate(lines: list[str]) -> list[str]:
+    out = []
+    for line in lines:
+        if line.strip() in ICONS:
+            line = f"{ICONS[line.strip()]} {line.strip()}"
+        elif line.startswith(("- ", "* ")):
+            line = "• " + line[2:]
+        out.append(line)
+    return out
 
 
 def caption(version: str, tag: str) -> str:
@@ -61,7 +73,7 @@ def caption(version: str, tag: str) -> str:
         head = f"🚀 RenVault {html.escape(version, quote=False)} #stable ({commit})"
     else:
         head = f"🥚 Beta {html.escape(version, quote=False)} #beta ({commit})"
-    body = tag_notes(tag) or commit_notes(tag)
+    body = decorate(tag_notes(tag) or commit_notes(tag))
 
     def build(lines: list[str], cut: int) -> str:
         text = "\n".join([head, "", *(html.escape(line, quote=False) for line in lines)])
@@ -78,7 +90,7 @@ def caption(version: str, tag: str) -> str:
 
 
 def release_notes(version: str, tag: str) -> str:
-    return "\n".join([f"RenVault {version}", "", *(tag_notes(tag) or commit_notes(tag))])
+    return "\n".join([f"RenVault {version}", "", *decorate(tag_notes(tag) or commit_notes(tag))])
 
 
 async def send(folder: str, version: str, tag: str) -> None:
