@@ -15,15 +15,51 @@ plugins {
 val goHost = extensions.getByType<RenVaultNativeExtension>().host()
 
 val appVersion = providers.gradleProperty("renvault.version").orElse("0.0.0")
+val appVersionCode = providers.gradleProperty("renvault.version_code").orElse("0")
+val appChannel = providers.gradleProperty("renvault.channel")
+    .orElse(appVersion.zip(providers.environmentVariable("GITHUB_REF_TYPE").orElse("")) { version, ref ->
+        when {
+            "-" in version -> version.substringAfter('-').substringBefore('.')
+            ref == "tag" -> "stable"
+            else -> "dev"
+        }
+    })
+val appCommit = providers.environmentVariable("GITHUB_SHA")
+    .orElse(providers.exec { commandLine("git", "rev-parse", "HEAD"); isIgnoreExitValue = true }.standardOutput.asText)
+    .map { it.trim().take(8) }
+val goMod = rootProject.layout.projectDirectory.file("core/go.mod")
 val generateVersion = tasks.register("generateAppVersion") {
     val out = layout.buildDirectory.dir("generated/version/kotlin")
     val version = appVersion
+    val code = appVersionCode
+    val channel = appChannel
+    val commit = appCommit
+    val mod = goMod
     inputs.property("version", version)
+    inputs.property("code", code)
+    inputs.property("channel", channel)
+    inputs.property("commit", commit)
+    inputs.file(mod)
     outputs.dir(out)
     doLast {
+        val apple = Regex("""github\.com/Laky-64/appleservices (\S+)""").find(mod.asFile.readText())?.groupValues?.get(1).orEmpty()
         val file = out.get().file("io/lauren/renvault/AppVersion.kt").asFile
         file.parentFile.mkdirs()
-        file.writeText("package io.lauren.renvault\n\nconst val RvAppVersion: String = \"${version.get()}\"\n")
+        file.writeText(
+            """
+            |package io.lauren.renvault
+            |
+            |const val RvAppVersion: String = "${version.get()}"
+            |
+            |const val RvAppVersionCode: String = "${code.get()}"
+            |
+            |const val RvAppChannel: String = "${channel.get()}"
+            |
+            |const val RvAppCommit: String = "${commit.get()}"
+            |
+            |const val RvAppleServicesVersion: String = "$apple"
+            |""".trimMargin(),
+        )
     }
 }
 

@@ -219,7 +219,8 @@
     <string name="totp_setup_desc">If \"%1$s\" supports verification codes, visit the website to get a setup key and enter it here.</string>
     <string name="totp_key_placeholder">Setup key</string>
     <string name="totp_key_confirm">Use setup key</string>
-    <string name="settings_version">Version</string>
+    <string name="settings_based_on">Based on %1$s</string>
+    <string name="settings_channel_stable">Stable</string>
     <string name="anisette_title">Anisette server</string>
     <string name="anisette_desc">Apple needs anisette data to sign you in. By default RenVault uses the public SideStore servers. You can set your own instead: then only that one is used.</string>
     <string name="anisette_placeholder">Server address</string>

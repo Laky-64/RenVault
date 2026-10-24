@@ -81,7 +81,8 @@ import io.lauren.renvault.resources.websites_add
 import io.lauren.renvault.resources.websites_placeholder
 import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
-import io.lauren.renvault.resources.settings_version
+import io.lauren.renvault.resources.settings_based_on
+import io.lauren.renvault.resources.settings_channel_stable
 import io.lauren.renvault.resources.auth_2fa_hint
 import io.lauren.renvault.resources.auth_2fa_resend_action
 import io.lauren.renvault.resources.auth_2fa_title
@@ -302,8 +303,9 @@ private val TextResources = listOf(
     Res.string.anisette_reset,
     Res.string.anisette_invalid,
     Res.string.anisette_note,
-    Res.string.settings_version,
     Res.string.websites_title,
+    Res.string.settings_based_on,
+    Res.string.settings_channel_stable,
     Res.string.websites_desc,
     Res.string.websites_placeholder,
     Res.string.websites_add,
@@ -695,7 +697,8 @@ private class ResourceStrings(
     override val settingsSignOutDesc: String get() = text(Res.string.settings_sign_out_desc)
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
-    override val settingsVersion: String get() = text(Res.string.settings_version)
+    override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override fun settingsBasedOn(core: String): String = text(Res.string.settings_based_on, core)
     override val settingsAdvancedTitle: String get() = text(Res.string.settings_advanced_title)
     override val anisetteTitle: String get() = text(Res.string.anisette_title)
     override val anisetteDesc: String get() = text(Res.string.anisette_desc)

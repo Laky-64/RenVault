@@ -163,7 +163,8 @@
     <string name="totp_setup_desc">Se \"%1$s\" supporta i codici di verifica, visita il sito web per ottenere una chiave di configurazione e inseriscila qui.</string>
     <string name="totp_key_placeholder">Chiave di configurazione</string>
     <string name="totp_key_confirm">Usa chiave di configurazione</string>
-    <string name="settings_version">Versione</string>
+    <string name="settings_based_on">Basato su %1$s</string>
+    <string name="settings_channel_stable">Stabile</string>
 
     <string name="auth_sign_in_title">Accedi con il tuo Apple ID</string>
     <string name="auth_sign_in_hint">Accedi con un\'email o un numero di telefono per usare RenVault</string>

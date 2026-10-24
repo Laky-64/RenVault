@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
@@ -70,6 +71,11 @@ data class RvSettingsState(
     val appleId: String = "",
     val appName: String,
     val version: String = "",
+    val versionCode: String = "",
+    val channel: String = "",
+    val commit: String = "",
+    val platform: String = "",
+    val core: String = "",
     val autoLockMinutes: Int = 5,
     val autoLockChoices: List<Int> = emptyList(),
     val pending: Int = 0,
@@ -216,6 +222,22 @@ private fun RootPage(
     var anisetteOpen by remember { mutableStateOf(false) }
     var profileOpen by remember { mutableStateOf(false) }
     val editable = state.local && devices != null
+    val copy = rememberClipboardCopy()
+    val copyBuild: () -> Unit = {
+        copy(
+            listOf(
+                "${state.appName} v${state.version}",
+                state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+                "#${state.channel}",
+                state.commit.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+                state.platform,
+            ).filter { it.isNotEmpty() }.joinToString(" "),
+        )
+        scope.launch {
+            snackbar.currentSnackbarData?.dismiss()
+            snackbar.showSnackbar(strings.fieldCopied)
+        }
+    }
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
@@ -458,10 +480,19 @@ private fun RootPage(
                     RvSegment(
                         index = 1,
                         count = 2,
+                        onClick = copyBuild,
                         leading = { SettingBadge(RvInfoIcon, accents.blue) },
-                        supporting = { Text(listOf(state.appName, state.version).filter { it.isNotEmpty() }.joinToString(" ")) },
+                        supporting = {
+                            Text(
+                                listOfNotNull(
+                                    listOf(state.commit, state.platform).filter { it.isNotEmpty() }.joinToString(" · "),
+                                    state.core.takeIf { it.isNotEmpty() }?.let(strings::settingsBasedOn),
+                                ).filter { it.isNotEmpty() }.joinToString("\n"),
+                            )
+                        },
+                        trailing = { ChannelPill(state.channel, strings) },
                     ) {
-                        Text(strings.settingsVersion)
+                        Text(listOf("${state.appName} ${state.version}", state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty()).filter { it.isNotEmpty() }.joinToString(" "))
                     }
                 }
             }
@@ -523,6 +554,23 @@ private fun RootPage(
             actions = devices,
             strings = strings,
             onDismiss = { profileOpen = false },
+        )
+    }
+}
+
+@Composable
+private fun ChannelPill(channel: String, strings: RvStrings) {
+    val accents = RenVault.accents
+    val tone = when (channel) {
+        "stable" -> accents.green
+        "beta" -> accents.yellow
+        else -> accents.red
+    }
+    Surface(shape = CircleShape, color = tone.container, contentColor = tone.content) {
+        Text(
+            text = if (channel == "stable") strings.settingsChannelStable else channel.replaceFirstChar { it.uppercase() },
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
         )
     }
 }

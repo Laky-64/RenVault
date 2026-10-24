@@ -106,7 +106,8 @@ interface RvStrings {
     val settingsSignOutDesc: String
     val settingsOpenLabel: String
     val cancel: String
-    val settingsVersion: String
+    val settingsChannelStable: String
+    fun settingsBasedOn(core: String): String
     val settingsAdvancedTitle: String
     val anisetteTitle: String
     val anisetteDesc: String

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvLan
+import io.lauren.renvault.lib.platformTag
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
@@ -370,6 +371,11 @@ fun RvVaultApp(
                             profileName = profile.name,
                             appleId = profile.appleId,
                             version = version,
+                            versionCode = RvAppVersionCode,
+                            channel = RvAppChannel,
+                            commit = RvAppCommit,
+                            platform = platformTag(),
+                            core = RvAppleServicesVersion.takeIf { it.isNotEmpty() }?.let { "appleservices $it" }.orEmpty(),
                             autoLockMinutes = settings.autoLockMinutes,
                             autoLockChoices = choices,
                             pending = sync.pending,
