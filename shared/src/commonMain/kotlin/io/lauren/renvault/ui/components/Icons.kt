@@ -253,10 +253,12 @@ val RvAppleIcon: ImageVector by lazy {
         viewportWidth = 24f,
         viewportHeight = 24f,
     ).apply {
-        addPath(
-            pathData = PathParser().parsePathString(APPLE).toNodes(),
-            fill = SolidColor(Color.Black),
-        )
+        group(translationX = 0.61f) {
+            addPath(
+                pathData = PathParser().parsePathString(APPLE).toNodes(),
+                fill = SolidColor(Color.Black),
+            )
+        }
     }.build()
 }
 
