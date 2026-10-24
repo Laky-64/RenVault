@@ -25,15 +25,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FilledTonalIconToggleButton
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -561,29 +559,6 @@ fun RvAuthFlow(
                             icon = RvCloudOffIcon,
                         )
                     },
-                    extra = {
-                        AssistChip(
-                            onClick = { anisetteOpen = true },
-                            enabled = !busy,
-                            label = { Text(strings.anisetteTitle) },
-                            leadingIcon = {
-                                Icon(RvServerIcon, contentDescription = null, modifier = Modifier.size(AssistChipDefaults.IconSize))
-                            },
-                            trailingIcon = if (anisette.isNotEmpty()) {
-                                {
-                                    Icon(
-                                        imageVector = RvCheckIcon,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(AssistChipDefaults.IconSize),
-                                    )
-                                }
-                            } else {
-                                null
-                            },
-                            shape = CircleShape,
-                        )
-                    },
                 )
 
                 "step:${AuthStep.TwoFactor.name}" -> AuthPage(
@@ -853,7 +828,25 @@ fun RvAuthFlow(
             }
         }
 
-        RvThemeMenuButton(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp))
+        Row(
+            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            AnimatedVisibility(
+                visible = page == "entry:${AuthEntry.Credentials.name}" && !busy,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                FilledTonalIconToggleButton(
+                    checked = anisette.isNotEmpty(),
+                    onCheckedChange = { anisetteOpen = true },
+                    shapes = IconButtonDefaults.toggleableShapes(),
+                ) {
+                    Icon(RvServerIcon, contentDescription = strings.anisetteTitle)
+                }
+            }
+            RvThemeMenuButton()
+        }
 
         AnimatedVisibility(
             visible = busy,
@@ -902,7 +895,6 @@ private fun AuthPage(
     hint: String?,
     body: @Composable ColumnScope.() -> Unit,
     actions: @Composable ColumnScope.() -> Unit,
-    extra: (@Composable () -> Unit)? = null,
 ) {
     val heading: @Composable (Alignment.Horizontal, TextAlign) -> Unit = { align, textAlign ->
         Column(horizontalAlignment = align, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -949,12 +941,6 @@ private fun AuthPage(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 content = actions,
             )
-            if (extra != null) {
-                Box(
-                    modifier = Modifier.widthIn(max = BodyMax).fillMaxWidth().padding(top = 8.dp),
-                    contentAlignment = Alignment.Center,
-                ) { extra() }
-            }
         }
         return
     }
@@ -983,9 +969,6 @@ private fun AuthPage(
                     Column(content = body)
                     Spacer(Modifier.height(32.dp))
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp), content = actions)
-                    if (extra != null) {
-                        Box(modifier = Modifier.padding(top = 8.dp)) { extra() }
-                    }
                 }
             }
         }
