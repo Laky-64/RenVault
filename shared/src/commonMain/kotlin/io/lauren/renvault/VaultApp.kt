@@ -425,6 +425,7 @@ fun RvVaultApp(
                     }
 
                     RvAuthProfile(
+                        local = meta?.local == true,
                         name = meta?.name.orEmpty(),
                         photo = raw?.let {
                             withContext(Dispatchers.Default) {
@@ -442,6 +443,11 @@ fun RvVaultApp(
                 joinPairing = { text -> Vault.joinPairing(text) },
                 unlock = { secret -> Vault.unlock(secret) },
                 quick = quickUnlock,
+                reset = {
+                    Vault.signOut()
+                    biometrics?.forget()
+                    quick = QuickState()
+                },
                 onPrivacy = { openUrl(PrivacyUrl) },
                 anisette = anisette,
                 onAnisette = chooseAnisette,

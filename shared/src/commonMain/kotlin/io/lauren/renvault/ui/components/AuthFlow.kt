@@ -98,6 +98,7 @@ private enum class AuthEntry { Deciding, Credentials, Master }
 data class RvAuthProfile(
     val name: String = "",
     val photo: ImageBitmap? = null,
+    val local: Boolean = false,
 )
 
 data class RvAuthDevice(
@@ -125,6 +126,7 @@ fun RvAuthFlow(
     joinPairing: suspend (String) -> String = { "" },
     unlock: suspend (String) -> Unit = {},
     quick: RvQuickUnlock? = null,
+    reset: suspend () -> Unit = {},
     onPrivacy: () -> Unit = {},
     anisette: String = "",
     onAnisette: suspend (String) -> Boolean = { true },
@@ -424,6 +426,26 @@ fun RvAuthFlow(
     }
 
     var quickReady by remember { mutableStateOf(false) }
+    var resetOpen by remember { mutableStateOf(false) }
+    var resetLocal by remember { mutableStateOf(false) }
+    val openReset: () -> Unit = {
+        scope.launch {
+            resetLocal = runCatching { loadProfile().local }.getOrDefault(false)
+            resetOpen = true
+        }
+    }
+    val confirmReset: () -> Unit = {
+        scope.launch {
+            busy = true
+            runCatching { reset() }
+            unlockValue = ""
+            unlockError = ""
+            quickReady = false
+            steps.clear()
+            entry = AuthEntry.Credentials
+            busy = false
+        }
+    }
     val submitQuick: () -> Unit = {
         if (quick != null && !busy) {
             scope.launch {
@@ -554,6 +576,14 @@ fun RvAuthFlow(
                                 icon = RvFingerprintIcon,
                                 enabled = !busy,
                             )
+                        }
+                        TextButton(
+                            onClick = openReset,
+                            enabled = !busy,
+                            shapes = ButtonDefaults.shapes(),
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                        ) {
+                            Text(strings.resetForgot)
                         }
                     },
                 )
@@ -922,6 +952,18 @@ fun RvAuthFlow(
             }
         }
     }
+
+    RvConfirmDialog(
+        open = resetOpen,
+        onOpenChange = { resetOpen = it },
+        title = strings.resetTitle,
+        description = if (resetLocal) strings.resetLocal else strings.resetIcloud,
+        confirm = strings.resetAction,
+        cancel = strings.cancel,
+        danger = true,
+        icon = RvDeleteIcon,
+        onConfirm = confirmReset,
+    )
 
     RvAnisetteDialog(
         open = anisetteOpen,

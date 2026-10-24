@@ -652,11 +652,12 @@ func (v *Vault) ProfileInfo() ProfileMeta {
 		v.mu.Unlock()
 		return m
 	}
+	local := v.sh != nil
 	v.mu.Unlock()
-	if pr, ok := v.sess.Profile(); ok {
+	if pr, ok := v.sess.Profile(); ok && !local {
 		return ProfileMeta{Name: pr.Name, AppleID: pending, HasPhoto: len(pr.Photo) > 0}
 	}
-	return ProfileMeta{AppleID: pending}
+	return ProfileMeta{AppleID: pending, Local: local}
 }
 
 func (v *Vault) SignOut() error {
@@ -664,7 +665,7 @@ func (v *Vault) SignOut() error {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	var err error
-	if v.sh == nil {
+	if v.sh == nil && v.k != nil {
 		err = appleservices.Logout(v.store)
 	}
 	v.lockLocked()

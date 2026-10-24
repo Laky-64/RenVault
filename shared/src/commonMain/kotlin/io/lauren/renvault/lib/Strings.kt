@@ -107,6 +107,11 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val resetForgot: String
+    val resetTitle: String
+    val resetIcloud: String
+    val resetLocal: String
+    val resetAction: String
     val quickBiometrics: String
     fun quickUnlockWith(method: String): String
     val quickPromptTitle: String

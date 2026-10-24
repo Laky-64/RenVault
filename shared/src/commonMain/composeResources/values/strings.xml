@@ -359,4 +359,9 @@
     <string name="quick_gone">Biometrics changed on this device. Unlock with your master password, then turn quick unlock on again.</string>
     <string name="quick_expired">For your security, enter the master password. Quick unlock will work again right after.</string>
     <string name="quick_failed">Couldn\'t turn on quick unlock</string>
+    <string name="reset_forgot">Forgot your password?</string>
+    <string name="reset_title">Reset RenVault?</string>
+    <string name="reset_icloud">Your passwords stay safe in iCloud Keychain. RenVault removes the copy on this device, then you can sign in again with your Apple ID and choose a new master password.</string>
+    <string name="reset_local">The vault on this device will be deleted. If you linked other devices, you can connect this one again from them; otherwise your passwords can only come back from a backup.</string>
+    <string name="reset_action">Reset</string>
 </resources>

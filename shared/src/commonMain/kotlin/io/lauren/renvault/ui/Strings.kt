@@ -83,6 +83,11 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.reset_forgot
+import io.lauren.renvault.resources.reset_title
+import io.lauren.renvault.resources.reset_icloud
+import io.lauren.renvault.resources.reset_local
+import io.lauren.renvault.resources.reset_action
 import io.lauren.renvault.resources.quick_biometrics
 import io.lauren.renvault.resources.quick_unlock_with
 import io.lauren.renvault.resources.quick_prompt_title
@@ -335,6 +340,11 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.reset_forgot,
+    Res.string.reset_title,
+    Res.string.reset_icloud,
+    Res.string.reset_local,
+    Res.string.reset_action,
     Res.string.quick_biometrics,
     Res.string.quick_unlock_with,
     Res.string.quick_prompt_title,
@@ -756,6 +766,11 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val resetForgot: String get() = text(Res.string.reset_forgot)
+    override val resetTitle: String get() = text(Res.string.reset_title)
+    override val resetIcloud: String get() = text(Res.string.reset_icloud)
+    override val resetLocal: String get() = text(Res.string.reset_local)
+    override val resetAction: String get() = text(Res.string.reset_action)
     override val quickBiometrics: String get() = text(Res.string.quick_biometrics)
     override fun quickUnlockWith(method: String): String = text(Res.string.quick_unlock_with, method)
     override val quickPromptTitle: String get() = text(Res.string.quick_prompt_title)
