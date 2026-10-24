@@ -96,6 +96,7 @@ jobs:
           ./gradlew :desktopApp:packageDistributionForCurrentOS :desktopApp:createDistributable \
             -Drenvault.main=io.lauren.renvault.VaultMainKt \
             -Prenvault.version="${{ steps.version.outputs.name }}" \
+            -Prenvault.version_code="${{ steps.version.outputs.code }}" \
             -Prenvault.package_version="${{ steps.version.outputs.package }}"
 
       - name: Collect the packages
