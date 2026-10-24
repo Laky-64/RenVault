@@ -37,6 +37,9 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.window.Tray
 import com.jetbrains.JBR
 import io.lauren.renvault.lib.currentLocaleTag
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.app_name
+import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.components.RvLockIcon
 import io.lauren.renvault.ui.rememberStrings
 import java.awt.SystemTray
@@ -65,6 +68,7 @@ fun main() {
 }
 
 private fun vaultApplication() = application {
+    val appName = stringResource(Res.string.app_name)
     val state = rememberWindowState(size = StartSize)
     val tray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
     var visible by remember { mutableStateOf(true) }
@@ -78,7 +82,7 @@ private fun vaultApplication() = application {
     if (tray) {
         Tray(
             icon = rememberTrayIcon(),
-            tooltip = "RenVault",
+            tooltip = appName,
             onAction = { visible = true },
             menu = {
                 Item(strings.trayOpen, onClick = { visible = true })
@@ -91,7 +95,7 @@ private fun vaultApplication() = application {
         onCloseRequest = close,
         state = state,
         visible = visible,
-        title = "RenVault",
+        title = appName,
         undecorated = true,
     ) {
         LaunchedEffect(visible) {
@@ -114,14 +118,14 @@ private fun vaultApplication() = application {
         RenVaultTheme {
             Box(modifier = Modifier.fillMaxSize()) {
                 RvVaultApp(
-                    title = "RenVault",
+                    title = appName,
                     titleBar = {
                         TitleDrag(
                             maximised = maximised,
                             onRestore = { state.placement = WindowPlacement.Floating },
                         ) {
                             RvTitleBar(
-                                title = "RenVault",
+                                title = appName,
                                 maximised = maximised,
                                 onMinimise = { state.isMinimized = true },
                                 onToggleMaximise = {
