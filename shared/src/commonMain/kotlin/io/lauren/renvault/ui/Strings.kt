@@ -82,6 +82,8 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_privacy_title
+import io.lauren.renvault.resources.settings_auto_lock_immediate
 import io.lauren.renvault.resources.settings_screenshots
 import io.lauren.renvault.resources.settings_screenshots_desc
 import io.lauren.renvault.resources.settings_clipboard
@@ -352,6 +354,8 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_privacy_title,
+    Res.string.settings_auto_lock_immediate,
     Res.string.settings_screenshots,
     Res.string.settings_screenshots_desc,
     Res.string.settings_clipboard,
@@ -792,6 +796,8 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsPrivacyTitle: String get() = text(Res.string.settings_privacy_title)
+    override val settingsAutoLockImmediate: String get() = text(Res.string.settings_auto_lock_immediate)
     override val settingsScreenshots: String get() = text(Res.string.settings_screenshots)
     override val settingsScreenshotsDesc: String get() = text(Res.string.settings_screenshots_desc)
     override val settingsClipboard: String get() = text(Res.string.settings_clipboard)

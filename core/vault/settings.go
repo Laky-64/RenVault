@@ -13,7 +13,9 @@ type Settings struct {
 
 var sortFields = []string{"title", "website", "modified", "created"}
 
-var autoLockChoices = []int{1, 5, 15, 30, 60, 0}
+const AutoLockImmediate = -1
+
+var autoLockChoices = []int{AutoLockImmediate, 1, 5, 15, 30, 60, 0}
 
 func AutoLockChoices() []int {
 	return slices.Clone(autoLockChoices)

@@ -372,4 +372,6 @@
     <string name="settings_seconds">%1$s secondi</string>
     <string name="settings_screenshots">Blocca screenshot</string>
     <string name="settings_screenshots_desc">Nasconde password e codici da screenshot, registrazioni dello schermo e app recenti</string>
+    <string name="settings_privacy_title">Privacy</string>
+    <string name="settings_auto_lock_immediate">Subito</string>
 </resources>

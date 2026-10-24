@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import io.lauren.renvault.bridge.PlatformStorage
+import io.lauren.renvault.lib.RvLeaveSignal
 import io.lauren.renvault.ui.theme.RenVaultTheme
 
 class MainActivity : FragmentActivity() {
@@ -26,5 +27,10 @@ class MainActivity : FragmentActivity() {
                 )
             }
         }
+    }
+
+    override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
+        super.onTopResumedActivityChanged(isTopResumedActivity)
+        if (!isTopResumedActivity) RvLeaveSignal.left()
     }
 }

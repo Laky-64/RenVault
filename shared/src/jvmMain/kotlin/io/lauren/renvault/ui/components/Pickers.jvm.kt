@@ -8,6 +8,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import io.lauren.renvault.bridge.FailureKind
 import io.lauren.renvault.bridge.FileFilter
 import io.lauren.renvault.bridge.Vault
+import io.lauren.renvault.lib.RvLockGuard
 import io.lauren.renvault.bridge.VaultException
 import io.lauren.renvault.ui.LocalStrings
 import java.awt.FileDialog
@@ -29,6 +30,7 @@ internal actual fun rememberPhotoPicker(onPicked: (ByteArray) -> Unit): (() -> U
     return remember(scope, strings) {
         {
             scope.launch {
+                RvLockGuard.expectLeave()
                 val raw = try {
                     Vault.pickImage(strings.profilePhotoPick, strings.photoFilter)
                 } catch (failure: VaultException) {
@@ -57,6 +59,7 @@ internal actual fun rememberFileOpener(
     return remember(scope, title, filter) {
         {
             scope.launch {
+                RvLockGuard.expectLeave()
                 val raw = try {
                     Vault.pickFile(title, filter)
                 } catch (failure: VaultException) {
@@ -80,6 +83,7 @@ internal actual fun rememberFileSaver(
     return remember(scope, title, filter) {
         { name, data ->
             scope.launch {
+                RvLockGuard.expectLeave()
                 val saved = try {
                     Vault.saveFile(title, name, filter, data)
                 } catch (failure: VaultException) {

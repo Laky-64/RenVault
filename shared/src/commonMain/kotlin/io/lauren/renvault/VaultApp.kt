@@ -24,7 +24,11 @@ import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
 import io.lauren.renvault.bridge.NetInfo
+import io.lauren.renvault.lib.RvHideFromRecents
 import io.lauren.renvault.lib.RvLan
+import io.lauren.renvault.lib.RvLeaveSignal
+import io.lauren.renvault.lib.RvLockGuard
+import io.lauren.renvault.lib.leaveEvent
 import io.lauren.renvault.lib.quickKey
 import io.lauren.renvault.lib.rememberBiometrics
 import io.lauren.renvault.lib.platformTag
@@ -48,6 +52,7 @@ import io.lauren.renvault.lib.writePreference
 import io.lauren.renvault.lib.readPreference
 import io.lauren.renvault.ui.LocalNameNotice
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.compose.LifecycleEventEffect
 import io.lauren.renvault.ui.LocalNameMask
 import io.lauren.renvault.lib.RvNameMask
 import io.lauren.renvault.lib.RvNameSwap
@@ -204,6 +209,20 @@ fun RvVaultApp(
         scope.launch { runCatching { Vault.listen() } }
     }
 
+    val lockOnLeave = settings.autoLockMinutes < 0
+    RvHideFromRecents(lockOnLeave)
+    val leave: () -> Unit = {
+        if (lockOnLeave && unlocked && !RvLockGuard.expected()) {
+            unlocked = false
+            lanOpen = false
+            scope.launch { runCatching { Vault.lock() } }
+        }
+    }
+    LifecycleEventEffect(leaveEvent) { leave() }
+    LaunchedEffect(lockOnLeave) {
+        if (lockOnLeave) RvLeaveSignal.events.collect { leave() }
+    }
+
     LaunchedEffect(Unit) {
         Vault.events.collect { event ->
             when (event.kind) {
@@ -347,7 +366,10 @@ fun RvVaultApp(
                     key.fill(0)
                 }
             }
-            quickMethod != null -> nativeQuick { Vault.enableQuick(quickMethod) }
+            quickMethod != null -> {
+                RvLockGuard.expectLeave()
+                nativeQuick { Vault.enableQuick(quickMethod) }
+            }
         }
         loadQuick()
     }

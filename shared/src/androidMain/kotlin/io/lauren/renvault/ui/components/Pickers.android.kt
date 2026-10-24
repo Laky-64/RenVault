@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import io.lauren.renvault.lib.RvLockGuard
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -38,7 +39,10 @@ internal actual fun rememberPhotoPicker(onPicked: (ByteArray) -> Unit): (() -> U
         }
     }
     return remember(launcher) {
-        { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
+        {
+            RvLockGuard.expectLeave()
+            launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
     }
 }
 
@@ -51,6 +55,7 @@ internal actual fun rememberQrScanner(onScanned: (String) -> Unit): (() -> Unit)
             val options = GmsBarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
                 .build()
+            RvLockGuard.expectLeave()
             GmsBarcodeScanning.getClient(context, options)
                 .startScan()
                 .addOnSuccessListener { code -> code.rawValue?.let { latest(it) } }
@@ -77,7 +82,10 @@ internal actual fun rememberFileOpener(
         }
     }
     return remember(launcher, filter) {
-        { launcher.launch(filter.types.ifEmpty { listOf("*/*") }.plus("application/octet-stream").distinct().toTypedArray()) }
+        {
+            RvLockGuard.expectLeave()
+            launcher.launch(filter.types.ifEmpty { listOf("*/*") }.plus("application/octet-stream").distinct().toTypedArray())
+        }
     }
 }
 
@@ -111,6 +119,7 @@ internal actual fun rememberFileSaver(
     return remember(launcher) {
         { name, data ->
             pending.value = data
+            RvLockGuard.expectLeave()
             launcher.launch(name)
         }
     }

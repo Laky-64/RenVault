@@ -28,6 +28,7 @@ actual fun rememberAutofillSetup(): RvAutofillSetup? {
         if (on) {
             val intent = Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE)
                 .setData("package:${context.packageName}".toUri())
+            RvLockGuard.expectLeave()
             runCatching { context.startActivity(intent) }
                 .onFailure { runCatching { context.startActivity(Intent(Settings.ACTION_SETTINGS)) } }
         } else {

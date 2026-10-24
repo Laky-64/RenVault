@@ -85,6 +85,7 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
                 .setNegativeButtonText(cancel)
                 .setAllowedAuthenticators(BIOMETRIC_STRONG)
                 .build()
+            RvLockGuard.expectLeave()
             prompt.authenticate(info, BiometricPrompt.CryptoObject(cipher))
             cont.invokeOnCancellation { prompt.cancelAuthentication() }
         }

@@ -10,6 +10,7 @@ import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.bridge.VaultException
 import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.RvBiometrics
+import io.lauren.renvault.lib.RvLockGuard
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.currentLocaleTag
 import io.lauren.renvault.lib.rememberBiometrics
@@ -56,6 +57,7 @@ internal fun rememberQuickUnlock(strings: RvStrings, biometrics: RvBiometrics?):
                 val current = Vault.quickState()
                 val local = biometrics
                 if (local == null || current.method != local.method) {
+                    RvLockGuard.expectLeave()
                     onVerified()
                     nativeQuick { Vault.unlockQuick(current.method) }
                     return

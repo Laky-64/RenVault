@@ -449,11 +449,10 @@ private fun RootPage(
             item {
                 RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
                     val quick = if (state.quickLabel.isNotEmpty()) 1 else 0
-                    val shots = if (screenshotBlockSupported) 1 else 0
                     if (quick == 1) {
                         RvSegment(
                             index = 0,
-                            count = 4 + quick + shots,
+                            count = 3 + quick,
                             onClick = {
                                 if (!quickBusy) {
                                     scope.launch {
@@ -479,7 +478,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = quick,
-                        count = 4 + quick + shots,
+                        count = 3 + quick,
                         onClick = { lockOpen = true },
                         leading = { SettingBadge(RvTimerIcon, accents.teal) },
                         supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
@@ -488,7 +487,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 1 + quick,
-                        count = 4 + quick + shots,
+                        count = 3 + quick,
                         onClick = onLockNow,
                         leading = { SettingBadge(RvLockIcon, accents.yellow) },
                     ) {
@@ -496,7 +495,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 2 + quick,
-                        count = 4 + quick + shots,
+                        count = 3 + quick,
                         onClick = checkPwned,
                         leading = {
                             if (checking) {
@@ -509,9 +508,15 @@ private fun RootPage(
                     ) {
                         Text(strings.settingsCheckPwned)
                     }
+                }
+            }
+
+            item {
+                RvSection(title = strings.settingsPrivacyTitle) {
+                    val shots = if (screenshotBlockSupported) 1 else 0
                     RvSegment(
-                        index = 3 + quick,
-                        count = 4 + quick + shots,
+                        index = 0,
+                        count = 1 + shots,
                         onClick = { clipboardOpen = true },
                         leading = { SettingBadge(RvCopyIcon, accents.blue) },
                         supporting = {
@@ -528,8 +533,8 @@ private fun RootPage(
                     }
                     if (shots == 1) {
                         RvSegment(
-                            index = 4 + quick,
-                            count = 4 + quick + shots,
+                            index = 1,
+                            count = 2,
                             onClick = { RvScreenshots.setBlocked(!RvScreenshots.blocked) },
                             leading = { SettingBadge(RvVisibilityOffIcon, accents.red) },
                             supporting = { Text(strings.settingsScreenshotsDesc) },
@@ -809,7 +814,8 @@ private fun durationLabel(seconds: Int, strings: RvStrings): String = when {
 }
 
 private fun lockLabel(value: Int, strings: RvStrings): String = when {
-    value <= 0 -> strings.settingsAutoLockNever
+    value < 0 -> strings.settingsAutoLockImmediate
+    value == 0 -> strings.settingsAutoLockNever
     value == 1 -> strings.settingsAutoLockMinute
     value == 60 -> strings.settingsAutoLockHour
     else -> strings.settingsAutoLockMinutes(value)

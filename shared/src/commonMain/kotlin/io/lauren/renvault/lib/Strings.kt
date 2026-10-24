@@ -107,6 +107,8 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val settingsPrivacyTitle: String
+    val settingsAutoLockImmediate: String
     val settingsScreenshots: String
     val settingsScreenshotsDesc: String
     val settingsClipboard: String
