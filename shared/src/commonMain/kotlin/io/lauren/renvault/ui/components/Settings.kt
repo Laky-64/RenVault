@@ -234,7 +234,7 @@ private fun RootPage(
     var anisetteOpen by remember { mutableStateOf(false) }
     var profileOpen by remember { mutableStateOf(false) }
     val editable = state.local && devices != null
-    val copy = rememberClipboardCopy()
+    val copy = rememberClipboardCopy(sensitive = false)
     val backupFlow = backup?.let {
         rememberBackupFlow(it, strings, onMessage = { text ->
             scope.launch {

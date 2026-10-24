@@ -5,6 +5,6 @@ import androidx.compose.runtime.remember
 import platform.UIKit.UIPasteboard
 
 @Composable
-actual fun rememberClipboardCopy(): (String) -> Unit = remember {
+actual fun rememberClipboardCopy(sensitive: Boolean): (String) -> Unit = remember {
     { text -> UIPasteboard.generalPasteboard.string = text }
 }
