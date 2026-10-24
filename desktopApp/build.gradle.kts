@@ -35,6 +35,13 @@ compose.desktop {
             macOS {
                 bundleID = "io.lauren.renvault"
             }
+            windows {
+                upgradeUuid = "737d67c8-f74c-4bc3-8e60-847cdd4be676"
+                menuGroup = "RenVault"
+                shortcut = true
+                menu = true
+                dirChooser = true
+            }
             linux {
                 packageName = "io.lauren.renvault"
             }
