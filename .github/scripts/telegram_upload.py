@@ -93,7 +93,8 @@ async def send(folder: str, version: str, tag: str) -> None:
     async with client:
         chat_id, peer = utils.resolve_id(int(os.environ["TELEGRAM_CHAT_ID"]))
         chat = await client.get_input_entity(peer(chat_id))
-        await client.send_file(chat, files, caption=captions, parse_mode="html", force_document=True)
+        uploads = await asyncio.gather(*(client.upload_file(path) for path in files))
+        await client.send_file(chat, uploads, caption=captions, parse_mode="html", force_document=True)
 
 
 if __name__ == "__main__":
