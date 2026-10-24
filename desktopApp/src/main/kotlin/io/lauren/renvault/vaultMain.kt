@@ -191,36 +191,38 @@ private fun FrameWindowScope.TitleDrag(
             var handled = false
             var ratio = 0f
             var wide = 0
-            var grabX = -1
-            var grabY = 0
+            var grab: Point? = null
 
             detectDragGestures(
-                onDragStart = { start ->
+                onDragStart = {
+                    grab = null
+                    wide = 0
                     handled = window.handOverMove()
                     if (handled) return@detectDragGestures
 
-                    grabY = start.y.roundToInt()
+                    val pointer = pointerLocation() ?: return@detectDragGestures
+                    val offset = Point(pointer.x - window.x, pointer.y - window.y)
+                    grab = offset
                     if (full) {
-                        ratio = (start.x / size.width).coerceIn(0f, 1f)
+                        ratio = (offset.x.toFloat() / window.width).coerceIn(0f, 1f)
                         wide = window.width
-                        grabX = -1
                         restore()
-                    } else {
-                        grabX = start.x.roundToInt()
                     }
                 },
                 onDrag = { change, _ ->
                     if (handled) return@detectDragGestures
                     change.consume()
 
+                    val offset = grab ?: return@detectDragGestures
                     val pointer = pointerLocation() ?: return@detectDragGestures
 
-                    if (grabX < 0) {
+                    if (wide > 0) {
                         if (window.width == wide) return@detectDragGestures
-                        grabX = (window.width * ratio).roundToInt()
+                        offset.x = (window.width * ratio).roundToInt()
+                        wide = 0
                     }
 
-                    window.setLocation(pointer.x - grabX, pointer.y - grabY)
+                    window.setLocation(pointer.x - offset.x, pointer.y - offset.y)
                 },
             )
         },
@@ -303,17 +305,25 @@ private fun FrameWindowScope.Edge(
         modifier = modifier
             .pointerHoverIcon(PointerIcon(Cursor(cursor)))
             .pointerInput(top, bottom, left, right) {
-                detectDragGestures { change, drag ->
+                var start: Point? = null
+                var bounds = window.bounds
+
+                detectDragGestures(onDragStart = {
+                    start = pointerLocation()
+                    bounds = window.bounds
+                }) { change, _ ->
                     change.consume()
 
-                    val dx = drag.x.roundToInt()
-                    val dy = drag.y.roundToInt()
+                    val origin = start ?: return@detectDragGestures
+                    val pointer = pointerLocation() ?: return@detectDragGestures
+                    val dx = pointer.x - origin.x
+                    val dy = pointer.y - origin.y
 
                     val floor = window.minimumSize
-                    var x = window.x
-                    var y = window.y
-                    var width = window.width
-                    var height = window.height
+                    var x = bounds.x
+                    var y = bounds.y
+                    var width = bounds.width
+                    var height = bounds.height
 
                     if (left) {
                         val next = max(floor.width, width - dx)
