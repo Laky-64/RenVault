@@ -325,4 +325,25 @@
     <string name="photo_filter">Immagini</string>
     <string name="tray_open">Apri RenVault</string>
     <string name="tray_quit">Esci da RenVault</string>
+    <string name="settings_backup_title">Backup</string>
+    <string name="settings_backup_note">Un backup contiene tutte le tue password. Conservalo in un posto sicuro e ricordati la sua password: senza, nessuno può aprirlo, nemmeno RenVault.</string>
+    <string name="backup_export">Esporta backup</string>
+    <string name="backup_export_desc">File cifrato protetto da una password</string>
+    <string name="backup_restore">Ripristina backup</string>
+    <string name="backup_restore_desc">Unisci un file .renvault a questo archivio</string>
+    <string name="backup_import_csv">Importa da CSV</string>
+    <string name="backup_import_csv_desc">Chrome, Apple Passwords, Bitwarden, 1Password, Firefox</string>
+    <string name="backup_password">Password del backup</string>
+    <string name="backup_password_confirm">Conferma password</string>
+    <string name="backup_password_mismatch">Le password non coincidono</string>
+    <string name="backup_password_short">Usa almeno 8 caratteri</string>
+    <string name="backup_export_hint">Ti servirà per ripristinare il backup. Se la perdi non si può recuperare.</string>
+    <string name="backup_restore_hint">Inserisci la password che hai scelto quando hai esportato questo backup.</string>
+    <string name="backup_saved">Backup salvato</string>
+    <string name="backup_wrong_password">Password del backup errata</string>
+    <string name="backup_bad_file">Questo file non è un backup o un export CSV valido</string>
+    <string name="backup_result">Importate: %1$s nuove, %2$s aggiornate</string>
+    <string name="backup_nothing">Niente di nuovo da importare</string>
+    <string name="backup_file_type">Backup RenVault</string>
+    <string name="auth_restore">Ripristina da backup</string>
 </resources>

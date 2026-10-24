@@ -207,6 +207,49 @@ internal data class PickRequest(
 )
 
 @Serializable
+data class FileFilter(
+    @SerialName("name") val name: String,
+    @SerialName("extensions") val extensions: List<String>,
+    @SerialName("types") val types: List<String>,
+)
+
+@Serializable
+internal data class PickFileRequest(
+    @SerialName("title") val title: String,
+    @SerialName("filter") val filter: FileFilter,
+)
+
+@Serializable
+internal data class SaveFileRequest(
+    @SerialName("title") val title: String,
+    @SerialName("name") val name: String,
+    @SerialName("filter") val filter: FileFilter,
+    @ByteString @SerialName("data") val data: ByteArray,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = data.contentHashCode()
+}
+
+@Serializable
+internal data class SavedResponse(@SerialName("saved") val saved: Boolean = false)
+
+@Serializable
+internal data class BackupRequest(
+    @SerialName("password") val password: String,
+    @ByteString @SerialName("data") val data: ByteArray,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = data.contentHashCode()
+}
+
+@Serializable
+data class ImportResult(
+    @SerialName("added") val added: Int = 0,
+    @SerialName("updated") val updated: Int = 0,
+    @SerialName("skipped") val skipped: Int = 0,
+)
+
+@Serializable
 internal data class JoinRequest(@SerialName("text") val text: String)
 
 @Serializable

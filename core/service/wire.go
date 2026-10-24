@@ -1,10 +1,12 @@
 package service
 
 import (
+	"strings"
 	"time"
 
 	"github.com/Laky-64/appleservices/keychain"
 	"github.com/Laky-64/renvault-core/apple"
+	"github.com/Laky-64/renvault-core/portal"
 	"github.com/Laky-64/renvault-core/vault"
 )
 
@@ -166,6 +168,51 @@ type pairResponse struct {
 type pickRequest struct {
 	Title  string `cbor:"title"`
 	Filter string `cbor:"filter"`
+}
+
+type fileFilter struct {
+	Name       string   `cbor:"name"`
+	Extensions []string `cbor:"extensions"`
+	Types      []string `cbor:"types"`
+}
+
+func (f fileFilter) portal() portal.Filter {
+	out := portal.Filter{Name: f.Name, Types: f.Types}
+	for _, ext := range f.Extensions {
+		out.Patterns = append(out.Patterns, "*."+strings.ToLower(ext), "*."+strings.ToUpper(ext))
+	}
+	return out
+}
+
+type pickFileRequest struct {
+	Title  string     `cbor:"title"`
+	Filter fileFilter `cbor:"filter"`
+}
+
+type saveFileRequest struct {
+	Title  string     `cbor:"title"`
+	Name   string     `cbor:"name"`
+	Filter fileFilter `cbor:"filter"`
+	Data   []byte     `cbor:"data"`
+}
+
+type savedResponse struct {
+	Saved bool `cbor:"saved"`
+}
+
+type backupRequest struct {
+	Password string `cbor:"password"`
+	Data     []byte `cbor:"data"`
+}
+
+type importResponse struct {
+	Added   int `cbor:"added"`
+	Updated int `cbor:"updated"`
+	Skipped int `cbor:"skipped"`
+}
+
+func importResponseOf(r vault.ImportResult) importResponse {
+	return importResponse{Added: r.Added, Updated: r.Updated, Skipped: r.Skipped}
 }
 
 type joinRequest struct {

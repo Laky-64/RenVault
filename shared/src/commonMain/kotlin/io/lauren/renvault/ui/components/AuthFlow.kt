@@ -127,6 +127,7 @@ fun RvAuthFlow(
     onPrivacy: () -> Unit = {},
     anisette: String = "",
     onAnisette: suspend (String) -> Boolean = { true },
+    backup: RvBackupActions? = null,
     onDone: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
@@ -160,6 +161,14 @@ fun RvAuthFlow(
     var profileFace by remember { mutableStateOf<ImageBitmap?>(null) }
     var joinCode by remember { mutableStateOf("") }
     var joinError by remember { mutableStateOf("") }
+    val restoreFlow = backup?.let {
+        rememberBackupFlow(
+            actions = it,
+            strings = strings,
+            onMessage = { text -> joinError = text },
+            onImported = { onDone() },
+        )
+    }
 
     val signInShake = remember { Animatable(0f) }
     val passcodeShake = remember { Animatable(0f) }
@@ -753,6 +762,15 @@ fun RvAuthFlow(
                             onClick = { submitJoin(joinCode) },
                             enabled = joinCode.isNotBlank(),
                         )
+                        restoreFlow?.restore?.let { restore ->
+                            RvButton(
+                                text = strings.authRestore,
+                                onClick = restore,
+                                kind = RvButtonKind.Tonal,
+                                icon = RvRestoreIcon,
+                                enabled = !busy,
+                            )
+                        }
                         TextButton(
                             onClick = onDone,
                             shapes = ButtonDefaults.shapes(),

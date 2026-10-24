@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -110,6 +111,7 @@ fun RvSettingsScreen(
     onOpenItem: (String) -> Unit = {},
     onNameNotice: (Boolean) -> Unit = {},
     devices: RvDeviceActions? = null,
+    backup: RvBackupActions? = null,
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
@@ -159,6 +161,7 @@ fun RvSettingsScreen(
                 onNames = { page = SettingsPage.Names },
                 onDevices = { page = SettingsPage.Devices },
                 devices = devices,
+                backup = backup,
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -201,6 +204,7 @@ private fun RootPage(
     onNames: () -> Unit,
     onDevices: () -> Unit,
     devices: RvDeviceActions?,
+    backup: RvBackupActions?,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -223,6 +227,14 @@ private fun RootPage(
     var profileOpen by remember { mutableStateOf(false) }
     val editable = state.local && devices != null
     val copy = rememberClipboardCopy()
+    val backupFlow = backup?.let {
+        rememberBackupFlow(it, strings, onMessage = { text ->
+            scope.launch {
+                snackbar.currentSnackbarData?.dismiss()
+                snackbar.showSnackbar(text)
+            }
+        })
+    }
     val copyBuild: () -> Unit = {
         copy(
             listOf(
@@ -447,6 +459,34 @@ private fun RootPage(
                 }
             }
 
+            if (backupFlow != null) item {
+                RvSection(title = strings.settingsBackupTitle, footer = strings.settingsBackupNote) {
+                    val rows = listOfNotNull(
+                        backupFlow.export?.let {
+                            BackupRow(it, RvDownloadIcon, accents.blue, strings.backupExport, strings.backupExportDesc)
+                        },
+                        backupFlow.restore?.let {
+                            BackupRow(it, RvRestoreIcon, accents.green, strings.backupRestore, strings.backupRestoreDesc)
+                        },
+                        backupFlow.importCsv?.let {
+                            BackupRow(it, RvUploadFileIcon, accents.orange, strings.backupImportCsv, strings.backupImportCsvDesc)
+                        },
+                    )
+                    rows.forEachIndexed { index, row ->
+                        RvSegment(
+                            index = index,
+                            count = rows.size,
+                            onClick = row.onClick,
+                            enabled = !backupFlow.busy,
+                            leading = { SettingBadge(row.icon, row.tone) },
+                            supporting = { Text(row.detail) },
+                        ) {
+                            Text(row.title)
+                        }
+                    }
+                }
+            }
+
             if (!state.local) item {
                 RvSection(title = strings.settingsAdvancedTitle) {
                     RvSegment(
@@ -557,6 +597,14 @@ private fun RootPage(
         )
     }
 }
+
+private class BackupRow(
+    val onClick: () -> Unit,
+    val icon: ImageVector,
+    val tone: RvTone,
+    val title: String,
+    val detail: String,
+)
 
 @Composable
 private fun ChannelPill(channel: String, strings: RvStrings) {

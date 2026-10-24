@@ -16,6 +16,8 @@ enum class FailureReason {
     PairMissing,
     NoNetwork,
     BadPhoto,
+    BackupPassword,
+    BackupFormat,
     Generic,
 }
 
@@ -64,6 +66,10 @@ private fun classify(raw: String): FailureReason {
     if ("no pairing in progress" in raw) return FailureReason.PairMissing
     if ("not connected to a network" in raw) return FailureReason.NoNetwork
     if ("must be a JPEG or PNG" in raw) return FailureReason.BadPhoto
+    if ("wrong backup password" in raw) return FailureReason.BackupPassword
+    if ("not a RenVault backup" in raw || "no password column" in raw || "needs a newer RenVault" in raw) {
+        return FailureReason.BackupFormat
+    }
 
     return FailureReason.Generic
 }

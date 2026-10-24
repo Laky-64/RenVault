@@ -85,6 +85,23 @@ object Vault {
         exchange<PickRequest, BytesResponse>(Op.PICK_IMAGE, PickRequest(title, filter), token).data
     }
 
+    suspend fun pickFile(title: String, filter: FileFilter): ByteArray = withToken { token ->
+        exchange<PickFileRequest, BytesResponse>(Op.PICK_FILE, PickFileRequest(title, filter), token).data
+    }
+
+    suspend fun saveFile(title: String, name: String, filter: FileFilter, data: ByteArray): Boolean = withToken { token ->
+        exchange<SaveFileRequest, SavedResponse>(Op.SAVE_FILE, SaveFileRequest(title, name, filter, data), token).saved
+    }
+
+    suspend fun exportBackup(password: String): ByteArray =
+        exchange<BackupRequest, BytesResponse>(Op.BACKUP_EXPORT, BackupRequest(password, ByteArray(0))).data
+
+    suspend fun importBackup(data: ByteArray, password: String): ImportResult =
+        exchange(Op.BACKUP_IMPORT, BackupRequest(password, data))
+
+    suspend fun importCsv(data: ByteArray): ImportResult =
+        exchange(Op.IMPORT_CSV, BackupRequest("", data))
+
     suspend fun syncPeers() = send(Op.PEERS_SYNC)
 
     suspend fun netInfo(): NetInfo = receive(Op.NET_INFO)

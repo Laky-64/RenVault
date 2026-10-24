@@ -23,6 +23,9 @@ internal object Op {
     const val VAULT_SET_NAMES = 0x1011
     const val VAULT_LOCAL_SETUP = 0x1012
     const val VAULT_SET_PROFILE = 0x1013
+    const val BACKUP_EXPORT = 0x1014
+    const val BACKUP_IMPORT = 0x1015
+    const val IMPORT_CSV = 0x1016
 
     const val DEVICES = 0x1201
     const val DEVICE_REMOVE = 0x1202
@@ -58,6 +61,8 @@ internal object Op {
     const val ICON_TILE = 0x3001
     const val ICON_IMAGE = 0x3002
     const val PICK_IMAGE = 0x3003
+    const val PICK_FILE = 0x3004
+    const val SAVE_FILE = 0x3005
 }
 
 internal object FailureKind {

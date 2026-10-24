@@ -83,6 +83,27 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_backup_title
+import io.lauren.renvault.resources.settings_backup_note
+import io.lauren.renvault.resources.backup_export
+import io.lauren.renvault.resources.backup_export_desc
+import io.lauren.renvault.resources.backup_restore
+import io.lauren.renvault.resources.backup_restore_desc
+import io.lauren.renvault.resources.backup_import_csv
+import io.lauren.renvault.resources.backup_import_csv_desc
+import io.lauren.renvault.resources.backup_password
+import io.lauren.renvault.resources.backup_password_confirm
+import io.lauren.renvault.resources.backup_password_mismatch
+import io.lauren.renvault.resources.backup_password_short
+import io.lauren.renvault.resources.backup_export_hint
+import io.lauren.renvault.resources.backup_restore_hint
+import io.lauren.renvault.resources.backup_saved
+import io.lauren.renvault.resources.backup_wrong_password
+import io.lauren.renvault.resources.backup_bad_file
+import io.lauren.renvault.resources.backup_result
+import io.lauren.renvault.resources.backup_nothing
+import io.lauren.renvault.resources.backup_file_type
+import io.lauren.renvault.resources.auth_restore
 import io.lauren.renvault.resources.auth_2fa_hint
 import io.lauren.renvault.resources.auth_2fa_resend_action
 import io.lauren.renvault.resources.auth_2fa_title
@@ -306,6 +327,27 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_backup_title,
+    Res.string.settings_backup_note,
+    Res.string.backup_export,
+    Res.string.backup_export_desc,
+    Res.string.backup_restore,
+    Res.string.backup_restore_desc,
+    Res.string.backup_import_csv,
+    Res.string.backup_import_csv_desc,
+    Res.string.backup_password,
+    Res.string.backup_password_confirm,
+    Res.string.backup_password_mismatch,
+    Res.string.backup_password_short,
+    Res.string.backup_export_hint,
+    Res.string.backup_restore_hint,
+    Res.string.backup_saved,
+    Res.string.backup_wrong_password,
+    Res.string.backup_bad_file,
+    Res.string.backup_result,
+    Res.string.backup_nothing,
+    Res.string.backup_file_type,
+    Res.string.auth_restore,
     Res.string.websites_desc,
     Res.string.websites_placeholder,
     Res.string.websites_add,
@@ -698,6 +740,27 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsBackupTitle: String get() = text(Res.string.settings_backup_title)
+    override val settingsBackupNote: String get() = text(Res.string.settings_backup_note)
+    override val backupExport: String get() = text(Res.string.backup_export)
+    override val backupExportDesc: String get() = text(Res.string.backup_export_desc)
+    override val backupRestore: String get() = text(Res.string.backup_restore)
+    override val backupRestoreDesc: String get() = text(Res.string.backup_restore_desc)
+    override val backupImportCsv: String get() = text(Res.string.backup_import_csv)
+    override val backupImportCsvDesc: String get() = text(Res.string.backup_import_csv_desc)
+    override val backupPassword: String get() = text(Res.string.backup_password)
+    override val backupPasswordConfirm: String get() = text(Res.string.backup_password_confirm)
+    override val backupPasswordMismatch: String get() = text(Res.string.backup_password_mismatch)
+    override val backupPasswordShort: String get() = text(Res.string.backup_password_short)
+    override val backupExportHint: String get() = text(Res.string.backup_export_hint)
+    override val backupRestoreHint: String get() = text(Res.string.backup_restore_hint)
+    override val backupSaved: String get() = text(Res.string.backup_saved)
+    override val backupWrongPassword: String get() = text(Res.string.backup_wrong_password)
+    override val backupBadFile: String get() = text(Res.string.backup_bad_file)
+    override fun backupResult(added: String, updated: String): String = text(Res.string.backup_result, added, updated)
+    override val backupNothing: String get() = text(Res.string.backup_nothing)
+    override val backupFileType: String get() = text(Res.string.backup_file_type)
+    override val authRestore: String get() = text(Res.string.auth_restore)
     override fun settingsBasedOn(core: String): String = text(Res.string.settings_based_on, core)
     override val settingsAdvancedTitle: String get() = text(Res.string.settings_advanced_title)
     override val anisetteTitle: String get() = text(Res.string.anisette_title)

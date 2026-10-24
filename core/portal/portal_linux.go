@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"io"
+	"maps"
 	"net/url"
 	"os"
 	"strings"
@@ -33,15 +34,45 @@ type filter struct {
 }
 
 func OpenFile(ctx context.Context, title string, f Filter) ([]byte, error) {
+	path, err := choose(ctx, "OpenFile", title, f, nil)
+	if err != nil || path == "" {
+		return nil, err
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(io.LimitReader(file, maxFileBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(data) > maxFileBytes {
+		return nil, errors.New("portal: file too large")
+	}
+	return data, nil
+}
+
+func SaveFile(ctx context.Context, title, name string, f Filter, data []byte) (bool, error) {
+	path, err := choose(ctx, "SaveFile", title, f, map[string]dbus.Variant{
+		"current_name": dbus.MakeVariant(name),
+	})
+	if err != nil || path == "" {
+		return false, err
+	}
+	return true, os.WriteFile(path, data, 0o600)
+}
+
+func choose(ctx context.Context, method, title string, f Filter, extra map[string]dbus.Variant) (string, error) {
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
-		return nil, ErrUnavailable
+		return "", ErrUnavailable
 	}
 	defer conn.Close()
 
 	token := make([]byte, 8)
 	if _, err := rand.Read(token); err != nil {
-		return nil, err
+		return "", err
 	}
 	handle := "renvault_" + hex.EncodeToString(token)
 	sender := strings.ReplaceAll(strings.TrimPrefix(conn.Names()[0], ":"), ".", "_")
@@ -52,7 +83,7 @@ func OpenFile(ctx context.Context, title string, f Filter) ([]byte, error) {
 		dbus.WithMatchInterface(requestIface),
 		dbus.WithMatchMember("Response"),
 	); err != nil {
-		return nil, ErrUnavailable
+		return "", ErrUnavailable
 	}
 	signals := make(chan *dbus.Signal, 4)
 	conn.Signal(signals)
@@ -73,21 +104,22 @@ func OpenFile(ctx context.Context, title string, f Filter) ([]byte, error) {
 		options["filters"] = dbus.MakeVariant(filters)
 		options["current_filter"] = dbus.MakeVariant(filters[0])
 	}
+	maps.Copy(options, extra)
 
 	chooser := conn.Object(portalService, portalPath)
 	var opened dbus.ObjectPath
-	if err := chooser.CallWithContext(ctx, chooserIface+".OpenFile", 0, "", title, options).Store(&opened); err != nil {
-		return nil, ErrUnavailable
+	if err := chooser.CallWithContext(ctx, chooserIface+"."+method, 0, "", title, options).Store(&opened); err != nil {
+		return "", ErrUnavailable
 	}
 
 	for {
 		select {
 		case <-ctx.Done():
 			conn.Object(portalService, opened).Call(requestIface+".Close", 0)
-			return nil, ctx.Err()
+			return "", ctx.Err()
 		case sig, ok := <-signals:
 			if !ok {
-				return nil, ErrUnavailable
+				return "", ErrUnavailable
 			}
 			if sig.Path != opened && sig.Path != request {
 				continue
@@ -97,33 +129,21 @@ func OpenFile(ctx context.Context, title string, f Filter) ([]byte, error) {
 	}
 }
 
-func readResponse(sig *dbus.Signal) ([]byte, error) {
+func readResponse(sig *dbus.Signal) (string, error) {
 	if len(sig.Body) < 2 {
-		return nil, ErrUnavailable
+		return "", ErrUnavailable
 	}
 	if code, _ := sig.Body[0].(uint32); code != 0 {
-		return nil, nil
+		return "", nil
 	}
 	results, _ := sig.Body[1].(map[string]dbus.Variant)
 	uris, _ := results["uris"].Value().([]string)
 	if len(uris) == 0 {
-		return nil, nil
+		return "", nil
 	}
 	target, err := url.Parse(uris[0])
 	if err != nil || target.Scheme != "file" {
-		return nil, errors.New("portal: unsupported file location")
+		return "", errors.New("portal: unsupported file location")
 	}
-	file, err := os.Open(target.Path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	data, err := io.ReadAll(io.LimitReader(file, maxImageBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) > maxImageBytes {
-		return nil, errors.New("portal: file too large")
-	}
-	return data, nil
+	return target.Path, nil
 }

@@ -107,6 +107,27 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val settingsBackupTitle: String
+    val settingsBackupNote: String
+    val backupExport: String
+    val backupExportDesc: String
+    val backupRestore: String
+    val backupRestoreDesc: String
+    val backupImportCsv: String
+    val backupImportCsvDesc: String
+    val backupPassword: String
+    val backupPasswordConfirm: String
+    val backupPasswordMismatch: String
+    val backupPasswordShort: String
+    val backupExportHint: String
+    val backupRestoreHint: String
+    val backupSaved: String
+    val backupWrongPassword: String
+    val backupBadFile: String
+    fun backupResult(added: String, updated: String): String
+    val backupNothing: String
+    val backupFileType: String
+    val authRestore: String
     fun settingsBasedOn(core: String): String
     val settingsAdvancedTitle: String
     val anisetteTitle: String

@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.EventKind
+import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvLan
 import io.lauren.renvault.lib.platformTag
@@ -28,7 +29,9 @@ import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.components.RvDevice
+import io.lauren.renvault.ui.components.RvBackupActions
 import io.lauren.renvault.ui.components.RvDeviceActions
+import io.lauren.renvault.ui.components.RvImported
 import io.lauren.renvault.ui.components.RvPairCode
 import kotlinx.coroutines.delay
 import io.lauren.renvault.bridge.EditPassword
@@ -294,6 +297,20 @@ fun RvVaultApp(
         }
     }
 
+    val backupActions = remember(strings) {
+        object : RvBackupActions {
+            override suspend fun export(password: String): ByteArray = Vault.exportBackup(password)
+
+            override suspend fun restore(data: ByteArray, password: String): RvImported =
+                Vault.importBackup(data, password).imported().also { revision++ }
+
+            override suspend fun importCsv(data: ByteArray): RvImported =
+                Vault.importCsv(data).imported().also { revision++ }
+
+            override fun describe(failure: Throwable): String = strings.failureText(failure)
+        }
+    }
+
     val linked = remember(web, passkeys) { linkItems(web, passkeys) }
     val zones = homeZones(linked.web, wifi, linked.passkeys)
 
@@ -353,6 +370,7 @@ fun RvVaultApp(
                 onPrivacy = { openUrl(PrivacyUrl) },
                 anisette = anisette,
                 onAnisette = chooseAnisette,
+                backup = backupActions,
                 onDone = { unlocked = true },
             )
         },
@@ -443,6 +461,7 @@ fun RvVaultApp(
                         writePreference(NameNoticeKey, if (shown) "on" else "off")
                     },
                     devices = if (profile.local) deviceActions else null,
+                    backup = backupActions,
                     onSignOut = {
                             scope.launch {
                                 leaving = true
@@ -522,3 +541,5 @@ private suspend fun deviceArt(url: String): ImageBitmap? {
         runCatching { bytes.decodeToImageBitmap() }.getOrNull()
     }
 }
+
+private fun ImportResult.imported(): RvImported = RvImported(added, updated)

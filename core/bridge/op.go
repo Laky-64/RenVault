@@ -25,6 +25,9 @@ const (
 	OpVaultSetNames        uint32 = 0x1011
 	OpVaultLocalSetup      uint32 = 0x1012
 	OpVaultSetProfile      uint32 = 0x1013
+	OpBackupExport         uint32 = 0x1014
+	OpBackupImport         uint32 = 0x1015
+	OpImportCSV            uint32 = 0x1016
 )
 
 const (
@@ -69,4 +72,6 @@ const (
 	OpIconTile  uint32 = 0x3001
 	OpIconImage uint32 = 0x3002
 	OpPickImage uint32 = 0x3003
+	OpPickFile  uint32 = 0x3004
+	OpSaveFile  uint32 = 0x3005
 )
