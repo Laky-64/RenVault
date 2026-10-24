@@ -115,22 +115,25 @@ func (v *Vault) UnlockWithPassword(masterPassword string) error {
 	if err != nil {
 		return err
 	}
-	_ = lockMemory(k)
-
 	v.mu.Lock()
 	defer v.mu.Unlock()
+	v.adoptLocked(vf, k, p)
+	v.renewQuickLocked()
+	return nil
+}
+
+func (v *Vault) adoptLocked(vf vaultFile, k []byte, p payload) {
+	_ = lockMemory(k)
 	if v.k != nil {
 		zero(v.k)
 	}
 	zeroPayloadSecrets(v.p)
 	v.vf = &vf
 	v.k = k
-	pc := p
-	v.p = &pc
+	v.p = &p
 	v.applyAutoLockLocked()
 	v.resetTimerLocked()
 	v.attachLocked()
-	return nil
 }
 
 func (v *Vault) SetOnLock(fn func()) {

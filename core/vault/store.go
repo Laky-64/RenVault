@@ -36,6 +36,8 @@ func mustCBOREncMode() cbor.EncMode {
 type wrappedKey struct {
 	Method string `cbor:"method"`
 	Blob   []byte `cbor:"blob"`
+	Sealed []byte `cbor:"sealed,omitempty"`
+	Until  int64  `cbor:"until,omitempty"`
 }
 
 type header struct {

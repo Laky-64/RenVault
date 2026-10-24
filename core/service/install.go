@@ -19,6 +19,7 @@ func Install() {
 		installLogin()
 		installDevices()
 		installBackup()
+		installQuick()
 		installIcons()
 	})
 }

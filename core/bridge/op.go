@@ -28,6 +28,10 @@ const (
 	OpBackupExport         uint32 = 0x1014
 	OpBackupImport         uint32 = 0x1015
 	OpImportCSV            uint32 = 0x1016
+	OpQuickState           uint32 = 0x1017
+	OpQuickEnable          uint32 = 0x1018
+	OpQuickDisable         uint32 = 0x1019
+	OpQuickUnlock          uint32 = 0x101A
 )
 
 const (
