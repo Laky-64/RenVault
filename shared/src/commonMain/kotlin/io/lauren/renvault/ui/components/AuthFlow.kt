@@ -733,9 +733,9 @@ fun RvAuthFlow(
                 )
 
                 "step:${AuthStep.LocalJoin.name}" -> AuthPage(
-                    hero = { AuthHero(RvQrScanIcon, MaterialShapes.Gem) },
+                    hero = { AuthHero(if (scanJoin != null) RvQrScanIcon else RvKeyIcon, MaterialShapes.Gem) },
                     title = strings.authJoinTitle,
-                    hint = strings.pairJoinHint,
+                    hint = if (scanJoin != null) strings.pairJoinHint else strings.pairJoinManualHint,
                     body = {
                         PairJoinForm(
                             code = joinCode,
