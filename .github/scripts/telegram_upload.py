@@ -2,6 +2,7 @@ import asyncio
 import html
 import os
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -57,9 +58,34 @@ def decorate(lines: list[str]) -> list[str]:
     out = []
     for line in lines:
         if line.strip() in ICONS:
-            line = f"{ICONS[line.strip()]} {line.strip()}"
+            line = f"<b>{ICONS[line.strip()]} {line.strip()}</b>"
         elif line.startswith(("- ", "* ")):
-            line = "• " + line[2:]
+            line = "• " + markup(line[2:])
+        else:
+            line = markup(line)
+        out.append(line)
+    return out
+
+
+def markup(line: str) -> str:
+    text = html.escape(line, quote=False)
+    text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+    text = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
+    text = re.sub(r"(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])", r"<i>\1</i>", text)
+    return re.sub(
+        r"\[([^\]]+)\]\((https?://[^)\s]+)\)",
+        lambda m: f'<a href="{m.group(2).replace(chr(34), "%22")}">{m.group(1)}</a>',
+        text,
+    )
+
+
+def github_notes(lines: list[str]) -> list[str]:
+    out = []
+    for line in lines:
+        if line.strip() in ICONS:
+            line = f"### {ICONS[line.strip()]} {line.strip()}"
+        elif line.startswith("* "):
+            line = "- " + line[2:]
         out.append(line)
     return out
 
@@ -76,7 +102,7 @@ def caption(version: str, tag: str) -> str:
     body = decorate(tag_notes(tag) or commit_notes(tag))
 
     def build(lines: list[str], cut: int) -> str:
-        text = "\n".join([head, "", *(html.escape(line, quote=False) for line in lines)])
+        text = "\n".join([head, "", *lines])
         if cut:
             text += f'\n… <a href="{release}">{cut} more</a>'
         return text
@@ -90,7 +116,7 @@ def caption(version: str, tag: str) -> str:
 
 
 def release_notes(version: str, tag: str) -> str:
-    return "\n".join([f"RenVault {version}", "", *decorate(tag_notes(tag) or commit_notes(tag))])
+    return "\n".join(github_notes(tag_notes(tag) or commit_notes(tag)))
 
 
 async def send(folder: str, version: str, tag: str) -> None:
