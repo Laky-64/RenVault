@@ -46,6 +46,16 @@ object Vault {
 
     suspend fun lock() = send(Op.VAULT_LOCK)
 
+    suspend fun quickState(): QuickState = receive(Op.QUICK_STATE)
+
+    suspend fun enableQuick(method: String, key: ByteArray = ByteArray(0), sealed: ByteArray = ByteArray(0)) =
+        send(Op.QUICK_ENABLE, QuickRequest(method, key, sealed))
+
+    suspend fun disableQuick() = send(Op.QUICK_DISABLE)
+
+    suspend fun unlockQuick(method: String, key: ByteArray = ByteArray(0)) =
+        send(Op.QUICK_UNLOCK, QuickRequest(method, key))
+
     suspend fun profile(): Profile = receive(Op.VAULT_PROFILE)
 
     suspend fun profilePhoto(): ByteArray = receive<BytesResponse>(Op.VAULT_PROFILE_PHOTO).data

@@ -346,4 +346,12 @@
     <string name="backup_nothing">Niente di nuovo da importare</string>
     <string name="backup_file_type">Backup RenVault</string>
     <string name="auth_restore">Ripristina da backup</string>
+    <string name="quick_biometrics">biometria</string>
+    <string name="quick_unlock_with">Sblocca con %1$s</string>
+    <string name="quick_prompt_title">Sblocca RenVault</string>
+    <string name="quick_enable_prompt">Conferma per attivare lo sblocco rapido</string>
+    <string name="quick_note">La password principale verrà comunque chiesta ogni 7 giorni</string>
+    <string name="quick_gone">La biometria su questo dispositivo è cambiata. Sblocca con la password principale e riattiva lo sblocco rapido.</string>
+    <string name="quick_expired">Per sicurezza inserisci la password principale. Subito dopo lo sblocco rapido tornerà a funzionare.</string>
+    <string name="quick_failed">Impossibile attivare lo sblocco rapido</string>
 </resources>

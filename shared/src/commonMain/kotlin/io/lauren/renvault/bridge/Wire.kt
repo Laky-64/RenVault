@@ -344,3 +344,25 @@ data class TrustedDevice(
     @SerialName("os_version") val osVersion: String = "",
     @SerialName("image_url") val imageUrl: String = "",
 )
+
+@Serializable
+internal data class QuickRequest(
+    @SerialName("method") val method: String,
+    @ByteString @SerialName("key") val key: ByteArray = ByteArray(0),
+    @ByteString @SerialName("sealed") val sealed: ByteArray = ByteArray(0),
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = key.contentHashCode()
+}
+
+@Serializable
+data class QuickState(
+    @SerialName("methods") val methods: List<String> = emptyList(),
+    @SerialName("method") val method: String = "",
+    @ByteString @SerialName("sealed") val sealed: ByteArray = ByteArray(0),
+    @SerialName("ready") val ready: Boolean = false,
+    @SerialName("expired") val expired: Boolean = false,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = method.hashCode()
+}

@@ -18,6 +18,7 @@ enum class FailureReason {
     BadPhoto,
     BackupPassword,
     BackupFormat,
+    QuickExpired,
     Generic,
 }
 
@@ -67,6 +68,7 @@ private fun classify(raw: String): FailureReason {
     if ("not connected to a network" in raw) return FailureReason.NoNetwork
     if ("must be a JPEG or PNG" in raw) return FailureReason.BadPhoto
     if ("wrong backup password" in raw) return FailureReason.BackupPassword
+    if ("quick unlock expired" in raw) return FailureReason.QuickExpired
     if ("not a RenVault backup" in raw || "no password column" in raw || "needs a newer RenVault" in raw) {
         return FailureReason.BackupFormat
     }

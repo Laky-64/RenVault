@@ -140,6 +140,7 @@ fun RvHomePage(
     onNameNotice: (Boolean) -> Unit = {},
     devices: RvDeviceActions? = null,
     backup: RvBackupActions? = null,
+    onQuick: suspend (Boolean) -> Unit = {},
 ) {
     if (zones.isEmpty()) return
 
@@ -379,6 +380,7 @@ fun RvHomePage(
             onNameNotice = onNameNotice,
             devices = devices,
             backup = backup,
+            onQuick = onQuick,
             onOpenItem = { id ->
                 settingsOpen = false
                 zoneKind = RvZoneKind.All

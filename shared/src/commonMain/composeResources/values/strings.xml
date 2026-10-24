@@ -351,4 +351,12 @@
     <string name="backup_nothing">Nothing new to import</string>
     <string name="backup_file_type">RenVault backup</string>
     <string name="auth_restore">Restore from backup</string>
+    <string name="quick_biometrics">biometrics</string>
+    <string name="quick_unlock_with">Unlock with %1$s</string>
+    <string name="quick_prompt_title">Unlock RenVault</string>
+    <string name="quick_enable_prompt">Confirm to turn on quick unlock</string>
+    <string name="quick_note">The master password is still asked every 7 days</string>
+    <string name="quick_gone">Biometrics changed on this device. Unlock with your master password, then turn quick unlock on again.</string>
+    <string name="quick_expired">For your security, enter the master password. Quick unlock will work again right after.</string>
+    <string name="quick_failed">Couldn\'t turn on quick unlock</string>
 </resources>

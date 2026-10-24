@@ -34,6 +34,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.relativeOf
@@ -78,6 +80,8 @@ data class RvSettingsState(
     val platform: String = "",
     val core: String = "",
     val autoLockMinutes: Int = 5,
+    val quickLabel: String = "",
+    val quickOn: Boolean = false,
     val autoLockChoices: List<Int> = emptyList(),
     val pending: Int = 0,
     val syncedAt: Long = 0L,
@@ -112,6 +116,7 @@ fun RvSettingsScreen(
     onNameNotice: (Boolean) -> Unit = {},
     devices: RvDeviceActions? = null,
     backup: RvBackupActions? = null,
+    onQuick: suspend (Boolean) -> Unit = {},
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
@@ -162,6 +167,7 @@ fun RvSettingsScreen(
                 onDevices = { page = SettingsPage.Devices },
                 devices = devices,
                 backup = backup,
+                onQuick = onQuick,
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -205,6 +211,7 @@ private fun RootPage(
     onDevices: () -> Unit,
     devices: RvDeviceActions?,
     backup: RvBackupActions?,
+    onQuick: suspend (Boolean) -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -216,6 +223,7 @@ private fun RootPage(
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var checking by remember { mutableStateOf(false) }
+    var quickBusy by remember { mutableStateOf(false) }
     val accents = RenVault.accents
     val list = rememberLazyListState()
     val scrolled by list.scrolledPast()
@@ -424,9 +432,37 @@ private fun RootPage(
 
             item {
                 RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
+                    val quick = if (state.quickLabel.isNotEmpty()) 1 else 0
+                    if (quick == 1) {
+                        RvSegment(
+                            index = 0,
+                            count = 3 + quick,
+                            onClick = {
+                                if (!quickBusy) {
+                                    scope.launch {
+                                        quickBusy = true
+                                        try {
+                                            onQuick(!state.quickOn)
+                                        } catch (_: RvBiometricCancelled) {
+                                        } catch (_: Throwable) {
+                                            snackbar.currentSnackbarData?.dismiss()
+                                            snackbar.showSnackbar(strings.quickFailed)
+                                        }
+                                        quickBusy = false
+                                    }
+                                }
+                            },
+                            enabled = !quickBusy,
+                            leading = { SettingBadge(RvFingerprintIcon, accents.blue) },
+                            supporting = { Text(strings.quickNote) },
+                            trailing = { Switch(checked = state.quickOn, onCheckedChange = null) },
+                        ) {
+                            Text(strings.quickUnlockWith(state.quickLabel))
+                        }
+                    }
                     RvSegment(
-                        index = 0,
-                        count = 3,
+                        index = quick,
+                        count = 3 + quick,
                         onClick = { lockOpen = true },
                         leading = { SettingBadge(RvTimerIcon, accents.teal) },
                         supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
@@ -434,16 +470,16 @@ private fun RootPage(
                         Text(strings.settingsAutoLock)
                     }
                     RvSegment(
-                        index = 1,
-                        count = 3,
+                        index = 1 + quick,
+                        count = 3 + quick,
                         onClick = onLockNow,
                         leading = { SettingBadge(RvLockIcon, accents.yellow) },
                     ) {
                         Text(strings.settingsLockNow)
                     }
                     RvSegment(
-                        index = 2,
-                        count = 3,
+                        index = 2 + quick,
+                        count = 3 + quick,
                         onClick = checkPwned,
                         leading = {
                             if (checking) {

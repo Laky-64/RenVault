@@ -83,6 +83,14 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.quick_biometrics
+import io.lauren.renvault.resources.quick_unlock_with
+import io.lauren.renvault.resources.quick_prompt_title
+import io.lauren.renvault.resources.quick_enable_prompt
+import io.lauren.renvault.resources.quick_note
+import io.lauren.renvault.resources.quick_gone
+import io.lauren.renvault.resources.quick_expired
+import io.lauren.renvault.resources.quick_failed
 import io.lauren.renvault.resources.settings_backup_title
 import io.lauren.renvault.resources.settings_backup_note
 import io.lauren.renvault.resources.backup_export
@@ -327,6 +335,14 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.quick_biometrics,
+    Res.string.quick_unlock_with,
+    Res.string.quick_prompt_title,
+    Res.string.quick_enable_prompt,
+    Res.string.quick_note,
+    Res.string.quick_gone,
+    Res.string.quick_expired,
+    Res.string.quick_failed,
     Res.string.settings_backup_title,
     Res.string.settings_backup_note,
     Res.string.backup_export,
@@ -740,6 +756,14 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val quickBiometrics: String get() = text(Res.string.quick_biometrics)
+    override fun quickUnlockWith(method: String): String = text(Res.string.quick_unlock_with, method)
+    override val quickPromptTitle: String get() = text(Res.string.quick_prompt_title)
+    override val quickEnablePrompt: String get() = text(Res.string.quick_enable_prompt)
+    override val quickNote: String get() = text(Res.string.quick_note)
+    override val quickGone: String get() = text(Res.string.quick_gone)
+    override val quickExpired: String get() = text(Res.string.quick_expired)
+    override val quickFailed: String get() = text(Res.string.quick_failed)
     override val settingsBackupTitle: String get() = text(Res.string.settings_backup_title)
     override val settingsBackupNote: String get() = text(Res.string.settings_backup_note)
     override val backupExport: String get() = text(Res.string.backup_export)

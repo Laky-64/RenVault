@@ -34,6 +34,7 @@ dependencies {
     implementation(project(":shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.biometric)
     implementation(libs.androidx.profileinstaller)
 
     baselineProfile(project(":baselineProfile"))

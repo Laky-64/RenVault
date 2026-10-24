@@ -115,6 +115,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.biometric)
             implementation(libs.play.services.codeScanner)
             implementation(libs.androidx.work.runtime)
         }

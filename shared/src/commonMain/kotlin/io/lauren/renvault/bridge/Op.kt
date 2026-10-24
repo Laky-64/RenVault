@@ -26,6 +26,10 @@ internal object Op {
     const val BACKUP_EXPORT = 0x1014
     const val BACKUP_IMPORT = 0x1015
     const val IMPORT_CSV = 0x1016
+    const val QUICK_STATE = 0x1017
+    const val QUICK_ENABLE = 0x1018
+    const val QUICK_DISABLE = 0x1019
+    const val QUICK_UNLOCK = 0x101A
 
     const val DEVICES = 0x1201
     const val DEVICE_REMOVE = 0x1202

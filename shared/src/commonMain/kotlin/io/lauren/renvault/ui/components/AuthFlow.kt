@@ -71,6 +71,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.graphics.shapes.RoundedPolygon
 import io.lauren.renvault.lib.MinPassword
+import io.lauren.renvault.lib.RvBiometricCancelled
+import io.lauren.renvault.lib.RvBiometricGone
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.strengthOf
@@ -122,6 +124,7 @@ fun RvAuthFlow(
     finishLocal: suspend (String, String, ByteArray?) -> Unit = { _, _, _ -> },
     joinPairing: suspend (String) -> String = { "" },
     unlock: suspend (String) -> Unit = {},
+    quick: RvQuickUnlock? = null,
     onPrivacy: () -> Unit = {},
     anisette: String = "",
     onAnisette: suspend (String) -> Boolean = { true },
@@ -420,6 +423,38 @@ fun RvAuthFlow(
         }
     }
 
+    var quickReady by remember { mutableStateOf(false) }
+    val submitQuick: () -> Unit = {
+        if (quick != null && !busy) {
+            scope.launch {
+                unlockError = ""
+                try {
+                    quick.unlock {
+                        busyTitle = strings.busyOpeningVaultTitle
+                        busyLabel = strings.busyOpeningVault
+                        busy = true
+                    }
+                    onDone()
+                    return@launch
+                } catch (_: RvBiometricCancelled) {
+                } catch (_: RvBiometricGone) {
+                    quickReady = false
+                    unlockError = strings.quickGone
+                } catch (failure: Throwable) {
+                    quickReady = false
+                    unlockError = describe(failure)
+                }
+                busy = false
+            }
+        }
+    }
+
+    LaunchedEffect(entry) {
+        if (entry != AuthEntry.Master || quick == null) return@LaunchedEffect
+        quickReady = runCatching { quick.ready() }.getOrDefault(false)
+        if (quickReady) submitQuick()
+    }
+
     LaunchedEffect(Unit) {
         val slow = launch {
             delay(200)
@@ -511,6 +546,15 @@ fun RvAuthFlow(
                             enabled = unlockValue.isNotEmpty(),
                             icon = RvLockOpenIcon,
                         )
+                        if (quickReady && quick != null) {
+                            RvButton(
+                                text = strings.quickUnlockWith(quick.label),
+                                onClick = submitQuick,
+                                kind = RvButtonKind.Tonal,
+                                icon = RvFingerprintIcon,
+                                enabled = !busy,
+                            )
+                        }
                     },
                 )
 
