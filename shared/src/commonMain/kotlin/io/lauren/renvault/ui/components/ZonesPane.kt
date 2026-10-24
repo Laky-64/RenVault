@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.rememberScrollState
@@ -49,13 +50,13 @@ fun RvZonesPane(
     onSearch: () -> Unit,
     onSettings: () -> Unit,
     onAdd: () -> Unit = {},
+    grid: LazyGridState = rememberLazyGridState(),
 ) {
     if (selected != null) {
         ZonesRail(zones, title, photo, strings, selected, modifier, onZone, onSettings, onAdd)
         return
     }
 
-    val grid = rememberLazyGridState()
     val scrolled by grid.scrolledPast()
 
     Scaffold(
@@ -79,7 +80,7 @@ fun RvZonesPane(
                 start = RvLayout.gutter,
                 end = RvLayout.gutter,
                 top = padding.calculateTopPadding() + 4.dp,
-                bottom = padding.calculateBottomPadding() + 24.dp,
+                bottom = padding.calculateBottomPadding() + 104.dp,
             ),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),

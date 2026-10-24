@@ -34,7 +34,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -170,21 +169,6 @@ fun RvListPane(
                         },
                     )
                 }
-            }
-        },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = compact && zone.kind == RvZoneKind.All && !selecting && !searching,
-                enter = scaleIn(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
-                exit = scaleOut(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),
-            ) {
-                ExtendedFloatingActionButton(
-                    text = { Text(strings.listAdd) },
-                    icon = { Icon(RvAddIcon, contentDescription = null) },
-                    onClick = onAdd,
-                    expanded = !past,
-                    modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
-                )
             }
         },
     ) { padding ->

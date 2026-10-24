@@ -1,6 +1,13 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -165,6 +172,7 @@ fun RvHomePage(
     val lastZone = remember { arrayOf(RvZoneKind.All) }
     zoneKind?.let { lastZone[0] = it }
     val shownKind = zoneKind ?: if (compact) lastZone[0] else RvZoneKind.All
+    val zonesGrid = rememberLazyGridState()
     val active = zones.firstOrNull { it.kind == shownKind } ?: zones.first()
 
     val listStates = remember { HashMap<RvZoneKind, LazyListState>() }
@@ -268,6 +276,7 @@ fun RvHomePage(
 
     val zonesPane: @Composable (Modifier) -> Unit = { paneModifier ->
         RvZonesPane(
+            grid = zonesGrid,
             zones = zones,
             title = title,
             photo = photo,
@@ -417,6 +426,26 @@ fun RvHomePage(
                     Screen.Item -> detailPane(fill)
                     Screen.Settings -> settingsPane(fill, false)
                 }
+            }
+
+            val zonesScrolled by zonesGrid.scrolledPast()
+            val listScrolled by listState.scrolledPast()
+            AnimatedVisibility(
+                visible = screen == Screen.Zones ||
+                    (screen == Screen.List && active.kind == RvZoneKind.All && !selecting && !searching),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .navigationBarsPadding()
+                    .padding(end = 24.dp, bottom = 24.dp),
+                enter = scaleIn(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
+                exit = scaleOut(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),
+            ) {
+                ExtendedFloatingActionButton(
+                    text = { Text(strings.listAdd) },
+                    icon = { Icon(RvAddIcon, contentDescription = null) },
+                    onClick = { creating = true },
+                    expanded = if (screen == Screen.Zones) !zonesScrolled else !listScrolled,
+                )
             }
         } else {
             Row(
