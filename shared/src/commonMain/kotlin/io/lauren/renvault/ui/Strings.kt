@@ -71,7 +71,6 @@ import io.lauren.renvault.resources.anisette_title
 import io.lauren.renvault.resources.anisette_desc
 import io.lauren.renvault.resources.anisette_placeholder
 import io.lauren.renvault.resources.anisette_default
-import io.lauren.renvault.resources.anisette_reset
 import io.lauren.renvault.resources.anisette_invalid
 import io.lauren.renvault.resources.anisette_note
 import io.lauren.renvault.resources.totp_key_confirm
@@ -83,6 +82,13 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.anisette_insecure_warning
+import io.lauren.renvault.resources.anisette_default_desc
+import io.lauren.renvault.resources.anisette_custom
+import io.lauren.renvault.resources.anisette_checking
+import io.lauren.renvault.resources.anisette_unreachable
+import io.lauren.renvault.resources.anisette_insecure
+import io.lauren.renvault.resources.anisette_latency
 import io.lauren.renvault.resources.reset_forgot
 import io.lauren.renvault.resources.reset_title
 import io.lauren.renvault.resources.reset_icloud
@@ -334,12 +340,18 @@ private val TextResources = listOf(
     Res.string.anisette_desc,
     Res.string.anisette_placeholder,
     Res.string.anisette_default,
-    Res.string.anisette_reset,
     Res.string.anisette_invalid,
     Res.string.anisette_note,
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.anisette_insecure_warning,
+    Res.string.anisette_default_desc,
+    Res.string.anisette_custom,
+    Res.string.anisette_checking,
+    Res.string.anisette_unreachable,
+    Res.string.anisette_insecure,
+    Res.string.anisette_latency,
     Res.string.reset_forgot,
     Res.string.reset_title,
     Res.string.reset_icloud,
@@ -766,6 +778,13 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val anisetteInsecureWarning: String get() = text(Res.string.anisette_insecure_warning)
+    override val anisetteDefaultDesc: String get() = text(Res.string.anisette_default_desc)
+    override val anisetteCustom: String get() = text(Res.string.anisette_custom)
+    override val anisetteChecking: String get() = text(Res.string.anisette_checking)
+    override val anisetteUnreachable: String get() = text(Res.string.anisette_unreachable)
+    override val anisetteInsecure: String get() = text(Res.string.anisette_insecure)
+    override fun anisetteLatency(ms: String): String = text(Res.string.anisette_latency, ms)
     override val resetForgot: String get() = text(Res.string.reset_forgot)
     override val resetTitle: String get() = text(Res.string.reset_title)
     override val resetIcloud: String get() = text(Res.string.reset_icloud)
@@ -806,7 +825,6 @@ private class ResourceStrings(
     override val anisetteDesc: String get() = text(Res.string.anisette_desc)
     override val anisettePlaceholder: String get() = text(Res.string.anisette_placeholder)
     override val anisetteDefault: String get() = text(Res.string.anisette_default)
-    override val anisetteReset: String get() = text(Res.string.anisette_reset)
     override val anisetteInvalid: String get() = text(Res.string.anisette_invalid)
     override val anisetteNote: String get() = text(Res.string.anisette_note)
     override val websitesTitle: String get() = text(Res.string.websites_title)

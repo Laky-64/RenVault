@@ -35,6 +35,8 @@ import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.components.RvDevice
+import io.lauren.renvault.ui.components.LocalAnisetteServers
+import io.lauren.renvault.ui.components.RvAnisetteChoice
 import io.lauren.renvault.ui.components.RvBackupActions
 import io.lauren.renvault.ui.components.RvDeviceActions
 import io.lauren.renvault.ui.components.RvImported
@@ -388,178 +390,184 @@ fun RvVaultApp(
     val linked = remember(web, passkeys) { linkItems(web, passkeys) }
     val zones = homeZones(linked.web, wifi, linked.passkeys)
 
-    RvVaultShell(
-        authenticated = unlocked,
-        modifier = modifier.fillMaxSize(),
-        titleBar = titleBar,
-        auth = {
-            if (!ready) return@RvVaultShell
-            RvAuthFlow(
-                photo = photo,
-                strings = strings,
-                describe = { strings.failureText(it) },
-                unlocked = { Vault.state().unlocked },
-                configured = { Vault.state().configured },
-                startLogin = { appleId, secret -> Vault.startLogin(appleId, secret) },
-                requestCode = { Vault.requestCode() },
-                submitCode = { code -> Vault.submitCode(code) },
-                loadDevices = {
-                    coroutineScope {
-                        Vault.bottles().map { device ->
-                            async {
-                                RvAuthDevice(
-                                    name = device.name,
-                                    model = device.shortModel,
-                                    art = deviceArt(device.imageUrl),
-                                )
-                            }
-                        }.awaitAll()
-                    }
-                },
-                loadProfile = {
-                    val meta = runCatching { Vault.profile() }.getOrNull()
-                    val raw = if (meta?.hasPhoto == true) {
-                        runCatching { Vault.profilePhoto() }.getOrNull()
-                    } else {
-                        null
-                    }
+    val loadAnisette: suspend () -> List<RvAnisetteChoice> = {
+        Vault.anisetteServers().map { RvAnisetteChoice(it.name, it.address, it.latencyMs, it.reachable) }
+    }
 
-                    RvAuthProfile(
-                        local = meta?.local == true,
-                        name = meta?.name.orEmpty(),
-                        photo = raw?.let {
-                            withContext(Dispatchers.Default) {
-                                runCatching { it.decodeToImageBitmap() }.getOrNull()
-                            }
-                        },
-                    )
-                },
-                recoverDevice = { index, passcode -> Vault.recoverBottle(index, passcode) },
-                finishSetup = { secret -> Vault.finishSetup(secret) },
-                finishLocal = { secret, name, picture ->
-                    Vault.localSetup(secret, name, withContext(Dispatchers.Default) { RvLan.deviceName() }, picture)
-                    lanOpen = true
-                },
-                joinPairing = { text -> Vault.joinPairing(text) },
-                unlock = { secret -> Vault.unlock(secret) },
-                quick = quickUnlock,
-                reset = {
-                    Vault.signOut()
-                    biometrics?.forget()
-                    quick = QuickState()
-                },
-                onPrivacy = { openUrl(PrivacyUrl) },
-                anisette = anisette,
-                onAnisette = chooseAnisette,
-                backup = backupActions,
-                onDone = { unlocked = true },
-            )
-        },
-        home = {
-            val mask = remember(names) { RvNameMask(names) }
-            CompositionLocalProvider(LocalNameMask provides mask, LocalNameNotice provides nameNotice) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    RvHomePage(
-                        zones = zones,
-                        secrets = secrets,
-                        title = title,
-                        photo = photo,
-                        favicon = favicon,
-                        settings = RvSettingsState(
-                            appName = title,
-                            profileName = profile.name,
-                            appleId = profile.appleId,
-                            version = version,
-                            versionCode = RvAppVersionCode,
-                            channel = RvAppChannel,
-                            commit = RvAppCommit,
-                            platform = platformTag(),
-                            core = RvAppleServicesVersion.takeIf { it.isNotEmpty() }?.let { "appleservices $it" }.orEmpty(),
-                            autoLockMinutes = settings.autoLockMinutes,
-                            quickLabel = quickMethod?.let { quickLabel(it, strings) }.orEmpty(),
-                            quickOn = quick.method.isNotEmpty(),
-                            autoLockChoices = choices,
-                            pending = sync.pending,
-                            syncedAt = sync.syncedAt,
-                            anisette = anisette,
-                            pwnedCheckedAt = pwnedAt,
-                            names = names,
-                            nameNotice = nameNotice,
-                            local = profile.local,
-                            devices = devices,
-                        ),
-                        sortField = sortFieldOf(settings.sortField),
-                        sortAscending = settings.sortAscending,
-                        strings = strings,
-                        settingsBusy = leaving,
-                        onSort = { field, ascending ->
-                            settings = settings.copy(
-                                sortField = sortKeyOf(field),
-                                sortAscending = ascending,
-                            )
-                            scope.launch {
-                                runCatching { Vault.setSort(sortKeyOf(field), ascending) }
-                            }
-                        },
-                        onCopy = copy,
-                        onChangePassword = { domain ->
-                            scope.launch {
-                                val target = runCatching { Vault.changePasswordUrl(domain) }.getOrNull()
-                                if (!target.isNullOrEmpty()) openUrl(target)
-                            }
-                        },
-                        onLearnMore = { openUrl(PasskeyUrl) },
-                        onCreate = { draft -> create(draft); revision++ },
-                        onSave = { item, draft -> save(item, draft).also { revision++ } },
-                        onDelete = { id -> Vault.deletePasswords(listOf(id)); revision++ },
-                        onRestore = { id -> Vault.restorePassword(id); revision++ },
-                        onPurge = { id -> Vault.purgePasswords(listOf(id)); revision++ },
-                        onDeleteMany = { ids, purge ->
-                            if (purge) Vault.purgePasswords(ids) else Vault.deletePasswords(ids)
-                            revision++
-                        },
-                        onAutoLock = { minutes ->
-                            settings = settings.copy(autoLockMinutes = minutes)
-                            scope.launch { runCatching { Vault.setAutoLock(minutes) } }
-                        },
-                        onLockNow = {
-                            scope.launch {
-                                runCatching { Vault.lock() }
-                                unlocked = false
-                            }
-                        },
-                        onCheckPwned = {
-                            val report = Vault.checkPwned()
-                            pwnedAt = report.checkedAt
-                            revision++
-                            report.pwned
-                        },
-                        onAnisette = chooseAnisette,
-                        onNames = { next ->
-                            Vault.setNames(next.map { NameSwap(it.from, it.to) })
-                            names = Vault.names().map { RvNameSwap(it.from, it.to) }
-                        },
-                        onNameNotice = { shown ->
-                        nameNotice = shown
-                        writePreference(NameNoticeKey, if (shown) "on" else "off")
+    CompositionLocalProvider(LocalAnisetteServers provides loadAnisette) {
+        RvVaultShell(
+            authenticated = unlocked,
+            modifier = modifier.fillMaxSize(),
+            titleBar = titleBar,
+            auth = {
+                if (!ready) return@RvVaultShell
+                RvAuthFlow(
+                    photo = photo,
+                    strings = strings,
+                    describe = { strings.failureText(it) },
+                    unlocked = { Vault.state().unlocked },
+                    configured = { Vault.state().configured },
+                    startLogin = { appleId, secret -> Vault.startLogin(appleId, secret) },
+                    requestCode = { Vault.requestCode() },
+                    submitCode = { code -> Vault.submitCode(code) },
+                    loadDevices = {
+                        coroutineScope {
+                            Vault.bottles().map { device ->
+                                async {
+                                    RvAuthDevice(
+                                        name = device.name,
+                                        model = device.shortModel,
+                                        art = deviceArt(device.imageUrl),
+                                    )
+                                }
+                            }.awaitAll()
+                        }
                     },
-                    devices = if (profile.local) deviceActions else null,
+                    loadProfile = {
+                        val meta = runCatching { Vault.profile() }.getOrNull()
+                        val raw = if (meta?.hasPhoto == true) {
+                            runCatching { Vault.profilePhoto() }.getOrNull()
+                        } else {
+                            null
+                        }
+
+                        RvAuthProfile(
+                            local = meta?.local == true,
+                            name = meta?.name.orEmpty(),
+                            photo = raw?.let {
+                                withContext(Dispatchers.Default) {
+                                    runCatching { it.decodeToImageBitmap() }.getOrNull()
+                                }
+                            },
+                        )
+                    },
+                    recoverDevice = { index, passcode -> Vault.recoverBottle(index, passcode) },
+                    finishSetup = { secret -> Vault.finishSetup(secret) },
+                    finishLocal = { secret, name, picture ->
+                        Vault.localSetup(secret, name, withContext(Dispatchers.Default) { RvLan.deviceName() }, picture)
+                        lanOpen = true
+                    },
+                    joinPairing = { text -> Vault.joinPairing(text) },
+                    unlock = { secret -> Vault.unlock(secret) },
+                    quick = quickUnlock,
+                    reset = {
+                        Vault.signOut()
+                        biometrics?.forget()
+                        quick = QuickState()
+                    },
+                    onPrivacy = { openUrl(PrivacyUrl) },
+                    anisette = anisette,
+                    onAnisette = chooseAnisette,
                     backup = backupActions,
-                    onQuick = setQuick,
-                    onSignOut = {
-                            scope.launch {
-                                leaving = true
-                                if (profile.local) RvLan.schedule(false)
-                                runCatching { Vault.signOut() }
-                                leaving = false
-                                unlocked = false
-                            }
+                    onDone = { unlocked = true },
+                )
+            },
+            home = {
+                val mask = remember(names) { RvNameMask(names) }
+                CompositionLocalProvider(LocalNameMask provides mask, LocalNameNotice provides nameNotice) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        RvHomePage(
+                            zones = zones,
+                            secrets = secrets,
+                            title = title,
+                            photo = photo,
+                            favicon = favicon,
+                            settings = RvSettingsState(
+                                appName = title,
+                                profileName = profile.name,
+                                appleId = profile.appleId,
+                                version = version,
+                                versionCode = RvAppVersionCode,
+                                channel = RvAppChannel,
+                                commit = RvAppCommit,
+                                platform = platformTag(),
+                                core = RvAppleServicesVersion.takeIf { it.isNotEmpty() }?.let { "appleservices $it" }.orEmpty(),
+                                autoLockMinutes = settings.autoLockMinutes,
+                                quickLabel = quickMethod?.let { quickLabel(it, strings) }.orEmpty(),
+                                quickOn = quick.method.isNotEmpty(),
+                                autoLockChoices = choices,
+                                pending = sync.pending,
+                                syncedAt = sync.syncedAt,
+                                anisette = anisette,
+                                pwnedCheckedAt = pwnedAt,
+                                names = names,
+                                nameNotice = nameNotice,
+                                local = profile.local,
+                                devices = devices,
+                            ),
+                            sortField = sortFieldOf(settings.sortField),
+                            sortAscending = settings.sortAscending,
+                            strings = strings,
+                            settingsBusy = leaving,
+                            onSort = { field, ascending ->
+                                settings = settings.copy(
+                                    sortField = sortKeyOf(field),
+                                    sortAscending = ascending,
+                                )
+                                scope.launch {
+                                    runCatching { Vault.setSort(sortKeyOf(field), ascending) }
+                                }
+                            },
+                            onCopy = copy,
+                            onChangePassword = { domain ->
+                                scope.launch {
+                                    val target = runCatching { Vault.changePasswordUrl(domain) }.getOrNull()
+                                    if (!target.isNullOrEmpty()) openUrl(target)
+                                }
+                            },
+                            onLearnMore = { openUrl(PasskeyUrl) },
+                            onCreate = { draft -> create(draft); revision++ },
+                            onSave = { item, draft -> save(item, draft).also { revision++ } },
+                            onDelete = { id -> Vault.deletePasswords(listOf(id)); revision++ },
+                            onRestore = { id -> Vault.restorePassword(id); revision++ },
+                            onPurge = { id -> Vault.purgePasswords(listOf(id)); revision++ },
+                            onDeleteMany = { ids, purge ->
+                                if (purge) Vault.purgePasswords(ids) else Vault.deletePasswords(ids)
+                                revision++
+                            },
+                            onAutoLock = { minutes ->
+                                settings = settings.copy(autoLockMinutes = minutes)
+                                scope.launch { runCatching { Vault.setAutoLock(minutes) } }
+                            },
+                            onLockNow = {
+                                scope.launch {
+                                    runCatching { Vault.lock() }
+                                    unlocked = false
+                                }
+                            },
+                            onCheckPwned = {
+                                val report = Vault.checkPwned()
+                                pwnedAt = report.checkedAt
+                                revision++
+                                report.pwned
+                            },
+                            onAnisette = chooseAnisette,
+                            onNames = { next ->
+                                Vault.setNames(next.map { NameSwap(it.from, it.to) })
+                                names = Vault.names().map { RvNameSwap(it.from, it.to) }
+                            },
+                            onNameNotice = { shown ->
+                            nameNotice = shown
+                            writePreference(NameNoticeKey, if (shown) "on" else "off")
                         },
-                    )
+                        devices = if (profile.local) deviceActions else null,
+                        backup = backupActions,
+                        onQuick = setQuick,
+                        onSignOut = {
+                                scope.launch {
+                                    leaving = true
+                                    if (profile.local) RvLan.schedule(false)
+                                    runCatching { Vault.signOut() }
+                                    leaving = false
+                                    unlocked = false
+                                }
+                            },
+                        )
+                    }
                 }
-            }
-        },
-    )
+            },
+        )
+    }
 }
 
 private val TileSize = 56.dp

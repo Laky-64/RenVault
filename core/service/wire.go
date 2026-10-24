@@ -407,3 +407,10 @@ type quickStateResponse struct {
 	Ready   bool     `cbor:"ready"`
 	Expired bool     `cbor:"expired"`
 }
+
+type anisetteEntry struct {
+	Name      string `cbor:"name"`
+	Address   string `cbor:"address"`
+	LatencyMs int64  `cbor:"latency_ms"`
+	Reachable bool   `cbor:"reachable"`
+}

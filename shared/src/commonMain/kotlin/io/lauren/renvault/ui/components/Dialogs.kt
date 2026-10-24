@@ -6,6 +6,8 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,9 +29,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -351,6 +355,17 @@ fun RvWebsitesDialog(
     )
 }
 
+data class RvAnisetteChoice(
+    val name: String,
+    val address: String,
+    val latencyMs: Long,
+    val reachable: Boolean,
+)
+
+val LocalAnisetteServers = compositionLocalOf<suspend () -> List<RvAnisetteChoice>> { { emptyList() } }
+
+private const val CustomServer = "\u0000custom"
+
 @Composable
 fun RvAnisetteDialog(
     open: Boolean,
@@ -362,11 +377,21 @@ fun RvAnisetteDialog(
     if (!open) return
 
     val scope = rememberCoroutineScope()
-    var value by remember { mutableStateOf(current) }
+    val loadServers = LocalAnisetteServers.current
+    var servers by remember { mutableStateOf<List<RvAnisetteChoice>?>(null) }
+    var picked by remember { mutableStateOf(current) }
+    var custom by remember { mutableStateOf(current) }
     var refused by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
 
-    val apply: (String) -> Unit = { target ->
+    LaunchedEffect(Unit) {
+        val loaded = runCatching { loadServers() }.getOrDefault(emptyList())
+        servers = loaded
+        if (current.isNotEmpty() && loaded.none { it.address == current }) picked = CustomServer
+    }
+
+    val target = if (picked == CustomServer) custom else picked
+    val apply: () -> Unit = {
         if (!busy) {
             scope.launch {
                 busy = true
@@ -382,30 +407,86 @@ fun RvAnisetteDialog(
         icon = { Icon(RvServerIcon, contentDescription = null) },
         title = { Text(strings.anisetteTitle) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(strings.anisetteDesc)
-                RvTextField(
-                    value = value,
-                    onValueChange = {
-                        value = it
-                        refused = false
-                    },
-                    label = strings.anisettePlaceholder,
-                    enabled = !busy,
-                    keyboard = KeyboardType.Uri,
-                    error = if (refused) strings.anisetteInvalid else null,
-                    supporting = if (value.isBlank()) strings.anisetteDefault else strings.anisetteNote,
-                    onDone = { apply(value) },
-                )
-                if (current.isNotEmpty()) {
-                    TextButton(onClick = { apply("") }, enabled = !busy, shapes = ButtonDefaults.shapes()) {
-                        Text(strings.anisetteReset)
+            Column(modifier = Modifier.heightIn(max = 520.dp)) {
+                Column(
+                    modifier = Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(strings.anisetteDesc)
+                    Column(modifier = Modifier.selectableGroup()) {
+                        AnisetteRow(
+                            title = strings.anisetteDefault,
+                            detail = strings.anisetteDefaultDesc,
+                            selected = picked.isEmpty(),
+                            enabled = !busy,
+                            onClick = { picked = "" },
+                        )
+                        val loaded = servers
+                        if (loaded == null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                ContainedLoadingIndicator(modifier = Modifier.size(32.dp))
+                                Text(strings.anisetteChecking, style = MaterialTheme.typography.bodyMedium)
+                            }
+                        } else {
+                            loaded.forEach { server ->
+                                AnisetteRow(
+                                    title = server.name,
+                                    detail = server.address.substringAfter("://"),
+                                    selected = picked == server.address,
+                                    enabled = !busy && server.reachable,
+                                    status = when {
+                                        !server.reachable -> strings.anisetteUnreachable
+                                        server.address.startsWith("http://") -> strings.anisetteInsecure
+                                        else -> strings.anisetteLatency(server.latencyMs.toString())
+                                    },
+                                    good = server.reachable && server.address.startsWith("https://"),
+                                    onClick = { picked = server.address },
+                                )
+                            }
+                        }
+                        AnisetteRow(
+                            title = strings.anisetteCustom,
+                            detail = null,
+                            selected = picked == CustomServer,
+                            enabled = !busy,
+                            onClick = { picked = CustomServer },
+                        )
+                    }
+                    AnimatedVisibility(visible = picked == CustomServer) {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            RvTextField(
+                                value = custom,
+                                onValueChange = {
+                                    custom = it
+                                    refused = false
+                                },
+                                label = strings.anisettePlaceholder,
+                                enabled = !busy,
+                                keyboard = KeyboardType.Uri,
+                                error = if (refused) strings.anisetteInvalid else null,
+                                supporting = strings.anisetteNote,
+                                onDone = apply,
+                            )
+                        }
                     }
                 }
+                InsecureWarning(
+                    text = strings.anisetteInsecureWarning,
+                    visible = target.trim().startsWith("http://", ignoreCase = true),
+                    modifier = Modifier.padding(top = 16.dp),
+                )
             }
         },
         confirmButton = {
-            Button(onClick = { apply(value) }, enabled = !busy, shapes = ButtonDefaults.shapes()) {
+            Button(
+                onClick = apply,
+                enabled = !busy && (picked != CustomServer || custom.isNotBlank()),
+                shapes = ButtonDefaults.shapes(),
+            ) {
                 Text(strings.editorSave)
             }
         },
@@ -413,4 +494,78 @@ fun RvAnisetteDialog(
             TextButton(onClick = { onOpenChange(false) }, shapes = ButtonDefaults.shapes()) { Text(strings.cancel) }
         },
     )
+}
+
+@Composable
+private fun AnisetteRow(
+    title: String,
+    detail: String?,
+    selected: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    status: String? = null,
+    good: Boolean = true,
+) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null, enabled = enabled)
+        Column(modifier = Modifier.weight(1f).padding(vertical = 6.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (enabled) colors.onSurface else colors.onSurfaceVariant,
+            )
+            if (detail != null) {
+                Text(detail, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
+        }
+        if (status != null) {
+            Text(
+                text = status,
+                style = MaterialTheme.typography.labelMedium,
+                color = when {
+                    !enabled -> colors.error
+                    good -> colors.primary
+                    else -> colors.tertiary
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun InsecureWarning(text: String, visible: Boolean, modifier: Modifier = Modifier) {
+    val motion = MaterialTheme.motionScheme
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = expandVertically(motion.defaultSpatialSpec()) +
+            scaleIn(motion.defaultSpatialSpec(), initialScale = 0.9f) +
+            fadeIn(motion.defaultEffectsSpec()),
+        exit = shrinkVertically(motion.fastSpatialSpec()) +
+            scaleOut(motion.fastSpatialSpec(), targetScale = 0.9f) +
+            fadeOut(motion.fastEffectsSpec()),
+    ) {
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            color = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(imageVector = RvWarningIcon, contentDescription = null, modifier = Modifier.size(20.dp))
+                Text(text = text, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
 }

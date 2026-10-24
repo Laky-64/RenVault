@@ -217,10 +217,9 @@
     <string name="failure_wrong_master_password">La password principale non è corretta.</string>
     <string name="failure_no_devices">Nessun dispositivo recuperabile è collegato a questo account.</string>
     <string name="anisette_title">Server anisette</string>
-    <string name="anisette_desc">Apple richiede i dati anisette per farti accedere. Di predefinito RenVault usa i server pubblici di SideStore. Puoi indicarne uno tuo: in quel caso verrà usato solo quello.</string>
+    <string name="anisette_desc">Apple richiede i dati anisette per farti accedere. Scegli uno dei server pubblici o usane uno tuo.</string>
     <string name="anisette_placeholder">Indirizzo del server</string>
     <string name="anisette_default">Predefinito (SideStore)</string>
-    <string name="anisette_reset">Usa predefinito</string>
     <string name="anisette_invalid">Non è un indirizzo di server valido.</string>
     <string name="anisette_note">Vale dal prossimo accesso.</string>
     <string name="settings_advanced_title">Avanzate</string>
@@ -359,4 +358,11 @@
     <string name="reset_icloud">Le tue password restano al sicuro nel Portachiavi iCloud. RenVault cancella la copia su questo dispositivo, poi puoi accedere di nuovo con il tuo Apple ID e scegliere una nuova password principale.</string>
     <string name="reset_local">L\'archivio su questo dispositivo verrà cancellato. Se hai collegato altri dispositivi puoi ricollegare questo da lì, altrimenti le password si possono recuperare solo da un backup.</string>
     <string name="reset_action">Reimposta</string>
+    <string name="anisette_default_desc">Prova in automatico i server pubblici</string>
+    <string name="anisette_custom">Server personalizzato…</string>
+    <string name="anisette_checking">Controllo dei server…</string>
+    <string name="anisette_unreachable">Non raggiungibile</string>
+    <string name="anisette_insecure">Non cifrato</string>
+    <string name="anisette_latency">%1$s ms</string>
+    <string name="anisette_insecure_warning">La connessione a questo server non è protetta: chi è sulla tua rete può vedere o alterare i dati anisette. La password dell\'Apple ID non passa mai da qui.</string>
 </resources>

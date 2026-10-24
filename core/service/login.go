@@ -72,6 +72,19 @@ func installLogin() {
 		return nil
 	})
 
+	query(bridge.OpAnisetteServers, func(ctx context.Context) ([]anisetteEntry, error) {
+		active, err := opened()
+		if err != nil {
+			return nil, err
+		}
+		servers := active.AnisetteServers(ctx)
+		out := make([]anisetteEntry, len(servers))
+		for i, s := range servers {
+			out[i] = anisetteEntry{Name: s.Name, Address: s.Address, LatencyMs: s.Latency.Milliseconds(), Reachable: s.Reachable}
+		}
+		return out, nil
+	})
+
 	command(bridge.OpLoginFinish, func(_ context.Context, request secretRequest) error {
 		active, err := opened()
 		if err != nil {

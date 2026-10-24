@@ -64,6 +64,14 @@ data class AnisetteServer(
 )
 
 @Serializable
+data class AnisetteEntry(
+    @SerialName("name") val name: String = "",
+    @SerialName("address") val address: String = "",
+    @SerialName("latency_ms") val latencyMs: Long = 0,
+    @SerialName("reachable") val reachable: Boolean = false,
+)
+
+@Serializable
 internal data class SubmitCodeRequest(@SerialName("code") val code: String)
 
 @Serializable

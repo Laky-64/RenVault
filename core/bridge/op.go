@@ -70,6 +70,7 @@ const (
 
 	OpAnisetteServer    uint32 = 0x2007
 	OpAnisetteSetServer uint32 = 0x2008
+	OpAnisetteServers   uint32 = 0x2009
 )
 
 const (

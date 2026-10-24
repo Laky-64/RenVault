@@ -206,6 +206,8 @@ object Vault {
 
     suspend fun setAnisetteServer(url: String) = send(Op.ANISETTE_SET_SERVER, AnisetteRequest(url))
 
+    suspend fun anisetteServers(): List<AnisetteEntry> = receive(Op.ANISETTE_SERVERS)
+
     suspend fun listen() {
         while (currentCoroutineContext().isActive) {
             pump()

@@ -61,6 +61,7 @@ internal object Op {
     const val LOGIN_FINISH = 0x2006
     const val ANISETTE_SERVER = 0x2007
     const val ANISETTE_SET_SERVER = 0x2008
+    const val ANISETTE_SERVERS = 0x2009
 
     const val ICON_TILE = 0x3001
     const val ICON_IMAGE = 0x3002

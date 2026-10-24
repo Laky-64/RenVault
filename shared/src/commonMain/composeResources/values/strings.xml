@@ -222,10 +222,9 @@
     <string name="settings_based_on">Based on %1$s</string>
     <string name="settings_channel_stable">Stable</string>
     <string name="anisette_title">Anisette server</string>
-    <string name="anisette_desc">Apple needs anisette data to sign you in. By default RenVault uses the public SideStore servers. You can set your own instead: then only that one is used.</string>
+    <string name="anisette_desc">Apple needs anisette data to sign you in. Pick one of the public servers or use your own.</string>
     <string name="anisette_placeholder">Server address</string>
     <string name="anisette_default">Default (SideStore)</string>
-    <string name="anisette_reset">Use default</string>
     <string name="anisette_invalid">That is not a valid server address.</string>
     <string name="anisette_note">It applies from the next sign-in.</string>
     <string name="settings_advanced_title">Advanced</string>
@@ -364,4 +363,11 @@
     <string name="reset_icloud">Your passwords stay safe in iCloud Keychain. RenVault removes the copy on this device, then you can sign in again with your Apple ID and choose a new master password.</string>
     <string name="reset_local">The vault on this device will be deleted. If you linked other devices, you can connect this one again from them; otherwise your passwords can only come back from a backup.</string>
     <string name="reset_action">Reset</string>
+    <string name="anisette_default_desc">Tries the public servers automatically</string>
+    <string name="anisette_custom">Custom server…</string>
+    <string name="anisette_checking">Checking servers…</string>
+    <string name="anisette_unreachable">Unreachable</string>
+    <string name="anisette_insecure">Not encrypted</string>
+    <string name="anisette_latency">%1$s ms</string>
+    <string name="anisette_insecure_warning">The connection to this server isn\'t protected: anyone on your network can see or change the anisette data. Your Apple ID password never goes through it.</string>
 </resources>

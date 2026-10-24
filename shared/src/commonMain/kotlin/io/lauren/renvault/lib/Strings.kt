@@ -107,6 +107,13 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val anisetteInsecureWarning: String
+    val anisetteDefaultDesc: String
+    val anisetteCustom: String
+    val anisetteChecking: String
+    val anisetteUnreachable: String
+    val anisetteInsecure: String
+    fun anisetteLatency(ms: String): String
     val resetForgot: String
     val resetTitle: String
     val resetIcloud: String
@@ -147,7 +154,6 @@ interface RvStrings {
     val anisetteDesc: String
     val anisettePlaceholder: String
     val anisetteDefault: String
-    val anisetteReset: String
     val anisetteInvalid: String
     val anisetteNote: String
     val websitesTitle: String

@@ -1,13 +1,21 @@
 package vault
 
 import (
+	"cmp"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptrace"
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/Laky-64/appleservices/anisette"
 )
@@ -76,4 +84,63 @@ func (v *Vault) SetAnisetteServer(raw string) error {
 	}
 	v.sess.SetAnisetteServer(server)
 	return nil
+}
+
+type AnisetteServer struct {
+	Name      string
+	Address   string
+	Latency   time.Duration
+	Reachable bool
+}
+
+func (v *Vault) AnisetteServers(ctx context.Context) []AnisetteServer {
+	list := anisette.NewServerList(filepath.Join(v.base, "anisette-servers.json"), anisette.DefaultServerListURL).Servers()
+	out := make([]AnisetteServer, len(list))
+	client := &http.Client{Timeout: 5 * time.Second}
+	var wg sync.WaitGroup
+	for i, s := range list {
+		out[i] = AnisetteServer{Name: s.Name, Address: strings.TrimRight(s.Address, "/")}
+		wg.Go(func() {
+			out[i].Latency, out[i].Reachable = probeAnisette(ctx, client, out[i].Address)
+		})
+	}
+	wg.Wait()
+	slices.SortStableFunc(out, func(a, b AnisetteServer) int {
+		if a.Reachable != b.Reachable {
+			if a.Reachable {
+				return -1
+			}
+			return 1
+		}
+		if !a.Reachable {
+			return 0
+		}
+		if sa, sb := strings.HasPrefix(a.Address, "https://"), strings.HasPrefix(b.Address, "https://"); sa != sb {
+			if sa {
+				return -1
+			}
+			return 1
+		}
+		return cmp.Compare(a.Latency, b.Latency)
+	})
+	return out
+}
+
+func probeAnisette(ctx context.Context, client *http.Client, address string) (time.Duration, bool) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, address+"/v3/client_info", nil)
+	if err != nil {
+		return 0, false
+	}
+	var sent, answered time.Time
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), &httptrace.ClientTrace{
+		WroteRequest:         func(httptrace.WroteRequestInfo) { sent = time.Now() },
+		GotFirstResponseByte: func() { answered = time.Now() },
+	}))
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, false
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 64<<10))
+	return answered.Sub(sent), resp.StatusCode == http.StatusOK
 }
