@@ -102,7 +102,7 @@
     <string name="settings_auto_lock_never">Mai</string>
     <string name="settings_auto_lock_minute">1 minuto</string>
     <string name="settings_auto_lock_hour">1 ora</string>
-    <string name="settings_auto_lock_note">RenVault si blocca automaticamente dopo questo periodo di inattività. L\'archivio resta crittografato sul disco finché non lo sblocchi di nuovo.</string>
+    <string name="settings_auto_lock_note">Queste opzioni proteggono l\'archivio su questo dispositivo. Resta crittografato sul disco finché non lo sblocchi.</string>
     <string name="settings_lock_now">Blocca ora</string>
     <string name="settings_check_pwned">Verifica password compromesse</string>
     <string name="settings_about_title">Info</string>
@@ -370,4 +370,6 @@
     <string name="settings_clipboard">Svuota password copiate</string>
     <string name="settings_clipboard_after">Dopo %1$s</string>
     <string name="settings_seconds">%1$s secondi</string>
+    <string name="settings_screenshots">Blocca screenshot</string>
+    <string name="settings_screenshots_desc">Nasconde password e codici da screenshot, registrazioni dello schermo e app recenti</string>
 </resources>

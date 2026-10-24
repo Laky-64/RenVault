@@ -79,4 +79,5 @@ const (
 	OpPickImage uint32 = 0x3003
 	OpPickFile  uint32 = 0x3004
 	OpSaveFile  uint32 = 0x3005
+	OpSecure    uint32 = 0x3006
 )

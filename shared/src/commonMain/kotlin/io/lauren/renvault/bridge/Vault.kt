@@ -112,6 +112,8 @@ object Vault {
     suspend fun importCsv(data: ByteArray): ImportResult =
         exchange(Op.IMPORT_CSV, BackupRequest("", data))
 
+    suspend fun setSecure(on: Boolean) = send(Op.SECURE, SecureRequest(on))
+
     suspend fun syncPeers() = send(Op.PEERS_SYNC)
 
     suspend fun netInfo(): NetInfo = receive(Op.NET_INFO)

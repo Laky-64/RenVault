@@ -374,3 +374,6 @@ data class QuickState(
     override fun equals(other: Any?) = this === other
     override fun hashCode() = method.hashCode()
 }
+
+@Serializable
+internal data class SecureRequest(@SerialName("on") val on: Boolean)

@@ -414,3 +414,7 @@ type anisetteEntry struct {
 	LatencyMs int64  `cbor:"latency_ms"`
 	Reachable bool   `cbor:"reachable"`
 }
+
+type secureRequest struct {
+	On bool `cbor:"on"`
+}

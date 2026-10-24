@@ -52,6 +52,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
+import io.lauren.renvault.lib.RvScreenshots
+import io.lauren.renvault.lib.screenshotBlockSupported
 import io.lauren.renvault.lib.clipboardClearSeconds
 import io.lauren.renvault.lib.rememberAutofillSetup
 import io.lauren.renvault.lib.setClipboardClearSeconds
@@ -447,10 +449,11 @@ private fun RootPage(
             item {
                 RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
                     val quick = if (state.quickLabel.isNotEmpty()) 1 else 0
+                    val shots = if (screenshotBlockSupported) 1 else 0
                     if (quick == 1) {
                         RvSegment(
                             index = 0,
-                            count = 4 + quick,
+                            count = 4 + quick + shots,
                             onClick = {
                                 if (!quickBusy) {
                                     scope.launch {
@@ -476,7 +479,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = quick,
-                        count = 4 + quick,
+                        count = 4 + quick + shots,
                         onClick = { lockOpen = true },
                         leading = { SettingBadge(RvTimerIcon, accents.teal) },
                         supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
@@ -485,7 +488,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 1 + quick,
-                        count = 4 + quick,
+                        count = 4 + quick + shots,
                         onClick = onLockNow,
                         leading = { SettingBadge(RvLockIcon, accents.yellow) },
                     ) {
@@ -493,7 +496,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 2 + quick,
-                        count = 4 + quick,
+                        count = 4 + quick + shots,
                         onClick = checkPwned,
                         leading = {
                             if (checking) {
@@ -508,7 +511,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 3 + quick,
-                        count = 4 + quick,
+                        count = 4 + quick + shots,
                         onClick = { clipboardOpen = true },
                         leading = { SettingBadge(RvCopyIcon, accents.blue) },
                         supporting = {
@@ -522,6 +525,18 @@ private fun RootPage(
                         },
                     ) {
                         Text(strings.settingsClipboard)
+                    }
+                    if (shots == 1) {
+                        RvSegment(
+                            index = 4 + quick,
+                            count = 4 + quick + shots,
+                            onClick = { RvScreenshots.setBlocked(!RvScreenshots.blocked) },
+                            leading = { SettingBadge(RvVisibilityOffIcon, accents.red) },
+                            supporting = { Text(strings.settingsScreenshotsDesc) },
+                            trailing = { Switch(checked = RvScreenshots.blocked, onCheckedChange = null) },
+                        ) {
+                            Text(strings.settingsScreenshots)
+                        }
                     }
                 }
             }

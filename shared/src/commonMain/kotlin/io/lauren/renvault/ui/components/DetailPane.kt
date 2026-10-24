@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.DeletedDays
 import io.lauren.renvault.lib.RvDetailField
 import io.lauren.renvault.lib.RvDraft
@@ -107,6 +108,7 @@ fun RvDetailPane(
         Placeholder(zone = zone, strings = strings, modifier = modifier)
         return
     }
+    RvSecureScreen()
 
     val names = LocalNameMask.current
     val hidden = remember(item, names) { hidesName(item, names) } && LocalNameNotice.current

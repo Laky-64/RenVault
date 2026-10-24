@@ -82,6 +82,8 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_screenshots
+import io.lauren.renvault.resources.settings_screenshots_desc
 import io.lauren.renvault.resources.settings_clipboard
 import io.lauren.renvault.resources.settings_clipboard_after
 import io.lauren.renvault.resources.settings_seconds
@@ -350,6 +352,8 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_screenshots,
+    Res.string.settings_screenshots_desc,
     Res.string.settings_clipboard,
     Res.string.settings_clipboard_after,
     Res.string.settings_seconds,
@@ -788,6 +792,8 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsScreenshots: String get() = text(Res.string.settings_screenshots)
+    override val settingsScreenshotsDesc: String get() = text(Res.string.settings_screenshots_desc)
     override val settingsClipboard: String get() = text(Res.string.settings_clipboard)
     override fun settingsClipboardAfter(time: String): String = text(Res.string.settings_clipboard_after, time)
     override fun settingsSeconds(count: String): String = text(Res.string.settings_seconds, count)

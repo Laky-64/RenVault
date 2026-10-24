@@ -68,6 +68,7 @@ internal object Op {
     const val PICK_IMAGE = 0x3003
     const val PICK_FILE = 0x3004
     const val SAVE_FILE = 0x3005
+    const val SECURE = 0x3006
 }
 
 internal object FailureKind {

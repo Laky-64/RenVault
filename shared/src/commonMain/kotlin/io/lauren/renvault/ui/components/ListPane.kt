@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvItem
 import io.lauren.renvault.lib.RvItemIcon
 import io.lauren.renvault.lib.RvSecretSource
@@ -90,6 +91,7 @@ fun RvListPane(
     canDeleteSelected: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    if (zone.kind == RvZoneKind.Codes) RvSecureScreen()
     val text = strings.zoneText(zone.kind, zone.items.isEmpty())
     val past by listState.scrolledPast()
     val scrolled = past || items.isEmpty()

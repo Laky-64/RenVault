@@ -6,6 +6,7 @@ import (
 
 	"github.com/Laky-64/renvault-core/bridge"
 	"github.com/Laky-64/renvault-core/portal"
+	"github.com/Laky-64/renvault-core/screen"
 )
 
 func installBackup() {
@@ -42,6 +43,14 @@ func installBackup() {
 			return bytesResponse{}, bridge.Fail(bridge.KindBadOp, err.Error())
 		}
 		return bytesResponse{Data: data}, err
+	})
+
+	command(bridge.OpSecure, func(_ context.Context, request secureRequest) error {
+		err := screen.SetSecure(request.On)
+		if errors.Is(err, screen.ErrUnsupported) {
+			return bridge.Fail(bridge.KindBadOp, err.Error())
+		}
+		return err
 	})
 
 	handle(bridge.OpSaveFile, func(ctx context.Context, request saveFileRequest) (savedResponse, error) {

@@ -158,7 +158,7 @@
     <string name="settings_auto_lock_never">Never</string>
     <string name="settings_auto_lock_minute">1 minute</string>
     <string name="settings_auto_lock_hour">1 hour</string>
-    <string name="settings_auto_lock_note">RenVault locks itself after this long without activity. Your vault stays encrypted on disk until you unlock it again.</string>
+    <string name="settings_auto_lock_note">These options protect your vault on this device. It stays encrypted on disk until you unlock it.</string>
     <string name="settings_lock_now">Lock Now</string>
     <string name="settings_check_pwned">Check for Compromised Passwords</string>
     <string name="settings_about_title">About</string>
@@ -375,4 +375,6 @@
     <string name="settings_clipboard">Clear copied passwords</string>
     <string name="settings_clipboard_after">After %1$s</string>
     <string name="settings_seconds">%1$s seconds</string>
+    <string name="settings_screenshots">Block screenshots</string>
+    <string name="settings_screenshots_desc">Hides passwords and codes from screenshots, screen recordings and recent apps</string>
 </resources>

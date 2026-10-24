@@ -35,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
@@ -236,6 +237,7 @@ fun RvNewPasswordSheet(
     onSave: (RvEditorDraft) -> Unit,
 ) {
     if (!open) return
+    RvSecureScreen()
 
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
