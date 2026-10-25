@@ -107,6 +107,8 @@ interface RvStrings {
     val settingsOpenLabel: String
     val cancel: String
     val settingsChannelStable: String
+    val settingsAutofillTotp: String
+    val settingsAutofillTotpDesc: String
     val settingsAutofillStyle: String
     val settingsAutofillInline: String
     val settingsAutofillPopup: String

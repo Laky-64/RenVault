@@ -82,6 +82,8 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.settings_autofill_totp
+import io.lauren.renvault.resources.settings_autofill_totp_desc
 import io.lauren.renvault.resources.settings_autofill_style
 import io.lauren.renvault.resources.settings_autofill_inline
 import io.lauren.renvault.resources.settings_autofill_popup
@@ -357,6 +359,8 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.settings_autofill_totp,
+    Res.string.settings_autofill_totp_desc,
     Res.string.settings_autofill_style,
     Res.string.settings_autofill_inline,
     Res.string.settings_autofill_popup,
@@ -802,6 +806,8 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val settingsAutofillTotp: String get() = text(Res.string.settings_autofill_totp)
+    override val settingsAutofillTotpDesc: String get() = text(Res.string.settings_autofill_totp_desc)
     override val settingsAutofillStyle: String get() = text(Res.string.settings_autofill_style)
     override val settingsAutofillInline: String get() = text(Res.string.settings_autofill_inline)
     override val settingsAutofillPopup: String get() = text(Res.string.settings_autofill_popup)

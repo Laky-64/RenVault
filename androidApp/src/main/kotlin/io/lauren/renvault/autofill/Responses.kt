@@ -21,6 +21,7 @@ import androidx.annotation.RequiresApi
 import io.lauren.renvault.R
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.bridge.WebEntry
+import io.lauren.renvault.lib.autofillCopyTotp
 
 private const val MaxDatasets = 8
 
@@ -30,6 +31,7 @@ internal const val ExtraDomain = "io.lauren.renvault.autofill.DOMAIN"
 internal const val ExtraPackage = "io.lauren.renvault.autofill.PACKAGE"
 internal const val ExtraPick = "io.lauren.renvault.autofill.PICK"
 internal const val ExtraInline = "io.lauren.renvault.autofill.INLINE"
+internal const val ExtraEntry = "io.lauren.renvault.autofill.ENTRY"
 
 internal fun presentation(context: Context, title: String, detail: String = ""): RemoteViews =
     RemoteViews(context.packageName, R.layout.autofill_item).apply {
@@ -53,16 +55,34 @@ internal fun authSender(context: Context, form: Form, pick: Boolean): IntentSend
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
+private fun totpSender(context: Context, form: Form, entry: String): IntentSender {
+    val intent = Intent(context, AutofillTotpActivity::class.java)
+        .putExtra(ExtraUsername, form.username)
+        .putExtra(ExtraPassword, form.password)
+        .putExtra(ExtraDomain, form.webDomain)
+        .putExtra(ExtraPackage, form.packageName)
+        .putExtra(ExtraEntry, entry)
+    val flags = PendingIntent.FLAG_CANCEL_CURRENT or
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0)
+    return PendingIntent.getActivity(context, 1000 + (entry.hashCode() and 0xFFFF), intent, flags).intentSender
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Suppress("DEPRECATION")
-internal suspend fun datasetOf(context: Context, form: Form, entry: WebEntry, slot: Int = 0): Dataset {
+internal suspend fun datasetOf(context: Context, form: Form, entry: WebEntry, slot: Int = 0, deferTotp: Boolean = true): Dataset {
     val title = entry.title.ifEmpty { entry.domain }
     val views = presentation(context, title, entry.username)
     val builder = Dataset.Builder(views)
+    val chip = inlineOf(context, form, slot, title, entry.username)
+    if (deferTotp && entry.hasTotp && autofillCopyTotp()) {
+        form.ids.forEach { id -> builder.setField(id, null, views, chip) }
+        builder.setAuthentication(totpSender(context, form, entry.id))
+        return builder.build()
+    }
     val values = listOfNotNull(
         form.username?.let { it to AutofillValue.forText(entry.username) },
         form.password?.let { it to AutofillValue.forText(Vault.password(entry.id)) },
     )
-    val chip = inlineOf(context, form, slot, title, entry.username)
     values.forEach { (id, value) -> builder.setField(id, value, views, chip) }
     return builder.build()
 }

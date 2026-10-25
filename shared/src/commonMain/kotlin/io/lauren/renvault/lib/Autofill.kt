@@ -10,5 +10,11 @@ fun autofillInline(): Boolean = readPreference(InlineKey) != "off"
 
 fun setAutofillInline(on: Boolean) = writePreference(InlineKey, if (on) "on" else "off")
 
+private const val CopyTotpKey = "autofill_copy_totp"
+
+fun autofillCopyTotp(): Boolean = readPreference(CopyTotpKey) == "on"
+
+fun setAutofillCopyTotp(on: Boolean) = writePreference(CopyTotpKey, if (on) "on" else "off")
+
 @Composable
 expect fun rememberAutofillSetup(): RvAutofillSetup?

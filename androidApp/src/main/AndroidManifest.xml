@@ -30,6 +30,12 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:theme="@style/Theme.RenVault.Autofill" />
+        <activity
+            android:name=".autofill.AutofillTotpActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:theme="@style/Theme.RenVault.Autofill" />
         <service
             android:name=".autofill.RvAutofillService"
             android:exported="true"

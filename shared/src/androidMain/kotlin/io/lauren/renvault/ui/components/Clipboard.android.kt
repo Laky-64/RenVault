@@ -3,6 +3,7 @@ package io.lauren.renvault.ui.components
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
+import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -19,25 +20,22 @@ private val clearer = Handler(Looper.getMainLooper())
 @Composable
 actual fun rememberClipboardCopy(): (text: String, sensitive: Boolean) -> Unit {
     val context = LocalContext.current
+    return remember(context) { { text, sensitive -> copyToClipboard(context, text, sensitive) } }
+}
 
-    return remember(context) {
-        { text, sensitive ->
-            val clipboard = context.getSystemService<ClipboardManager>()
-            if (clipboard != null) {
-                val label = "RenVault ${Random.nextLong()}"
-                val clip = ClipData.newPlainText(label, text)
-                if (sensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    clip.description.extras = PersistableBundle().apply {
-                        putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
-                    }
-                }
-                clipboard.setPrimaryClip(clip)
-                val delay = clipboardClearSeconds() * 1000L
-                if (sensitive && delay > 0) {
-                    clearer.postDelayed({ clearIfOurs(clipboard, label) }, delay)
-                }
-            }
+fun copyToClipboard(context: Context, text: String, sensitive: Boolean) {
+    val clipboard = context.getSystemService<ClipboardManager>() ?: return
+    val label = "RenVault ${Random.nextLong()}"
+    val clip = ClipData.newPlainText(label, text)
+    if (sensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true)
         }
+    }
+    clipboard.setPrimaryClip(clip)
+    val delay = clipboardClearSeconds() * 1000L
+    if (sensitive && delay > 0) {
+        clearer.postDelayed({ clearIfOurs(clipboard, label) }, delay)
     }
 }
 

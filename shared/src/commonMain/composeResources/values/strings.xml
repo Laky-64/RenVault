@@ -382,4 +382,6 @@
     <string name="settings_autofill_style">Suggestions</string>
     <string name="settings_autofill_inline">In the keyboard</string>
     <string name="settings_autofill_popup">Below the field</string>
+    <string name="settings_autofill_totp">Copy 2FA code</string>
+    <string name="settings_autofill_totp_desc">After autofill, the 2FA code is copied to the clipboard</string>
 </resources>

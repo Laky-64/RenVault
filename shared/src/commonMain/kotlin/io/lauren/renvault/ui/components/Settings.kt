@@ -55,8 +55,10 @@ import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
 import io.lauren.renvault.lib.screenshotBlockSupported
 import io.lauren.renvault.lib.clipboardClearSeconds
+import io.lauren.renvault.lib.autofillCopyTotp
 import io.lauren.renvault.lib.autofillInline
 import io.lauren.renvault.lib.rememberAutofillSetup
+import io.lauren.renvault.lib.setAutofillCopyTotp
 import io.lauren.renvault.lib.setAutofillInline
 import io.lauren.renvault.lib.setClipboardClearSeconds
 import io.lauren.renvault.lib.RvNameSwap
@@ -228,6 +230,7 @@ private fun RootPage(
     var clipboardOpen by remember { mutableStateOf(false) }
     var autofillStyleOpen by remember { mutableStateOf(false) }
     var inlineFill by remember { mutableStateOf(autofillInline()) }
+    var copyTotp by remember { mutableStateOf(autofillCopyTotp()) }
     var clipboardClear by remember { mutableIntStateOf(clipboardClearSeconds()) }
     val accents = RenVault.accents
     val list = rememberLazyListState()
@@ -390,8 +393,9 @@ private fun RootPage(
 
             item {
                 RvSection(title = strings.settingsGeneralTitle) {
-                    val styled = autofill != null && autofill.enabled && autofill.inlineSupported
-                    val fill = (if (autofill != null) 1 else 0) + (if (styled) 1 else 0)
+                    val active = autofill != null && autofill.enabled
+                    val styled = active && autofill.inlineSupported
+                    val fill = (if (autofill != null) 1 else 0) + (if (styled) 1 else 0) + (if (active) 1 else 0)
                     RvSegment(
                         index = 0,
                         count = 3 + fill,
@@ -423,6 +427,21 @@ private fun RootPage(
                             supporting = { Text(if (inlineFill) strings.settingsAutofillInline else strings.settingsAutofillPopup) },
                         ) {
                             Text(strings.settingsAutofillStyle)
+                        }
+                    }
+                    if (active) {
+                        RvSegment(
+                            index = if (styled) 3 else 2,
+                            count = 3 + fill,
+                            onClick = {
+                                copyTotp = !copyTotp
+                                setAutofillCopyTotp(copyTotp)
+                            },
+                            leading = { SettingBadge(RvCodesIcon, accents.yellow) },
+                            supporting = { Text(strings.settingsAutofillTotpDesc) },
+                            trailing = { Switch(checked = copyTotp, onCheckedChange = null) },
+                        ) {
+                            Text(strings.settingsAutofillTotp)
                         }
                     }
                     RvSegment(

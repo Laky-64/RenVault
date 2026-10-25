@@ -377,4 +377,6 @@
     <string name="settings_autofill_style">Suggerimenti</string>
     <string name="settings_autofill_inline">Nella tastiera</string>
     <string name="settings_autofill_popup">Sotto il campo</string>
+    <string name="settings_autofill_totp">Copia codice 2FA</string>
+    <string name="settings_autofill_totp_desc">Dopo la compilazione automatica il codice 2FA viene copiato negli appunti</string>
 </resources>

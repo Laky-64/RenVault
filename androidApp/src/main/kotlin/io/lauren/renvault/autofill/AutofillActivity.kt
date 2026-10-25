@@ -40,6 +40,8 @@ import io.lauren.renvault.RvUnlockGate
 import io.lauren.renvault.bridge.PlatformStorage
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.bridge.WebEntry
+import io.lauren.renvault.lib.autofillCopyTotp
+import io.lauren.renvault.ui.components.copyToClipboard
 import io.lauren.renvault.ui.components.RvSearchIcon
 import io.lauren.renvault.ui.components.RvSegment
 import io.lauren.renvault.ui.components.RvTextField
@@ -98,7 +100,13 @@ class AutofillActivity : FragmentActivity() {
         if (finishing) return
         finishing = true
         lifecycleScope.launch {
-            finishWith(datasetOf(this@AutofillActivity, form, entry))
+            val dataset = datasetOf(this@AutofillActivity, form, entry, deferTotp = false)
+            if (entry.hasTotp && autofillCopyTotp()) {
+                runCatching { Vault.totp(entry.id) }.getOrNull()?.takeIf { it.isNotEmpty() }?.let {
+                    copyToClipboard(this@AutofillActivity, it, sensitive = true)
+                }
+            }
+            finishWith(dataset)
         }
     }
 
@@ -109,7 +117,7 @@ class AutofillActivity : FragmentActivity() {
 }
 
 @Suppress("DEPRECATION")
-private inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
+internal inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) getParcelableExtra(key, T::class.java) else getParcelableExtra(key)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
