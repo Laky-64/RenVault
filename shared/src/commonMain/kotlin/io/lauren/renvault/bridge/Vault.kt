@@ -114,6 +114,9 @@ object Vault {
 
     suspend fun setSecure(on: Boolean) = send(Op.SECURE, SecureRequest(on))
 
+    suspend fun setTitleBar(dark: Boolean, caption: Int, text: Int) =
+        send(Op.TITLE_BAR, TitleBarRequest(dark, caption, text))
+
     suspend fun syncPeers() = send(Op.PEERS_SYNC)
 
     suspend fun netInfo(): NetInfo = receive(Op.NET_INFO)

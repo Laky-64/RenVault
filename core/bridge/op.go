@@ -80,4 +80,5 @@ const (
 	OpPickFile  uint32 = 0x3004
 	OpSaveFile  uint32 = 0x3005
 	OpSecure    uint32 = 0x3006
+	OpTitleBar  uint32 = 0x3007
 )

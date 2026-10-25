@@ -377,3 +377,10 @@ data class QuickState(
 
 @Serializable
 internal data class SecureRequest(@SerialName("on") val on: Boolean)
+
+@Serializable
+internal data class TitleBarRequest(
+    @SerialName("dark") val dark: Boolean,
+    @SerialName("caption") val caption: Int,
+    @SerialName("text") val text: Int,
+)

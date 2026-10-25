@@ -15,7 +15,6 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
-    implementation(libs.jbr.api)
 }
 
 val runtime = javaToolchains.launcherFor {

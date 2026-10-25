@@ -92,7 +92,6 @@ fun RvVaultApp(
     title: String = stringResource(Res.string.app_name),
     version: String = RvAppVersion,
     strings: RvStrings = LocalStrings.current,
-    titleBar: @Composable (() -> Unit)? = null,
     onOpenUrl: ((String) -> Unit)? = null,
 ) {
     val links = LocalUriHandler.current
@@ -385,7 +384,6 @@ fun RvVaultApp(
         RvVaultShell(
             authenticated = unlocked,
             modifier = modifier.fillMaxSize(),
-            titleBar = titleBar,
             auth = {
                 if (!ready) return@RvVaultShell
                 RvAuthFlow(

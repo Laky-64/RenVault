@@ -2,11 +2,7 @@
 
 package screen
 
-import (
-	"syscall"
-
-	"golang.org/x/sys/windows"
-)
+import "golang.org/x/sys/windows"
 
 const (
 	wdaNone               = 0x00
@@ -26,21 +22,14 @@ func SetSecure(on bool) error {
 	if !Supported() {
 		return ErrUnsupported
 	}
-	pid := windows.GetCurrentProcessId()
 	affinity := uintptr(wdaNone)
 	if on {
 		affinity = wdaExcludeFromCapture
 	}
-	callback := syscall.NewCallback(func(hwnd, _ uintptr) uintptr {
-		var owner uint32
-		if _, err := windows.GetWindowThreadProcessId(windows.HWND(hwnd), &owner); err != nil || owner != pid {
-			return 1
-		}
+	eachWindow(func(hwnd uintptr) {
 		if ok, _, _ := procSetWindowDisplayAffinity.Call(hwnd, affinity); ok == 0 && on {
 			procSetWindowDisplayAffinity.Call(hwnd, wdaMonitor)
 		}
-		return 1
 	})
-	procEnumWindows.Call(callback, 0)
 	return nil
 }

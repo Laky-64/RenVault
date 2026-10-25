@@ -418,3 +418,9 @@ type anisetteEntry struct {
 type secureRequest struct {
 	On bool `cbor:"on"`
 }
+
+type titleBarRequest struct {
+	Dark    bool   `cbor:"dark"`
+	Caption uint32 `cbor:"caption"`
+	Text    uint32 `cbor:"text"`
+}

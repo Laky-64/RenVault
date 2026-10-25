@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 fun RvVaultShell(
     authenticated: Boolean,
     modifier: Modifier = Modifier,
-    titleBar: @Composable (() -> Unit)? = null,
     auth: @Composable () -> Unit = {},
     home: @Composable () -> Unit = {},
 ) {
@@ -29,8 +28,6 @@ fun RvVaultShell(
 
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Column(modifier = Modifier.fillMaxSize()) {
-            titleBar?.invoke()
-
             AnimatedContent(
                 targetState = authenticated,
                 modifier = Modifier.weight(1f).fillMaxSize(),

@@ -45,6 +45,14 @@ func installBackup() {
 		return bytesResponse{Data: data}, err
 	})
 
+	command(bridge.OpTitleBar, func(_ context.Context, request titleBarRequest) error {
+		err := screen.SetTitleBar(request.Dark, request.Caption, request.Text)
+		if errors.Is(err, screen.ErrUnsupported) {
+			return nil
+		}
+		return err
+	})
+
 	command(bridge.OpSecure, func(_ context.Context, request secureRequest) error {
 		err := screen.SetSecure(request.On)
 		if errors.Is(err, screen.ErrUnsupported) {
