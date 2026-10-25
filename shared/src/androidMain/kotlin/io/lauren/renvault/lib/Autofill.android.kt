@@ -24,7 +24,7 @@ actual fun rememberAutofillSetup(): RvAutofillSetup? {
         enabled = manager.hasEnabledAutofillServices()
         onPauseOrDispose {}
     }
-    return RvAutofillSetup(enabled) { on ->
+    return RvAutofillSetup(enabled, Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { on ->
         if (on) {
             val intent = Intent(Settings.ACTION_REQUEST_SET_AUTOFILL_SERVICE)
                 .setData("package:${context.packageName}".toUri())

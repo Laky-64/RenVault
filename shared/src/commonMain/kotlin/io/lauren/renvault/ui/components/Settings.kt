@@ -55,7 +55,9 @@ import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
 import io.lauren.renvault.lib.screenshotBlockSupported
 import io.lauren.renvault.lib.clipboardClearSeconds
+import io.lauren.renvault.lib.autofillInline
 import io.lauren.renvault.lib.rememberAutofillSetup
+import io.lauren.renvault.lib.setAutofillInline
 import io.lauren.renvault.lib.setClipboardClearSeconds
 import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.lib.RvStrings
@@ -224,6 +226,8 @@ private fun RootPage(
     var checking by remember { mutableStateOf(false) }
     var quickBusy by remember { mutableStateOf(false) }
     var clipboardOpen by remember { mutableStateOf(false) }
+    var autofillStyleOpen by remember { mutableStateOf(false) }
+    var inlineFill by remember { mutableStateOf(autofillInline()) }
     var clipboardClear by remember { mutableIntStateOf(clipboardClearSeconds()) }
     val accents = RenVault.accents
     val list = rememberLazyListState()
@@ -386,7 +390,8 @@ private fun RootPage(
 
             item {
                 RvSection(title = strings.settingsGeneralTitle) {
-                    val fill = if (autofill != null) 1 else 0
+                    val styled = autofill != null && autofill.enabled && autofill.inlineSupported
+                    val fill = (if (autofill != null) 1 else 0) + (if (styled) 1 else 0)
                     RvSegment(
                         index = 0,
                         count = 3 + fill,
@@ -407,6 +412,17 @@ private fun RootPage(
                             trailing = { Switch(checked = setup.enabled, onCheckedChange = null) },
                         ) {
                             Text(strings.settingsAutofill)
+                        }
+                    }
+                    if (styled) {
+                        RvSegment(
+                            index = 2,
+                            count = 3 + fill,
+                            onClick = { autofillStyleOpen = true },
+                            leading = { SettingBadge(RvAutofillIcon, accents.teal) },
+                            supporting = { Text(if (inlineFill) strings.settingsAutofillInline else strings.settingsAutofillPopup) },
+                        ) {
+                            Text(strings.settingsAutofillStyle)
                         }
                     }
                     RvSegment(
@@ -652,6 +668,20 @@ private fun RootPage(
         label = { lockLabel(it, strings) },
         cancel = strings.cancel,
         onSelect = onAutoLock,
+    )
+
+    RvChoiceDialog(
+        open = autofillStyleOpen,
+        onOpenChange = { autofillStyleOpen = it },
+        title = strings.settingsAutofillStyle,
+        choices = listOf(true, false),
+        selected = inlineFill,
+        label = { if (it) strings.settingsAutofillInline else strings.settingsAutofillPopup },
+        cancel = strings.cancel,
+        onSelect = {
+            inlineFill = it
+            setAutofillInline(it)
+        },
     )
 
     RvChoiceDialog(

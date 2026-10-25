@@ -379,4 +379,7 @@
     <string name="settings_screenshots_desc">Hides passwords and codes from screenshots, screen recordings and recent apps</string>
     <string name="settings_privacy_title">Privacy</string>
     <string name="settings_auto_lock_immediate">Immediately</string>
+    <string name="settings_autofill_style">Suggestions</string>
+    <string name="settings_autofill_inline">In the keyboard</string>
+    <string name="settings_autofill_popup">Below the field</string>
 </resources>

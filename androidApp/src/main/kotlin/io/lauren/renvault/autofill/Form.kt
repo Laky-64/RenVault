@@ -2,6 +2,7 @@ package io.lauren.renvault.autofill
 
 import android.app.assist.AssistStructure
 import android.os.Build
+import android.os.Parcelable
 import android.text.InputType
 import android.view.View
 import android.view.autofill.AutofillId
@@ -14,6 +15,7 @@ internal class Form(
     val password: AutofillId?,
     val webDomain: String?,
     val packageName: String,
+    val inline: Parcelable? = null,
 ) {
     val ids: List<AutofillId> get() = listOfNotNull(username, password)
 }

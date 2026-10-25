@@ -58,6 +58,7 @@ class AutofillActivity : FragmentActivity() {
             password = intent.parcelable(ExtraPassword),
             webDomain = intent.getStringExtra(ExtraDomain),
             packageName = intent.getStringExtra(ExtraPackage).orEmpty(),
+            inline = intent.parcelable<Parcelable>(ExtraInline),
         )
         val pick = intent.getBooleanExtra(ExtraPick, false)
 
