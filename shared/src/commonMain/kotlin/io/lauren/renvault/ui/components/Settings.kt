@@ -88,6 +88,7 @@ data class RvSettingsState(
     val autoLockMinutes: Int = 5,
     val quickLabel: String = "",
     val quickOn: Boolean = false,
+    val quickCredential: Boolean? = null,
     val autoLockChoices: List<Int> = emptyList(),
     val pending: Int = 0,
     val syncedAt: Long = 0L,
@@ -123,6 +124,7 @@ fun RvSettingsScreen(
     devices: RvDeviceActions? = null,
     backup: RvBackupActions? = null,
     onQuick: suspend (Boolean) -> Unit = {},
+    onQuickCredential: suspend (Boolean) -> Unit = {},
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
@@ -171,6 +173,7 @@ fun RvSettingsScreen(
                 devices = devices,
                 backup = backup,
                 onQuick = onQuick,
+                onQuickCredential = onQuickCredential,
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -215,6 +218,7 @@ private fun RootPage(
     devices: RvDeviceActions?,
     backup: RvBackupActions?,
     onQuick: suspend (Boolean) -> Unit,
+    onQuickCredential: suspend (Boolean) -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -483,7 +487,8 @@ private fun RootPage(
 
             item {
                 RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
-                    val quick = if (state.quickLabel.isNotEmpty()) 1 else 0
+                    val credential = if (state.quickOn && state.quickCredential != null) 1 else 0
+                    val quick = (if (state.quickLabel.isNotEmpty()) 1 else 0) + credential
                     if (quick == 1) {
                         RvSegment(
                             index = 0,
@@ -509,6 +514,33 @@ private fun RootPage(
                             trailing = { Switch(checked = state.quickOn, onCheckedChange = null) },
                         ) {
                             Text(strings.quickUnlockWith(state.quickLabel))
+                        }
+                    }
+                    if (credential == 1) {
+                        RvSegment(
+                            index = 1,
+                            count = 3 + quick,
+                            onClick = {
+                                if (!quickBusy) {
+                                    scope.launch {
+                                        quickBusy = true
+                                        try {
+                                            onQuickCredential(state.quickCredential != true)
+                                        } catch (_: RvBiometricCancelled) {
+                                        } catch (_: Throwable) {
+                                            snackbar.currentSnackbarData?.dismiss()
+                                            snackbar.showSnackbar(strings.quickFailed)
+                                        }
+                                        quickBusy = false
+                                    }
+                                }
+                            },
+                            enabled = !quickBusy,
+                            leading = { SettingBadge(RvPinIcon, accents.orange) },
+                            supporting = { Text(strings.quickCredentialDesc) },
+                            trailing = { Switch(checked = state.quickCredential == true, onCheckedChange = null) },
+                        ) {
+                            Text(strings.quickCredential)
                         }
                     }
                     RvSegment(

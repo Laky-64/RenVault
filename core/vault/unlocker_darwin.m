@@ -11,11 +11,12 @@ int rv_touch_available(void) {
     return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] ? 1 : 0;
 }
 
-int rv_touch_verify(const char *reason) {
+int rv_touch_verify(const char *reason, int credential) {
     LAContext *context = [[LAContext alloc] init];
+    LAPolicy policy = credential ? LAPolicyDeviceOwnerAuthentication : LAPolicyDeviceOwnerAuthenticationWithBiometrics;
     dispatch_semaphore_t done = dispatch_semaphore_create(0);
     __block int result = 2;
-    [context evaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics
+    [context evaluatePolicy:policy
             localizedReason:[NSString stringWithUTF8String:reason]
                       reply:^(BOOL success, NSError *error) {
         if (success) {

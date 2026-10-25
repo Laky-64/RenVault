@@ -28,6 +28,8 @@ import io.lauren.renvault.lib.RvHideFromRecents
 import io.lauren.renvault.lib.RvLan
 import io.lauren.renvault.lib.RvLeaveSignal
 import io.lauren.renvault.lib.RvLockGuard
+import io.lauren.renvault.lib.quickCredential
+import io.lauren.renvault.lib.setQuickCredential
 import io.lauren.renvault.lib.leaveEvent
 import io.lauren.renvault.lib.quickKey
 import io.lauren.renvault.lib.rememberBiometrics
@@ -122,6 +124,12 @@ fun RvVaultApp(
     val biometrics = rememberBiometrics()
     var quick by remember { mutableStateOf(QuickState()) }
     val quickMethod = biometrics?.takeIf { it.available() }?.method ?: quick.methods.firstOrNull()
+    val credentialSupported = when (quickMethod) {
+        null -> false
+        biometrics?.method -> biometrics.credentialSupported
+        else -> quickMethod == TouchIdMethod
+    }
+    var credential by remember { mutableStateOf(quickCredential()) }
 
     val icons = remember { mutableStateMapOf<String, Painter?>() }
     val wanted = remember { mutableStateListOf<String>() }
@@ -367,10 +375,23 @@ fun RvVaultApp(
             }
             quickMethod != null -> {
                 RvLockGuard.expectLeave()
-                nativeQuick { Vault.enableQuick(quickMethod) }
+                nativeQuick { Vault.enableQuick(quickMethod, credential = credential && credentialSupported) }
             }
         }
         loadQuick()
+    }
+
+    val setCredential: suspend (Boolean) -> Unit = { on ->
+        setQuickCredential(on)
+        credential = on
+        try {
+            setQuick(true)
+        } catch (failure: Throwable) {
+            setQuickCredential(!on)
+            credential = !on
+            if (quickMethod == biometrics?.method) runCatching { setQuick(false) }
+            throw failure
+        }
     }
 
     val linked = remember(web, passkeys) { linkItems(web, passkeys) }
@@ -470,6 +491,7 @@ fun RvVaultApp(
                                 autoLockMinutes = settings.autoLockMinutes,
                                 quickLabel = quickMethod?.let { quickLabel(it, strings) }.orEmpty(),
                                 quickOn = quick.method.isNotEmpty(),
+                                quickCredential = credential.takeIf { credentialSupported },
                                 autoLockChoices = choices,
                                 pending = sync.pending,
                                 syncedAt = sync.syncedAt,
@@ -538,6 +560,7 @@ fun RvVaultApp(
                         devices = if (profile.local) deviceActions else null,
                         backup = backupActions,
                         onQuick = setQuick,
+                        onQuickCredential = setCredential,
                         onSignOut = {
                                 scope.launch {
                                     leaving = true

@@ -63,7 +63,7 @@ func (helloUnlocker) Available() bool {
 	return ok
 }
 
-func (helloUnlocker) Protect(k []byte) ([]byte, error) {
+func (helloUnlocker) Protect(k []byte, _ bool) ([]byte, error) {
 	if err := helloVerify(); err != nil {
 		return nil, err
 	}

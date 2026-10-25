@@ -395,9 +395,10 @@ func bottleEntriesOf(items []apple.BottleInfo) []bottleEntry {
 }
 
 type quickRequest struct {
-	Method string `cbor:"method"`
-	Key    []byte `cbor:"key"`
-	Sealed []byte `cbor:"sealed"`
+	Method     string `cbor:"method"`
+	Key        []byte `cbor:"key"`
+	Sealed     []byte `cbor:"sealed"`
+	Credential bool   `cbor:"credential"`
 }
 
 type quickStateResponse struct {

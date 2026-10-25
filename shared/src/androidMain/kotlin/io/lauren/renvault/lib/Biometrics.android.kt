@@ -6,6 +6,7 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -34,6 +35,11 @@ actual fun rememberBiometrics(): RvBiometrics? {
 private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiometrics {
     override val method = "android-biometric"
 
+    override val credentialSupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            BiometricManager.from(activity).canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL) ==
+            BiometricManager.BIOMETRIC_SUCCESS
+
     override fun available(): Boolean =
         BiometricManager.from(activity).canAuthenticate(BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
 
@@ -41,7 +47,8 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
 
     override suspend fun seal(key: ByteArray, title: String, cancel: String): ByteArray {
         forget()
-        val cipher = Cipher.getInstance(Transformation).apply { init(Cipher.ENCRYPT_MODE, createKey()) }
+        val credential = quickCredential() && credentialSupported
+        val cipher = Cipher.getInstance(Transformation).apply { init(Cipher.ENCRYPT_MODE, createKey(credential)) }
         val ready = prompt(cipher, title, cancel)
         return ready.iv + ready.doFinal(key)
     }
@@ -80,10 +87,17 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
                     }
                 },
             )
+            val credential = quickCredential() && credentialSupported
             val info = BiometricPrompt.PromptInfo.Builder()
                 .setTitle(title)
-                .setNegativeButtonText(cancel)
-                .setAllowedAuthenticators(BIOMETRIC_STRONG)
+                .apply {
+                    if (credential) {
+                        setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+                    } else {
+                        setAllowedAuthenticators(BIOMETRIC_STRONG)
+                        setNegativeButtonText(cancel)
+                    }
+                }
                 .build()
             RvLockGuard.expectLeave()
             prompt.authenticate(info, BiometricPrompt.CryptoObject(cipher))
@@ -94,7 +108,7 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
 
     private fun storedKey(): SecretKey? = keyStore().getKey(KeyAlias, null) as? SecretKey
 
-    private fun createKey(): SecretKey {
+    private fun createKey(credential: Boolean): SecretKey {
         val spec = KeyGenParameterSpec.Builder(KeyAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
             .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
             .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
@@ -103,7 +117,12 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
             .setInvalidatedByBiometricEnrollment(true)
             .apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    setUserAuthenticationParameters(0, KeyProperties.AUTH_BIOMETRIC_STRONG)
+                    val types = if (credential) {
+                        KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL
+                    } else {
+                        KeyProperties.AUTH_BIOMETRIC_STRONG
+                    }
+                    setUserAuthenticationParameters(0, types)
                 }
             }
             .build()

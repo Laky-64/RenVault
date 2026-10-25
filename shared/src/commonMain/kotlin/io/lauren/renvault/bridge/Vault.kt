@@ -48,8 +48,12 @@ object Vault {
 
     suspend fun quickState(): QuickState = receive(Op.QUICK_STATE)
 
-    suspend fun enableQuick(method: String, key: ByteArray = ByteArray(0), sealed: ByteArray = ByteArray(0)) =
-        send(Op.QUICK_ENABLE, QuickRequest(method, key, sealed))
+    suspend fun enableQuick(
+        method: String,
+        key: ByteArray = ByteArray(0),
+        sealed: ByteArray = ByteArray(0),
+        credential: Boolean = false,
+    ) = send(Op.QUICK_ENABLE, QuickRequest(method, key, sealed, credential))
 
     suspend fun disableQuick() = send(Op.QUICK_DISABLE)
 

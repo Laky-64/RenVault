@@ -384,4 +384,6 @@
     <string name="settings_autofill_popup">Below the field</string>
     <string name="settings_autofill_totp">Copy 2FA code</string>
     <string name="settings_autofill_totp_desc">After autofill, the 2FA code is copied to the clipboard</string>
+    <string name="quick_credential">Unlock with screen lock too</string>
+    <string name="quick_credential_desc">Use your PIN, pattern or password when biometrics don\'t work</string>
 </resources>

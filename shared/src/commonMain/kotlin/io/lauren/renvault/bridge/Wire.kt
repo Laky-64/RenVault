@@ -358,6 +358,7 @@ internal data class QuickRequest(
     @SerialName("method") val method: String,
     @ByteString @SerialName("key") val key: ByteArray = ByteArray(0),
     @ByteString @SerialName("sealed") val sealed: ByteArray = ByteArray(0),
+    @SerialName("credential") val credential: Boolean = false,
 ) {
     override fun equals(other: Any?) = this === other
     override fun hashCode() = key.contentHashCode()

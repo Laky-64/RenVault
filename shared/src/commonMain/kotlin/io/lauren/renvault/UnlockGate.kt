@@ -73,10 +73,12 @@ internal fun rememberQuickUnlock(strings: RvStrings, biometrics: RvBiometrics?):
         }
     }
 
+internal const val TouchIdMethod = "touch-id"
+
 internal fun quickLabel(method: String, strings: RvStrings): String = when (method) {
     "android-biometric" -> strings.quickBiometrics
     "windows-hello" -> "Windows Hello"
-    "touch-id" -> "Touch ID"
+    TouchIdMethod -> "Touch ID"
     else -> ""
 }
 

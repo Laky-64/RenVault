@@ -29,7 +29,7 @@ func installQuick() {
 		if err != nil {
 			return err
 		}
-		return cancelled(active.EnableQuick(request.Method, request.Key, request.Sealed))
+		return cancelled(active.EnableQuick(request.Method, request.Key, request.Sealed, request.Credential))
 	})
 
 	trigger(bridge.OpQuickDisable, func(context.Context) error {

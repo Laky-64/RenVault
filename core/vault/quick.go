@@ -61,7 +61,7 @@ func (v *Vault) QuickState() (QuickState, error) {
 	return QuickState{Method: w.Method, Sealed: w.Sealed, Ready: !expired, Expired: expired}, nil
 }
 
-func (v *Vault) EnableQuick(method string, q, sealed []byte) error {
+func (v *Vault) EnableQuick(method string, q, sealed []byte, credential bool) error {
 	if method == "" || method == methodPassword {
 		return errQuickMethod
 	}
@@ -75,7 +75,7 @@ func (v *Vault) EnableQuick(method string, q, sealed []byte) error {
 			return err
 		}
 		defer zero(fresh)
-		if sealed, err = u.Protect(fresh); err != nil {
+		if sealed, err = u.Protect(fresh, credential); err != nil {
 			return err
 		}
 		q = fresh

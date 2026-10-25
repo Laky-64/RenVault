@@ -82,6 +82,8 @@ import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_channel_stable
+import io.lauren.renvault.resources.quick_credential
+import io.lauren.renvault.resources.quick_credential_desc
 import io.lauren.renvault.resources.settings_autofill_totp
 import io.lauren.renvault.resources.settings_autofill_totp_desc
 import io.lauren.renvault.resources.settings_autofill_style
@@ -359,6 +361,8 @@ private val TextResources = listOf(
     Res.string.websites_title,
     Res.string.settings_based_on,
     Res.string.settings_channel_stable,
+    Res.string.quick_credential,
+    Res.string.quick_credential_desc,
     Res.string.settings_autofill_totp,
     Res.string.settings_autofill_totp_desc,
     Res.string.settings_autofill_style,
@@ -806,6 +810,8 @@ private class ResourceStrings(
     override val settingsOpenLabel: String get() = text(Res.string.settings_open_label)
     override val cancel: String get() = text(Res.string.cancel)
     override val settingsChannelStable: String get() = text(Res.string.settings_channel_stable)
+    override val quickCredential: String get() = text(Res.string.quick_credential)
+    override val quickCredentialDesc: String get() = text(Res.string.quick_credential_desc)
     override val settingsAutofillTotp: String get() = text(Res.string.settings_autofill_totp)
     override val settingsAutofillTotpDesc: String get() = text(Res.string.settings_autofill_totp_desc)
     override val settingsAutofillStyle: String get() = text(Res.string.settings_autofill_style)

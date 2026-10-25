@@ -379,4 +379,6 @@
     <string name="settings_autofill_popup">Sotto il campo</string>
     <string name="settings_autofill_totp">Copia codice 2FA</string>
     <string name="settings_autofill_totp_desc">Dopo la compilazione automatica il codice 2FA viene copiato negli appunti</string>
+    <string name="quick_credential">Sblocca anche con il blocco schermo</string>
+    <string name="quick_credential_desc">Usa PIN, sequenza o password quando la biometria non funziona</string>
 </resources>

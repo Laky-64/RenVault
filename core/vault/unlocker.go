@@ -3,7 +3,7 @@ package vault
 type Unlocker interface {
 	Method() string
 	Available() bool
-	Protect(k []byte) (blob []byte, err error)
+	Protect(k []byte, credential bool) (blob []byte, err error)
 	Unlock(blob []byte) (k []byte, err error)
 }
 
