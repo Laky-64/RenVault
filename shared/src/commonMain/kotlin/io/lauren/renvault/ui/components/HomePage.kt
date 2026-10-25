@@ -200,11 +200,6 @@ fun RvHomePage(
     val pickedWeb = items.filter { it is RvWebItem && it.id in picked }
     val draftOk = canSave(draft)
 
-    LaunchedEffect(active.kind, zoneKind == null) {
-        if (zoneKind == null && compact) return@LaunchedEffect
-        query = ""
-        searching = false
-    }
     LaunchedEffect(selecting, active.kind, zoneKind == null) { picked = emptySet() }
     LaunchedEffect(itemId) { editing = false }
     LaunchedEffect(current) { if (current != null) lastOpen = current }
@@ -301,6 +296,8 @@ fun RvHomePage(
                 zoneKind = kind
                 itemId = null
                 selecting = false
+                query = ""
+                searching = false
             },
             onSearch = {
                 zoneKind = RvZoneKind.All
@@ -398,6 +395,8 @@ fun RvHomePage(
                 settingsOpen = false
                 itemId = null
                 zoneKind = RvZoneKind.Security
+                query = ""
+                searching = false
             },
             onNames = onNames,
             onNameNotice = onNameNotice,
@@ -408,6 +407,8 @@ fun RvHomePage(
             onOpenItem = { id ->
                 settingsOpen = false
                 zoneKind = RvZoneKind.All
+                query = ""
+                searching = false
                 itemId = id
             },
         )
