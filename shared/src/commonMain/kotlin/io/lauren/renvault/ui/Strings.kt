@@ -4,6 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.staticCompositionLocalOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import io.lauren.renvault.lib.RvRelative
 import io.lauren.renvault.lib.RvRelativeUnit
 import io.lauren.renvault.lib.RvStrings
@@ -344,7 +350,7 @@ val LocalStrings = staticCompositionLocalOf<RvStrings> {
 @Composable
 fun rememberStrings(tag: String = LocalLocale.current.current): RvStrings {
     val environment = rememberResourceEnvironment()
-    val strings by produceState<RvStrings>(EmptyStrings, environment, tag) {
+    val strings by produceState(LoadedStrings[environment] ?: EmptyStrings, environment, tag) {
         value = loadStrings(environment)
     }
     return strings
@@ -675,12 +681,28 @@ private val PluralResources = listOf(
     Res.plurals.devices_count,
 )
 
-private suspend fun loadStrings(environment: ResourceEnvironment): RvStrings = ResourceStrings(
-    texts = TextResources.associateWith { unescape(getString(environment, it)) },
-    plurals = PluralResources.associateWith {
-        unescape(getPluralString(environment, it, 1)) to unescape(getPluralString(environment, it, 2))
-    },
-)
+private val LoadedStrings = mutableMapOf<ResourceEnvironment, RvStrings>()
+
+private val LoadingStrings = Mutex()
+
+private suspend fun loadStrings(environment: ResourceEnvironment): RvStrings = LoadingStrings.withLock {
+    LoadedStrings[environment]?.let { return it }
+    val loaded = coroutineScope {
+        val texts = TextResources.map { resource ->
+            async(Dispatchers.Default) { resource to unescape(getString(environment, resource)) }
+        }
+        val plurals = PluralResources.map { resource ->
+            async(Dispatchers.Default) {
+                resource to (unescape(getPluralString(environment, resource, 1)) to unescape(getPluralString(environment, resource, 2)))
+            }
+        }
+        ResourceStrings(texts = texts.awaitAll().toMap(), plurals = plurals.awaitAll().toMap())
+    }
+    LoadedStrings[environment] = loaded
+    loaded
+}
+
+internal val RvStrings.loaded: Boolean get() = this !== EmptyStrings
 
 private val ArgPattern = Regex("""%(\d+)\$[ds]""")
 

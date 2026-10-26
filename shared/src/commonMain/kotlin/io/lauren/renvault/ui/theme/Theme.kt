@@ -43,6 +43,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import io.lauren.renvault.ui.LocalLocale
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.rememberLocaleController
+import io.lauren.renvault.ui.loaded
 import io.lauren.renvault.ui.rememberStrings
 
 val LocalRvAccents: ProvidableCompositionLocal<RvAccents> = staticCompositionLocalOf { lightAccents }
@@ -70,6 +71,8 @@ fun RenVaultTheme(
     SystemBars(night)
     val scheme = dynamicScheme(night) ?: if (night) darkScheme else lightScheme
 
+    val strings = rememberStrings(locale.current)
+
     MaterialExpressiveTheme(
         colorScheme = scheme,
         motionScheme = MotionScheme.expressive(),
@@ -79,10 +82,10 @@ fun RenVaultTheme(
             LocalRvAccents provides if (night) darkAccents else lightAccents,
             LocalLocale provides locale,
             LocalThemeController provides theme,
-            LocalStrings provides rememberStrings(locale.current),
+            LocalStrings provides strings,
             LocalAutofillHighlightBrush provides SolidColor(Color.Transparent),
         ) {
-            ThemeReveal(theme = theme, system = system, content = content)
+            if (strings.loaded) ThemeReveal(theme = theme, system = system, content = content)
         }
     }
 }

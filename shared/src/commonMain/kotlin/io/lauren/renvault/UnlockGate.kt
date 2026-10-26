@@ -17,12 +17,14 @@ import io.lauren.renvault.lib.rememberBiometrics
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.components.RvAuthFlow
 import io.lauren.renvault.ui.components.RvQuickUnlock
+import io.lauren.renvault.ui.loaded
 import io.lauren.renvault.ui.rememberStrings
 
 @Composable
 fun RvUnlockGate(onUnlocked: () -> Unit, modifier: Modifier = Modifier) {
     val strings = rememberStrings(currentLocaleTag())
     val quick = rememberQuickUnlock(strings, rememberBiometrics())
+    if (!strings.loaded) return
     CompositionLocalProvider(LocalStrings provides strings) {
         RvAuthFlow(
             modifier = modifier,
