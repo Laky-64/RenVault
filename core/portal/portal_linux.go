@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
-	"io"
 	"maps"
 	"net/url"
 	"os"
@@ -38,19 +37,7 @@ func OpenFile(ctx context.Context, title string, f Filter) ([]byte, error) {
 	if err != nil || path == "" {
 		return nil, err
 	}
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-	data, err := io.ReadAll(io.LimitReader(file, maxFileBytes+1))
-	if err != nil {
-		return nil, err
-	}
-	if len(data) > maxFileBytes {
-		return nil, errors.New("portal: file too large")
-	}
-	return data, nil
+	return readFile(path)
 }
 
 func SaveFile(ctx context.Context, title, name string, f Filter, data []byte) (bool, error) {
