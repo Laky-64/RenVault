@@ -489,7 +489,7 @@ private fun RootPage(
                 RvSection(title = strings.settingsSecurityTitle, footer = strings.settingsAutoLockNote) {
                     val credential = if (state.quickOn && state.quickCredential != null) 1 else 0
                     val quick = (if (state.quickLabel.isNotEmpty()) 1 else 0) + credential
-                    if (quick == 1) {
+                    if (state.quickLabel.isNotEmpty()) {
                         RvSegment(
                             index = 0,
                             count = 3 + quick,
