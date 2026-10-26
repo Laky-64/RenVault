@@ -18,7 +18,7 @@ dependencies {
 }
 
 val runtime = javaToolchains.launcherFor {
-    languageVersion = JavaLanguageVersion.of(21)
+    languageVersion = JavaLanguageVersion.of(25)
     vendor = JvmVendorSpec.JETBRAINS
 }
 
@@ -26,6 +26,7 @@ compose.desktop {
     application {
         mainClass = System.getProperty("renvault.main") ?: "io.lauren.renvault.MainKt"
         javaHome = runtime.get().metadata.installationPath.asFile.absolutePath
+        jvmArgs += "--enable-native-access=ALL-UNNAMED"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
