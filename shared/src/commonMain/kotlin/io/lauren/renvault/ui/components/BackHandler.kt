@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.Job
@@ -45,8 +46,9 @@ internal fun <S> rememberBackTransition(screen: S, previous: S?, label: String, 
     var progress by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
     var settling by remember { mutableStateOf<Job?>(null) }
+    val current by rememberUpdatedState(screen)
 
-    LaunchedEffect(screen) {
+    LaunchedEffect(screen, dragging) {
         if (!dragging) state.animateTo(screen)
     }
     LaunchedEffect(dragging, previous) {
@@ -64,8 +66,8 @@ internal fun <S> rememberBackTransition(screen: S, previous: S?, label: String, 
         onCancel = {
             settling = scope.launch {
                 animate(progress, 0f) { value, _ -> progress = value }
+                state.snapTo(current)
                 dragging = false
-                state.snapTo(screen)
             }
         },
         onBack = {
