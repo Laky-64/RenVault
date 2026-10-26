@@ -2,6 +2,7 @@ package io.lauren.renvault.autofill
 
 import android.content.Intent
 import android.os.Build
+import androidx.core.content.IntentCompat
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.autofill.AutofillManager
@@ -116,9 +117,8 @@ class AutofillActivity : FragmentActivity() {
     }
 }
 
-@Suppress("DEPRECATION")
 internal inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) getParcelableExtra(key, T::class.java) else getParcelableExtra(key)
+    IntentCompat.getParcelableExtra(this, key, T::class.java)
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Build
 import android.service.autofill.Dataset
+import android.service.autofill.Field
 import android.service.autofill.FillResponse
 import android.view.View
 import android.view.autofill.AutofillId
@@ -13,6 +14,7 @@ import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
 import android.graphics.drawable.Icon
 import android.service.autofill.InlinePresentation
+import android.service.autofill.Presentations
 import android.view.inputmethod.InlineSuggestionsRequest
 import androidx.autofill.inline.UiVersions
 import androidx.autofill.inline.v1.InlineSuggestionUi
@@ -68,12 +70,11 @@ private fun totpSender(context: Context, form: Form, entry: String): IntentSende
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Suppress("DEPRECATION")
 internal suspend fun datasetOf(context: Context, form: Form, entry: WebEntry, slot: Int = 0, deferTotp: Boolean = true): Dataset {
     val title = entry.title.ifEmpty { entry.domain }
     val views = presentation(context, title, entry.username)
-    val builder = Dataset.Builder(views)
     val chip = inlineOf(context, form, slot, title, entry.username)
+    val builder = datasetBuilder(views, chip)
     if (deferTotp && entry.hasTotp && autofillCopyTotp()) {
         form.ids.forEach { id -> builder.setField(id, null, views, chip) }
         builder.setAuthentication(totpSender(context, form, entry.id))
@@ -87,8 +88,37 @@ internal suspend fun datasetOf(context: Context, form: Form, entry: WebEntry, sl
     return builder.build()
 }
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+internal fun presentationsOf(views: RemoteViews, chip: Any?): Presentations =
+    Presentations.Builder()
+        .setMenuPresentation(views)
+        .apply { if (chip != null) setInlinePresentation(chip as InlinePresentation) }
+        .build()
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun datasetBuilder(views: RemoteViews, chip: Any?): Dataset.Builder =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Dataset.Builder(presentationsOf(views, chip))
+    } else {
+        legacyDatasetBuilder(views)
+    }
+
 @Suppress("DEPRECATION")
+@RequiresApi(Build.VERSION_CODES.O)
+private fun legacyDatasetBuilder(views: RemoteViews): Dataset.Builder = Dataset.Builder(views)
+
+@RequiresApi(Build.VERSION_CODES.O)
 private fun Dataset.Builder.setField(id: AutofillId, value: AutofillValue?, views: RemoteViews, chip: Any?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        setField(id, Field.Builder().apply { if (value != null) setValue(value) }.build())
+    } else {
+        setLegacyField(id, value, views, chip)
+    }
+}
+
+@Suppress("DEPRECATION")
+@RequiresApi(Build.VERSION_CODES.O)
+private fun Dataset.Builder.setLegacyField(id: AutofillId, value: AutofillValue?, views: RemoteViews, chip: Any?) {
     if (chip != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         setValue(id, value, views, chip as InlinePresentation)
     } else {
@@ -119,15 +149,14 @@ internal fun inlineOf(context: Context, form: Form, slot: Int, title: String, de
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@Suppress("DEPRECATION")
 internal suspend fun unlockedResponse(context: Context, form: Form, entries: List<WebEntry>): FillResponse {
     val response = FillResponse.Builder()
     val shown = entries.take(MaxDatasets)
     shown.forEachIndexed { slot, entry -> response.addDataset(datasetOf(context, form, entry, slot)) }
     val searchTitle = context.getString(R.string.autofill_search)
     val views = presentation(context, searchTitle)
-    val search = Dataset.Builder(views)
     val chip = inlineOf(context, form, shown.size, searchTitle)
+    val search = datasetBuilder(views, chip)
     form.ids.forEach { id -> search.setField(id, null, views, chip) }
     search.setAuthentication(authSender(context, form, pick = true))
     response.addDataset(search.build())

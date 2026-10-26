@@ -82,7 +82,7 @@ private fun kindOf(node: AssistStructure.ViewNode): FieldKind {
             InputType.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS -> return FieldKind.Username
         }
     }
-    val label = listOfNotNull(node.idEntry, node.hint?.toString()).joinToString(" ").lowercase()
+    val label = listOfNotNull(node.idEntry, node.hint).joinToString(" ").lowercase()
     if ("password" in label) return FieldKind.Password
     if (UserWords.any { it in label }) return FieldKind.Username
     return if (node.isFocusable && node.className?.contains("EditText") == true) FieldKind.Text else FieldKind.None

@@ -9,6 +9,9 @@ import android.service.autofill.FillResponse
 import android.service.autofill.SaveCallback
 import android.service.autofill.SaveRequest
 import android.service.autofill.InlinePresentation
+import android.content.IntentSender
+import android.view.autofill.AutofillId
+import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import io.lauren.renvault.lib.autofillInline
 import io.lauren.renvault.R
@@ -55,20 +58,31 @@ class RvAutofillService : AutofillService() {
         if (!state.unlocked) {
             val title = getString(R.string.autofill_unlock)
             val chip = inlineOf(this, form, 0, title)
+            val ids = form.ids.toTypedArray()
+            val sender = authSender(this, form, pick = false)
+            val views = presentation(this, title)
             val builder = FillResponse.Builder()
-            if (chip != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                builder.setAuthentication(
-                    form.ids.toTypedArray(),
-                    authSender(this, form, pick = false),
-                    presentation(this, title),
-                    chip as InlinePresentation,
-                )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                builder.setAuthentication(ids, sender, presentationsOf(views, chip))
             } else {
-                @Suppress("DEPRECATION")
-                builder.setAuthentication(form.ids.toTypedArray(), authSender(this, form, pick = false), presentation(this, title))
+                builder.setLegacyAuthentication(ids, sender, views, chip)
             }
             return builder.build()
         }
         return unlockedResponse(this, form, matchEntries(Vault.web(), form))
+    }
+}
+
+@Suppress("DEPRECATION")
+private fun FillResponse.Builder.setLegacyAuthentication(
+    ids: Array<AutofillId>,
+    sender: IntentSender,
+    views: RemoteViews,
+    chip: Any?,
+) {
+    if (chip != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        setAuthentication(ids, sender, views, chip as InlinePresentation)
+    } else {
+        setAuthentication(ids, sender, views)
     }
 }

@@ -227,6 +227,7 @@ internal data class PickFileRequest(
     @SerialName("filter") val filter: FileFilter,
 )
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 internal data class SaveFileRequest(
     @SerialName("title") val title: String,
@@ -241,6 +242,7 @@ internal data class SaveFileRequest(
 @Serializable
 internal data class SavedResponse(@SerialName("saved") val saved: Boolean = false)
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 internal data class BackupRequest(
     @SerialName("password") val password: String,
@@ -353,6 +355,7 @@ data class TrustedDevice(
     @SerialName("image_url") val imageUrl: String = "",
 )
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 internal data class QuickRequest(
     @SerialName("method") val method: String,
@@ -364,6 +367,7 @@ internal data class QuickRequest(
     override fun hashCode() = key.contentHashCode()
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class QuickState(
     @SerialName("methods") val methods: List<String> = emptyList(),
