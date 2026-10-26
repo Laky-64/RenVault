@@ -18,7 +18,8 @@
             android:value="barcode_ui" />
         <activity
             android:exported="true"
-            android:name=".MainActivity">
+            android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,7 +30,8 @@
             android:name=".autofill.AutofillActivity"
             android:excludeFromRecents="true"
             android:exported="false"
-            android:theme="@style/Theme.RenVault.Autofill" />
+            android:theme="@style/Theme.RenVault.Autofill"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".autofill.AutofillTotpActivity"
             android:excludeFromRecents="true"
