@@ -2,6 +2,7 @@ package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.SeekableTransitionState
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 private const val PeekFraction = 0.3f
@@ -42,6 +44,7 @@ internal fun <S> rememberBackTransition(screen: S, previous: S?, label: String, 
     val scope = rememberCoroutineScope()
     var progress by remember { mutableFloatStateOf(0f) }
     var dragging by remember { mutableStateOf(false) }
+    var settling by remember { mutableStateOf<Job?>(null) }
 
     LaunchedEffect(screen) {
         if (!dragging) state.animateTo(screen)
@@ -54,14 +57,19 @@ internal fun <S> rememberBackTransition(screen: S, previous: S?, label: String, 
     RvPredictiveBackHandler(
         enabled = previous != null,
         onProgress = {
+            settling?.cancel()
             progress = it
             dragging = true
         },
         onCancel = {
-            dragging = false
-            scope.launch { state.animateTo(screen) }
+            settling = scope.launch {
+                animate(progress, 0f) { value, _ -> progress = value }
+                dragging = false
+                state.snapTo(screen)
+            }
         },
         onBack = {
+            settling?.cancel()
             dragging = false
             onBack()
         },
