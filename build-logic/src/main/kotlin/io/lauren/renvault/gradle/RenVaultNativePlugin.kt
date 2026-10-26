@@ -160,6 +160,6 @@ class RenVaultNativePlugin : Plugin<Project> {
             .filter(String::isNotEmpty)
 
     private companion object {
-        const val defaultNdkVersion = "27.2.12479018"
+        const val defaultNdkVersion = "30.0.16248370"
     }
 }
