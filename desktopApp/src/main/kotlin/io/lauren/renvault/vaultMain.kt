@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -65,6 +66,13 @@ private fun vaultApplication() = application {
     var nativeTray by remember { mutableStateOf<Boolean?>(if (mac) false else null) }
     val tray = nativeTray == true || awtTray
     var visible by remember { mutableStateOf(true) }
+    var raises by remember { mutableIntStateOf(0) }
+    var activation by remember { mutableStateOf("") }
+    val open: (token: String) -> Unit = { token ->
+        visible = true
+        activation = token
+        raises++
+    }
     val strings = rememberStrings(currentLocaleTag())
     val scope = rememberCoroutineScope()
     val close: () -> Unit = { if (tray) visible = false else exitApplication() }
@@ -77,7 +85,7 @@ private fun vaultApplication() = application {
     val trayIcon = rememberTrayIcon()
 
     LaunchedEffect(Unit) {
-        RvInstance.listen { visible = true }
+        RvInstance.listen(open)
     }
 
     if (!mac) {
@@ -98,7 +106,7 @@ private fun vaultApplication() = application {
                 if (event.kind != EventKind.TRAY) return@collect
                 when (Vault.trayItem(event)) {
                     TrayQuit -> quit()
-                    else -> visible = true
+                    else -> open("")
                 }
             }
         }
@@ -108,9 +116,9 @@ private fun vaultApplication() = application {
         Tray(
             icon = trayIcon,
             tooltip = appName,
-            onAction = { visible = true },
+            onAction = { open("") },
             menu = {
-                Item(strings.trayOpen, onClick = { visible = true })
+                Item(strings.trayOpen, onClick = { open("") })
                 Item(strings.trayQuit, onClick = ::exitApplication)
             },
         )
@@ -122,11 +130,14 @@ private fun vaultApplication() = application {
         visible = visible,
         title = appName,
     ) {
-        LaunchedEffect(visible) {
+        LaunchedEffect(visible, raises) {
             if (!visible) return@LaunchedEffect
             state.isMinimized = false
             window.toFront()
             window.requestFocus()
+            val token = activation
+            activation = ""
+            runCatching { Vault.raiseWindow(token) }
         }
 
         LaunchedEffect(Unit) {

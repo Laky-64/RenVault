@@ -83,4 +83,5 @@ const (
 	OpTitleBar  uint32 = 0x3007
 	OpTray      uint32 = 0x3008
 	OpTrayHide  uint32 = 0x3009
+	OpRaise     uint32 = 0x300A
 )

@@ -405,3 +405,6 @@ internal data class TrayRequest(
 
 @Serializable
 internal data class TrayEvent(@SerialName("item") val item: String = "")
+
+@Serializable
+internal data class RaiseRequest(@SerialName("token") val token: String)

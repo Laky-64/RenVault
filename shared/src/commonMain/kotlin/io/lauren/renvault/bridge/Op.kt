@@ -72,6 +72,7 @@ internal object Op {
     const val TITLE_BAR = 0x3007
     const val TRAY = 0x3008
     const val TRAY_HIDE = 0x3009
+    const val RAISE = 0x300A
 }
 
 internal object FailureKind {

@@ -7,3 +7,7 @@ func Show(Config, func(id string)) error {
 }
 
 func Hide() {}
+
+func TakeActivationToken() string {
+	return ""
+}

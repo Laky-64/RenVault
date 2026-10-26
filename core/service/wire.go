@@ -204,6 +204,10 @@ func (r trayRequest) config() tray.Config {
 	return config
 }
 
+type raiseRequest struct {
+	Token string `cbor:"token"`
+}
+
 type trayEvent struct {
 	Item string `cbor:"item"`
 }

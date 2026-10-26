@@ -126,6 +126,8 @@ object Vault {
 
     suspend fun hideTray() = send(Op.TRAY_HIDE)
 
+    suspend fun raiseWindow(token: String = "") = send(Op.RAISE, RaiseRequest(token))
+
     fun trayItem(event: Event): String = cbor.decodeFromByteArray(TrayEvent.serializer(), event.payload).item
 
     suspend fun syncPeers() = send(Op.PEERS_SYNC)

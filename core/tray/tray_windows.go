@@ -297,3 +297,7 @@ func emit(id string) {
 		go callback(id)
 	}
 }
+
+func TakeActivationToken() string {
+	return ""
+}

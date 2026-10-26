@@ -15,7 +15,7 @@ internal object RvInstance {
     private var server: ServerSocket? = null
 
     @Volatile
-    private var onShow: () -> Unit = {}
+    private var onShow: (token: String) -> Unit = {}
 
     fun claim(): Boolean {
         folder.mkdirs()
@@ -37,20 +37,24 @@ internal object RvInstance {
         thread(isDaemon = true, name = "renvault-instance") {
             while (!socket.isClosed) {
                 val client = runCatching { socket.accept() }.getOrNull() ?: break
-                client.use { if (it.getInputStream().bufferedReader().readLine() == ShowCommand) onShow() }
+                client.use {
+                    val line = it.getInputStream().bufferedReader().readLine().orEmpty()
+                    if (line == ShowCommand || line.startsWith("$ShowCommand ")) onShow(line.removePrefix(ShowCommand).trim())
+                }
             }
         }
         return true
     }
 
-    fun listen(action: () -> Unit) {
+    fun listen(action: (token: String) -> Unit) {
         onShow = action
     }
 
     private fun wakeRunning() {
         val port = runCatching { File(folder, "instance.port").readText().trim().toInt() }.getOrNull() ?: return
         runCatching {
-            Socket(InetAddress.getLoopbackAddress(), port).use { it.getOutputStream().write("$ShowCommand\n".toByteArray()) }
+            val token = System.getenv("XDG_ACTIVATION_TOKEN") ?: System.getenv("DESKTOP_STARTUP_ID") ?: ""
+            Socket(InetAddress.getLoopbackAddress(), port).use { it.getOutputStream().write("$ShowCommand $token\n".toByteArray()) }
         }
     }
 }

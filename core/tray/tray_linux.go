@@ -52,12 +52,13 @@ type itemProperties struct {
 }
 
 var (
-	mu       sync.Mutex
-	conn     *dbus.Conn
-	props    *prop.Properties
-	current  Config
-	report   func(id string)
-	revision uint32
+	mu         sync.Mutex
+	conn       *dbus.Conn
+	props      *prop.Properties
+	current    Config
+	report     func(id string)
+	revision   uint32
+	activation string
 )
 
 type item struct{}
@@ -73,6 +74,13 @@ func (item) SecondaryActivate(int32, int32) *dbus.Error {
 }
 
 func (item) ContextMenu(int32, int32) *dbus.Error { return nil }
+
+func (item) ProvideXdgActivationToken(token string) *dbus.Error {
+	mu.Lock()
+	activation = token
+	mu.Unlock()
+	return nil
+}
 
 func (item) Scroll(int32, string) *dbus.Error { return nil }
 
@@ -175,6 +183,14 @@ func emit(id string) {
 	if callback != nil {
 		go callback(id)
 	}
+}
+
+func TakeActivationToken() string {
+	mu.Lock()
+	defer mu.Unlock()
+	token := activation
+	activation = ""
+	return token
 }
 
 func Show(config Config, onEvent func(id string)) error {

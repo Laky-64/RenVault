@@ -64,6 +64,18 @@ func installBackup() {
 		return err
 	})
 
+	command(bridge.OpRaise, func(_ context.Context, request raiseRequest) error {
+		token := tray.TakeActivationToken()
+		if request.Token != "" {
+			token = request.Token
+		}
+		err := screen.Raise(token)
+		if errors.Is(err, screen.ErrUnsupported) {
+			return bridge.Fail(bridge.KindBadOp, err.Error())
+		}
+		return err
+	})
+
 	trigger(bridge.OpTrayHide, func(context.Context) error {
 		tray.Hide()
 		return nil
