@@ -1005,10 +1005,10 @@ private fun AuthPage(
                 .fillMaxSize()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(16.dp))
             Box(modifier = Modifier.widthIn(max = BodyMax).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 heading(Alignment.CenterHorizontally, TextAlign.Center)
             }
@@ -1016,7 +1016,7 @@ private fun AuthPage(
                 modifier = Modifier.widthIn(max = BodyMax).fillMaxWidth().padding(top = 32.dp),
                 content = body,
             )
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
             Spacer(Modifier.weight(1f))
             Column(
                 modifier = Modifier.widthIn(max = BodyMax).fillMaxWidth(),
