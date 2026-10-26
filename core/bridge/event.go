@@ -14,6 +14,7 @@ const (
 	EventAgentProgress uint32 = 0x0004
 	EventProfile       uint32 = 0x0005
 	EventDevices       uint32 = 0x0006
+	EventTray          uint32 = 0x0007
 )
 
 const queueDepth = 64

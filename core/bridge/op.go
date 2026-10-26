@@ -81,4 +81,6 @@ const (
 	OpSaveFile  uint32 = 0x3005
 	OpSecure    uint32 = 0x3006
 	OpTitleBar  uint32 = 0x3007
+	OpTray      uint32 = 0x3008
+	OpTrayHide  uint32 = 0x3009
 )

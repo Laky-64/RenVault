@@ -7,6 +7,7 @@ import (
 	"github.com/Laky-64/renvault-core/bridge"
 	"github.com/Laky-64/renvault-core/portal"
 	"github.com/Laky-64/renvault-core/screen"
+	"github.com/Laky-64/renvault-core/tray"
 )
 
 func installBackup() {
@@ -51,6 +52,21 @@ func installBackup() {
 			return nil
 		}
 		return err
+	})
+
+	command(bridge.OpTray, func(_ context.Context, request trayRequest) error {
+		err := tray.Show(request.config(), func(id string) {
+			bridge.Emit(bridge.EventTray, trayEvent{Item: id})
+		})
+		if errors.Is(err, tray.ErrUnsupported) {
+			return bridge.Fail(bridge.KindBadOp, err.Error())
+		}
+		return err
+	})
+
+	trigger(bridge.OpTrayHide, func(context.Context) error {
+		tray.Hide()
+		return nil
 	})
 
 	command(bridge.OpSecure, func(_ context.Context, request secureRequest) error {

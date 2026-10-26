@@ -385,3 +385,23 @@ internal data class TitleBarRequest(
     @SerialName("caption") val caption: Int,
     @SerialName("text") val text: Int,
 )
+
+@Serializable
+data class TrayItem(
+    @SerialName("id") val id: String,
+    @SerialName("label") val label: String,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+internal data class TrayRequest(
+    @SerialName("tooltip") val tooltip: String,
+    @ByteString @SerialName("icon") val icon: ByteArray,
+    @SerialName("items") val items: List<TrayItem>,
+) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = tooltip.hashCode()
+}
+
+@Serializable
+internal data class TrayEvent(@SerialName("item") val item: String = "")

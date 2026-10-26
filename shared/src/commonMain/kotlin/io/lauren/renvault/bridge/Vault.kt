@@ -121,6 +121,13 @@ object Vault {
     suspend fun setTitleBar(dark: Boolean, caption: Int, text: Int) =
         send(Op.TITLE_BAR, TitleBarRequest(dark, caption, text))
 
+    suspend fun showTray(tooltip: String, icon: ByteArray, items: List<TrayItem>) =
+        send(Op.TRAY, TrayRequest(tooltip, icon, items))
+
+    suspend fun hideTray() = send(Op.TRAY_HIDE)
+
+    fun trayItem(event: Event): String = cbor.decodeFromByteArray(TrayEvent.serializer(), event.payload).item
+
     suspend fun syncPeers() = send(Op.PEERS_SYNC)
 
     suspend fun netInfo(): NetInfo = receive(Op.NET_INFO)

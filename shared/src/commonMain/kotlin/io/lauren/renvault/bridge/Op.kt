@@ -70,6 +70,8 @@ internal object Op {
     const val SAVE_FILE = 0x3005
     const val SECURE = 0x3006
     const val TITLE_BAR = 0x3007
+    const val TRAY = 0x3008
+    const val TRAY_HIDE = 0x3009
 }
 
 internal object FailureKind {
@@ -95,4 +97,5 @@ object EventKind {
     const val AGENT_PROGRESS = 0x0004
     const val PROFILE = 0x0005
     const val DEVICES = 0x0006
+    const val TRAY = 0x0007
 }

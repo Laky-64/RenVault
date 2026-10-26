@@ -7,6 +7,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -21,8 +22,13 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.window.Tray
+import io.lauren.renvault.bridge.EventKind
+import io.lauren.renvault.bridge.TrayItem
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.lib.currentLocaleTag
 import io.lauren.renvault.resources.Res
@@ -34,6 +40,11 @@ import java.awt.SystemTray
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Desktop
 import java.awt.Dimension
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import java.net.URI
 import kotlin.math.roundToInt
 
@@ -50,18 +61,52 @@ private fun vaultApplication() = application {
     val appName = stringResource(Res.string.app_name)
     val state = rememberWindowState(size = StartSize)
     val mac = remember { System.getProperty("os.name").orEmpty().startsWith("Mac", ignoreCase = true) }
-    val tray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
+    val awtTray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
+    var nativeTray by remember { mutableStateOf<Boolean?>(if (mac) false else null) }
+    val tray = nativeTray == true || awtTray
     var visible by remember { mutableStateOf(true) }
     val strings = rememberStrings(currentLocaleTag())
+    val scope = rememberCoroutineScope()
     val close: () -> Unit = { if (tray) visible = false else exitApplication() }
+    val quit: () -> Unit = {
+        scope.launch {
+            if (nativeTray == true) runCatching { Vault.hideTray() }
+            exitApplication()
+        }
+    }
+    val trayIcon = rememberTrayIcon()
 
     LaunchedEffect(Unit) {
         RvInstance.listen { visible = true }
     }
 
-    if (tray) {
+    if (!mac) {
+        LaunchedEffect(appName, strings.trayOpen, strings.trayQuit) {
+            val items = listOf(TrayItem(TrayOpen, strings.trayOpen), TrayItem(TrayQuit, strings.trayQuit))
+            val shown = try {
+                Vault.showTray(appName, trayPng(trayIcon), items)
+                true
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Throwable) {
+                false
+            }
+            if (nativeTray != true) nativeTray = shown
+        }
+        LaunchedEffect(Unit) {
+            Vault.events.collect { event ->
+                if (event.kind != EventKind.TRAY) return@collect
+                when (Vault.trayItem(event)) {
+                    TrayQuit -> quit()
+                    else -> visible = true
+                }
+            }
+        }
+    }
+
+    if (awtTray && nativeTray == false) {
         Tray(
-            icon = rememberTrayIcon(),
+            icon = trayIcon,
             tooltip = appName,
             onAction = { visible = true },
             menu = {
@@ -151,6 +196,23 @@ private fun rememberTrayIcon(): Painter {
         }
     }
 }
+
+private fun trayPng(icon: Painter): ByteArray {
+    val side = TrayIconSize.toInt()
+    val image = BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB)
+    image.createGraphics().apply {
+        drawImage(icon.toAwtImage(Density(1f), LayoutDirection.Ltr, Size(TrayIconSize, TrayIconSize)), 0, 0, null)
+        dispose()
+    }
+    return ByteArrayOutputStream().use { out ->
+        ImageIO.write(image, "png", out)
+        out.toByteArray()
+    }
+}
+
+private const val TrayOpen = "open"
+
+private const val TrayQuit = "quit"
 
 private const val TrayIconSize = 64f
 

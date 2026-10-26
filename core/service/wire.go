@@ -7,6 +7,7 @@ import (
 	"github.com/Laky-64/appleservices/keychain"
 	"github.com/Laky-64/renvault-core/apple"
 	"github.com/Laky-64/renvault-core/portal"
+	"github.com/Laky-64/renvault-core/tray"
 	"github.com/Laky-64/renvault-core/vault"
 )
 
@@ -182,6 +183,29 @@ func (f fileFilter) portal() portal.Filter {
 		out.Patterns = append(out.Patterns, "*."+strings.ToLower(ext), "*."+strings.ToUpper(ext))
 	}
 	return out
+}
+
+type trayItem struct {
+	ID    string `cbor:"id"`
+	Label string `cbor:"label"`
+}
+
+type trayRequest struct {
+	Tooltip string     `cbor:"tooltip"`
+	Icon    []byte     `cbor:"icon"`
+	Items   []trayItem `cbor:"items"`
+}
+
+func (r trayRequest) config() tray.Config {
+	config := tray.Config{Tooltip: r.Tooltip, Icon: r.Icon}
+	for _, item := range r.Items {
+		config.Items = append(config.Items, tray.Item{ID: item.ID, Label: item.Label})
+	}
+	return config
+}
+
+type trayEvent struct {
+	Item string `cbor:"item"`
 }
 
 type pickFileRequest struct {
