@@ -41,10 +41,11 @@ import kotlin.math.pow
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val FlyMs = 300
 private const val FlyStagger = 45
-private const val GuardMs = 25L
+private val Guard = 25.milliseconds
 private const val RefillMs = 480L
 
 @OptIn(ExperimentalTime::class)
@@ -55,7 +56,7 @@ fun rememberTotpSlot(period: Int = 30): Long {
     LaunchedEffect(period) {
         while (true) {
             val stamp = nowMillis()
-            delay(1000L - stamp % 1000L + GuardMs)
+            delay((1000L - stamp % 1000L).milliseconds + Guard)
             slot = slotAt(nowMillis(), period)
         }
     }

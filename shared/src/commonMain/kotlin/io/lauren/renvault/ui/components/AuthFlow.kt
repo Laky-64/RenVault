@@ -80,8 +80,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.milliseconds
 
-private const val VeilMs = 220L
+private val Veil = 220.milliseconds
 private val BodyMax = 440.dp
 private const val DeviceArtFill = 0.64f
 
@@ -180,7 +181,7 @@ fun RvAuthFlow(
     val unlockFocus = remember { FocusRequester() }
 
     suspend fun refuse(track: Animatable<Float, AnimationVector1D>, focus: FocusRequester) {
-        delay(VeilMs)
+        delay(Veil)
         runCatching { focus.requestFocus() }
         track.shake()
     }
@@ -475,7 +476,7 @@ fun RvAuthFlow(
 
     LaunchedEffect(Unit) {
         val slow = launch {
-            delay(200)
+            delay(200.milliseconds)
             busyTitle = strings.busyOpeningVaultTitle
             busyLabel = strings.busyOpeningVault
             busy = true
@@ -920,8 +921,8 @@ fun RvAuthFlow(
 
         AnimatedVisibility(
             visible = busy,
-            enter = fadeIn(tween(VeilMs.toInt())),
-            exit = fadeOut(tween(VeilMs.toInt())),
+            enter = fadeIn(tween(Veil.inWholeMilliseconds.toInt())),
+            exit = fadeOut(tween(Veil.inWholeMilliseconds.toInt())),
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),

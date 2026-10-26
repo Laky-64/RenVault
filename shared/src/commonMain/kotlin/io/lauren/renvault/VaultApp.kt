@@ -87,6 +87,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun RvVaultApp(
@@ -302,7 +303,7 @@ fun RvVaultApp(
                         }
                     }
                 }
-                delay(LanRefreshMs)
+                delay(LanRefresh)
             }
         } finally {
             RvLan.stop()
@@ -584,11 +585,11 @@ private const val PrivacyUrl = "https://www.apple.com/legal/privacy/data/en/appl
 
 private const val PasskeyUrl = "https://support.apple.com/en-us/102195"
 
-private const val DeviceArtTimeoutMs = 4_000L
+private val DeviceArtTimeout = 4.seconds
 
 private const val NameNoticeKey = "name_notice"
 
-private const val LanRefreshMs = 30_000L
+private val LanRefresh = 30.seconds
 
 private suspend fun create(draft: RvEditorDraft) {
     runCatching {
@@ -634,7 +635,7 @@ private fun sortKeyOf(field: RvSortField): String = when (field) {
 
 private suspend fun deviceArt(url: String): ImageBitmap? {
     if (url.isEmpty()) return null
-    val bytes = withTimeoutOrNull(DeviceArtTimeoutMs) {
+    val bytes = withTimeoutOrNull(DeviceArtTimeout) {
         runCatching { Vault.image(url) }.getOrNull()
     } ?: return null
     return withContext(Dispatchers.Default) {

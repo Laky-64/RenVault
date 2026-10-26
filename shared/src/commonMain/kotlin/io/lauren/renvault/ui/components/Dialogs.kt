@@ -57,6 +57,7 @@ import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.websitesOk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun RvConfirmDialog(
@@ -231,7 +232,7 @@ fun RvTotpDialog(
     )
 }
 
-private const val RowMs = 220L
+private val RowDelay = 220.milliseconds
 
 private class WebRow(val id: Int, initial: String, fresh: Boolean) {
     var value by mutableStateOf(initial)
@@ -304,7 +305,7 @@ fun RvWebsitesDialog(
                                         onClick = {
                                             row.visible.targetState = false
                                             scope.launch {
-                                                delay(RowMs)
+                                                delay(RowDelay)
                                                 rows.remove(row)
                                             }
                                         },

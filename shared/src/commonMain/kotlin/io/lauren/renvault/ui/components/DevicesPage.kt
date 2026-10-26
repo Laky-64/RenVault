@@ -64,6 +64,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
 data class RvDevice(val id: String, val name: String, val self: Boolean, val syncedAt: Long)
 
@@ -79,7 +80,7 @@ interface RvDeviceActions {
     fun describe(failure: Throwable): String
 }
 
-private const val ClockTickMs = 30_000L
+private val ClockTick = 30.seconds
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -105,7 +106,7 @@ internal fun DevicesPage(
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
         while (true) {
-            delay(ClockTickMs)
+            delay(ClockTick)
             now = Clock.System.now().toEpochMilliseconds()
         }
     }

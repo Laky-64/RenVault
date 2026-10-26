@@ -72,8 +72,9 @@ import io.lauren.renvault.ui.theme.RvTone
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
-private const val ClockTickMs = 30_000L
+private val ClockTick = 30.seconds
 
 data class RvSettingsState(
     val profileName: String = "",
@@ -276,7 +277,7 @@ private fun RootPage(
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
         while (true) {
-            delay(ClockTickMs)
+            delay(ClockTick)
             now = Clock.System.now().toEpochMilliseconds()
         }
     }

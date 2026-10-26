@@ -6,11 +6,12 @@ import androidx.work.WorkerParameters
 import io.lauren.renvault.bridge.PlatformStorage
 import io.lauren.renvault.bridge.Vault
 import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration.Companion.seconds
 
 internal class RvSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         PlatformStorage.attach(applicationContext)
-        withTimeoutOrNull(WorkTimeoutMs) {
+        withTimeoutOrNull(WorkTimeout) {
             runCatching {
                 Vault.init()
                 Vault.setAddresses(RvLan.addresses())
@@ -21,4 +22,4 @@ internal class RvSyncWorker(context: Context, params: WorkerParameters) : Corout
     }
 }
 
-private const val WorkTimeoutMs = 30_000L
+private val WorkTimeout = 30.seconds
