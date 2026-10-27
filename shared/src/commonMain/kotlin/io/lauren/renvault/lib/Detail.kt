@@ -32,7 +32,7 @@ fun draftOf(item: RvWebItem): RvDraft {
 
 private fun filled(websites: List<String>): List<String> = websites.filter { it.isNotBlank() }
 
-fun websitesOk(websites: List<String>): Boolean = filled(websites).all { isDomain(bareHost(it)) }
+fun websitesOk(websites: List<String>): Boolean = filled(websites).all { isDomain(domainOf(it)) }
 
 fun tidyWebsites(websites: List<String>): List<String> =
     filled(websites).map(::domainOf).filter { it.isNotEmpty() }.distinct()

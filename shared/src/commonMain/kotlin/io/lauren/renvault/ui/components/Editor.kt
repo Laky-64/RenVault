@@ -40,7 +40,6 @@ import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
-import io.lauren.renvault.lib.bareHost
 import io.lauren.renvault.lib.domainOf
 import io.lauren.renvault.lib.generatePassword
 import io.lauren.renvault.lib.isDomain
@@ -249,8 +248,7 @@ fun RvNewPasswordSheet(
     var draft by remember { mutableStateOf(RvEditorDraft(password = generatePassword())) }
 
     val domain = domainOf(draft.website)
-    val typed = bareHost(draft.website)
-    val websiteOk = if (draft.website.isNotBlank()) isDomain(typed) else draft.title.isNotBlank()
+    val websiteOk = if (draft.website.isNotBlank()) isDomain(domain) else draft.title.isNotBlank()
     val canSave = websiteOk && (draft.password.isNotEmpty() || draft.username.isNotBlank())
 
     val close: () -> Unit = {

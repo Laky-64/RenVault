@@ -44,11 +44,9 @@ internal fun normalized(value: String): String = value.trim().lowercase()
 
 internal fun hostOf(value: String): String = normalized(value).removePrefix("www.")
 
-private val Scheme = Regex("^[a-z][a-z0-9+.\\-]*:/*")
 private val StrictScheme = Regex("^[a-z][a-z0-9+.\\-]*://")
 private val Credentials = Regex("^[^/@]*@")
 private val Port = Regex(":\\d+$")
-private val TrailingSlashes = Regex("/+$")
 private val OuterDots = Regex("^\\.+|\\.+$")
 private val PathBreak = Regex("[/?#\\\\]")
 private val Ipv4 = Regex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$")
@@ -77,12 +75,6 @@ fun isDomain(value: String): Boolean {
     if (tld.length < 2 || tld.length > 63) return false
     return labels.dropLast(1).all { labelOk(it, tld = false) } && labelOk(tld, tld = true)
 }
-
-fun bareHost(value: String): String =
-    normalized(value)
-        .replace(Scheme, "")
-        .removePrefix("www.")
-        .replace(TrailingSlashes, "")
 
 fun domainOf(value: String): String {
     var host = normalized(value)
