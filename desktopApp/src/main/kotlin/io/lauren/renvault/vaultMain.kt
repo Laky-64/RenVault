@@ -1,5 +1,6 @@
 package io.lauren.renvault
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,18 +16,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.toComposeImageBitmap
+import org.jetbrains.skia.Image
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.toAwtImage
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.window.Tray
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.TrayItem
@@ -35,15 +30,11 @@ import io.lauren.renvault.lib.currentLocaleTag
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
-import io.lauren.renvault.ui.components.RvLockIcon
 import io.lauren.renvault.ui.rememberStrings
 import java.awt.SystemTray
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Desktop
 import java.awt.Dimension
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import javax.imageio.ImageIO
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.net.URI
@@ -92,7 +83,7 @@ private fun vaultApplication() = application {
         LaunchedEffect(appName, strings.trayOpen, strings.trayQuit) {
             val items = listOf(TrayItem(TrayOpen, strings.trayOpen), TrayItem(TrayQuit, strings.trayQuit))
             val shown = try {
-                Vault.showTray(appName, trayPng(trayIcon), items)
+                Vault.showTray(appName, trayIcons("light"), trayIcons("dark"), items)
                 true
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -187,44 +178,19 @@ private fun vaultApplication() = application {
 
 @Composable
 private fun rememberTrayIcon(): Painter {
-    val glyph = rememberVectorPainter(RvLockIcon)
-    return remember(glyph) {
-        object : Painter() {
-            override val intrinsicSize = Size(TrayIconSize, TrayIconSize)
-
-            override fun DrawScope.onDraw() {
-                drawCircle(TrayBackground)
-                val inset = size.minDimension * 0.22f
-                translate(inset, inset) {
-                    with(glyph) {
-                        draw(
-                            size = Size(size.width - inset * 2, size.height - inset * 2),
-                            colorFilter = ColorFilter.tint(Color.White),
-                        )
-                    }
-                }
-            }
-        }
+    val variant = if (isSystemInDarkTheme()) "light" else "dark"
+    return remember(variant) {
+        BitmapPainter(Image.makeFromEncoded(trayIcons(variant).last()).toComposeImageBitmap())
     }
 }
 
-private fun trayPng(icon: Painter): ByteArray {
-    val side = TrayIconSize.toInt()
-    val image = BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB)
-    image.createGraphics().apply {
-        drawImage(icon.toAwtImage(Density(1f), LayoutDirection.Ltr, Size(TrayIconSize, TrayIconSize)), 0, 0, null)
-        dispose()
-    }
-    return ByteArrayOutputStream().use { out ->
-        ImageIO.write(image, "png", out)
-        out.toByteArray()
-    }
+private fun trayIcons(variant: String): List<ByteArray> = TraySizes.map { size ->
+    val stream = RvInstance::class.java.getResourceAsStream("/tray/vault-$variant-$size.png") ?: error("tray icon $variant $size missing")
+    stream.use { it.readBytes() }
 }
 
 private const val TrayOpen = "open"
 
 private const val TrayQuit = "quit"
 
-private const val TrayIconSize = 64f
-
-private val TrayBackground = Color(0xFF3F5BA9)
+private val TraySizes = listOf(16, 20, 24, 32, 48, 64)

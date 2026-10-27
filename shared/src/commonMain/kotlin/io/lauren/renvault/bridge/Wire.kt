@@ -398,14 +398,18 @@ data class TrayItem(
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
+internal data class TrayIcon(@ByteString @SerialName("png") val png: ByteArray) {
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = png.contentHashCode()
+}
+
+@Serializable
 internal data class TrayRequest(
     @SerialName("tooltip") val tooltip: String,
-    @ByteString @SerialName("icon") val icon: ByteArray,
+    @SerialName("icons") val icons: List<TrayIcon>,
+    @SerialName("iconsOnLight") val iconsOnLight: List<TrayIcon>,
     @SerialName("items") val items: List<TrayItem>,
-) {
-    override fun equals(other: Any?) = this === other
-    override fun hashCode() = tooltip.hashCode()
-}
+)
 
 @Serializable
 internal data class TrayEvent(@SerialName("item") val item: String = "")

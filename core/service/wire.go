@@ -190,14 +190,25 @@ type trayItem struct {
 	Label string `cbor:"label"`
 }
 
+type trayIcon struct {
+	Png []byte `cbor:"png"`
+}
+
 type trayRequest struct {
-	Tooltip string     `cbor:"tooltip"`
-	Icon    []byte     `cbor:"icon"`
-	Items   []trayItem `cbor:"items"`
+	Tooltip      string     `cbor:"tooltip"`
+	Icons        []trayIcon `cbor:"icons"`
+	IconsOnLight []trayIcon `cbor:"iconsOnLight"`
+	Items        []trayItem `cbor:"items"`
 }
 
 func (r trayRequest) config() tray.Config {
-	config := tray.Config{Tooltip: r.Tooltip, Icon: r.Icon}
+	config := tray.Config{Tooltip: r.Tooltip}
+	for _, icon := range r.Icons {
+		config.Icons = append(config.Icons, icon.Png)
+	}
+	for _, icon := range r.IconsOnLight {
+		config.IconsOnLight = append(config.IconsOnLight, icon.Png)
+	}
 	for _, item := range r.Items {
 		config.Items = append(config.Items, tray.Item{ID: item.ID, Label: item.Label})
 	}

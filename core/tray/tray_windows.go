@@ -3,6 +3,7 @@
 package tray
 
 import (
+	"encoding/binary"
 	"runtime"
 	"sync"
 	"syscall"
@@ -10,18 +11,20 @@ import (
 
 	"github.com/Laky-64/renvault-core/darkmode"
 	"golang.org/x/sys/windows"
+	"golang.org/x/sys/windows/registry"
 )
 
 const (
-	wmClose       = 0x0010
-	wmNull        = 0x0000
-	wmDestroy     = 0x0002
-	wmContextMenu = 0x007B
-	wmApp         = 0x8000
-	wmTray        = wmApp + 1
-	wmRefresh     = wmApp + 2
-	ninSelect     = 0x0400
-	ninKeySelect  = 0x0401
+	wmClose         = 0x0010
+	wmNull          = 0x0000
+	wmDestroy       = 0x0002
+	wmContextMenu   = 0x007B
+	wmSettingChange = 0x001A
+	wmApp           = 0x8000
+	wmTray          = wmApp + 1
+	wmRefresh       = wmApp + 2
+	ninSelect       = 0x0400
+	ninKeySelect    = 0x0401
 
 	nimAdd        = 0
 	nimModify     = 1
@@ -200,6 +203,8 @@ func handle(hwnd, message, wParam, lParam uintptr) uintptr {
 			showMenu(hwnd, int32(int16(wParam&0xFFFF)), int32(int16(wParam>>16&0xFFFF)))
 		}
 		return 0
+	case message == wmSettingChange:
+		notify(nimModify)
 	case message == wmRefresh:
 		notify(nimModify)
 		return 0
@@ -231,7 +236,7 @@ func notify(action uintptr) bool {
 	data := notifyIconData{window: window, id: iconID, flags: nifMessage | nifTip | nifShowTip, callbackMessage: wmTray}
 	data.size = uint32(unsafe.Sizeof(data))
 	if action != nimDelete {
-		if next := iconOf(current.Icon); next != 0 {
+		if next := iconOf(iconsForTheme(current)); next != 0 {
 			if icon != 0 {
 				procDestroyIcon.Call(icon)
 			}
@@ -252,15 +257,57 @@ func notify(action uintptr) bool {
 	return ok != 0
 }
 
-func iconOf(png []byte) uintptr {
+func iconOf(icons [][]byte) uintptr {
+	side, _, _ := procGetSystemMetrics.Call(smCxSmIcon)
+	png := closestIcon(icons, int(side))
 	if len(png) == 0 {
 		return 0
 	}
-	side, _, _ := procGetSystemMetrics.Call(smCxSmIcon)
 	handle, _, _ := procCreateIconFromResourceEx.Call(
 		uintptr(unsafe.Pointer(&png[0])), uintptr(len(png)), 1, iconResourceFormat, side, side, lrDefaultColor,
 	)
 	return handle
+}
+
+func iconsForTheme(config Config) [][]byte {
+	if len(config.IconsOnLight) > 0 && lightTaskbar() {
+		return config.IconsOnLight
+	}
+	return config.Icons
+}
+
+func lightTaskbar() bool {
+	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Themes\Personalize`, registry.QUERY_VALUE)
+	if err != nil {
+		return false
+	}
+	defer key.Close()
+	value, _, err := key.GetIntegerValue("SystemUsesLightTheme")
+	return err == nil && value == 1
+}
+
+func closestIcon(icons [][]byte, side int) []byte {
+	var best []byte
+	bestWidth := 0
+	for _, icon := range icons {
+		width := pngWidth(icon)
+		if width == 0 {
+			continue
+		}
+		fits := width >= side
+		bestFits := bestWidth >= side
+		if best == nil || (fits && (!bestFits || width < bestWidth)) || (!fits && !bestFits && width > bestWidth) {
+			best, bestWidth = icon, width
+		}
+	}
+	return best
+}
+
+func pngWidth(data []byte) int {
+	if len(data) < 24 {
+		return 0
+	}
+	return int(binary.BigEndian.Uint32(data[16:20]))
 }
 
 func showMenu(hwnd uintptr, x, y int32) {

@@ -121,8 +121,8 @@ object Vault {
     suspend fun setTitleBar(dark: Boolean, caption: Int, text: Int) =
         send(Op.TITLE_BAR, TitleBarRequest(dark, caption, text))
 
-    suspend fun showTray(tooltip: String, icon: ByteArray, items: List<TrayItem>) =
-        send(Op.TRAY, TrayRequest(tooltip, icon, items))
+    suspend fun showTray(tooltip: String, icons: List<ByteArray>, iconsOnLight: List<ByteArray>, items: List<TrayItem>) =
+        send(Op.TRAY, TrayRequest(tooltip, icons.map(::TrayIcon), iconsOnLight.map(::TrayIcon), items))
 
     suspend fun hideTray() = send(Op.TRAY_HIDE)
 

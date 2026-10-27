@@ -258,7 +258,7 @@ func export(bus *dbus.Conn) error {
 		"Title":      {Value: current.Tooltip, Emit: prop.EmitTrue},
 		"Status":     {Value: "Active", Emit: prop.EmitTrue},
 		"IconName":   {Value: ""},
-		"IconPixmap": {Value: pixmapsOf(current.Icon), Emit: prop.EmitTrue},
+		"IconPixmap": {Value: pixmapsOf(current.Icons), Emit: prop.EmitTrue},
 		"ToolTip":    {Value: tooltip{Title: current.Tooltip, Pixmaps: []pixmap{}}, Emit: prop.EmitTrue},
 		"ItemIsMenu": {Value: false},
 		"Menu":       {Value: menuPath},
@@ -299,7 +299,7 @@ func export(bus *dbus.Conn) error {
 func refresh() {
 	props.SetMust(itemIface, "Title", current.Tooltip)
 	props.SetMust(itemIface, "ToolTip", tooltip{Title: current.Tooltip, Pixmaps: []pixmap{}})
-	props.SetMust(itemIface, "IconPixmap", pixmapsOf(current.Icon))
+	props.SetMust(itemIface, "IconPixmap", pixmapsOf(current.Icons))
 	conn.Emit(itemPath, itemIface+".NewTitle")
 	conn.Emit(itemPath, itemIface+".NewIcon")
 	conn.Emit(itemPath, itemIface+".NewToolTip")
@@ -327,10 +327,20 @@ func reregister(bus *dbus.Conn, name string) {
 	}
 }
 
-func pixmapsOf(data []byte) []pixmap {
+func pixmapsOf(icons [][]byte) []pixmap {
+	out := []pixmap{}
+	for _, data := range icons {
+		if pixmap, ok := pixmapOf(data); ok {
+			out = append(out, pixmap)
+		}
+	}
+	return out
+}
+
+func pixmapOf(data []byte) (pixmap, bool) {
 	decoded, err := png.Decode(bytes.NewReader(data))
 	if err != nil {
-		return []pixmap{}
+		return pixmap{}, false
 	}
 	bounds := decoded.Bounds()
 	argb := make([]byte, 0, bounds.Dx()*bounds.Dy()*4)
@@ -340,5 +350,5 @@ func pixmapsOf(data []byte) []pixmap {
 			argb = append(argb, c.A, c.R, c.G, c.B)
 		}
 	}
-	return []pixmap{{Width: int32(bounds.Dx()), Height: int32(bounds.Dy()), Data: argb}}
+	return pixmap{Width: int32(bounds.Dx()), Height: int32(bounds.Dy()), Data: argb}, true
 }

@@ -12,7 +12,8 @@ type Item struct {
 }
 
 type Config struct {
-	Tooltip string
-	Icon    []byte
-	Items   []Item
+	Tooltip      string
+	Icons        [][]byte
+	IconsOnLight [][]byte
+	Items        []Item
 }
