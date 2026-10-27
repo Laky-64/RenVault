@@ -220,6 +220,10 @@
     <string name="totp_key_placeholder">Setup key</string>
     <string name="totp_key_confirm">Use setup key</string>
     <string name="settings_based_on">Based on %1$s</string>
+    <string name="settings_made_by">Made by</string>
+    <string name="settings_source_code">Source code</string>
+    <string name="settings_about_tagline">Your passwords, from iCloud Keychain or kept on your devices</string>
+    <string name="settings_report_issue">Report a problem</string>
     <string name="settings_channel_stable">Stable</string>
     <string name="anisette_title">Anisette server</string>
     <string name="anisette_desc">Apple needs anisette data to sign you in. Pick one of the public servers or use your own.</string>

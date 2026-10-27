@@ -152,6 +152,7 @@ fun RvHomePage(
     backup: RvBackupActions? = null,
     onQuick: suspend (Boolean) -> Unit = {},
     onQuickCredential: suspend (Boolean) -> Unit = {},
+    onOpenUrl: (String) -> Unit = {},
 ) {
     if (zones.isEmpty()) return
 
@@ -404,6 +405,7 @@ fun RvHomePage(
             backup = backup,
             onQuick = onQuick,
             onQuickCredential = onQuickCredential,
+            onOpenUrl = onOpenUrl,
             onOpenItem = { id ->
                 settingsOpen = false
                 zoneKind = RvZoneKind.All

@@ -87,6 +87,10 @@ import io.lauren.renvault.resources.websites_placeholder
 import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
+import io.lauren.renvault.resources.settings_made_by
+import io.lauren.renvault.resources.settings_source_code
+import io.lauren.renvault.resources.settings_about_tagline
+import io.lauren.renvault.resources.settings_report_issue
 import io.lauren.renvault.resources.settings_channel_stable
 import io.lauren.renvault.resources.quick_credential
 import io.lauren.renvault.resources.quick_credential_desc
@@ -366,6 +370,10 @@ private val TextResources = listOf(
     Res.string.anisette_note,
     Res.string.websites_title,
     Res.string.settings_based_on,
+    Res.string.settings_made_by,
+    Res.string.settings_source_code,
+    Res.string.settings_about_tagline,
+    Res.string.settings_report_issue,
     Res.string.settings_channel_stable,
     Res.string.quick_credential,
     Res.string.quick_credential_desc,
@@ -824,6 +832,10 @@ private class ResourceStrings(
     override val settingsPwnedNever: String get() = text(Res.string.settings_pwned_never)
     override val settingsAboutTitle: String get() = text(Res.string.settings_about_title)
     override val settingsLastSync: String get() = text(Res.string.settings_last_sync)
+    override val settingsMadeBy: String get() = text(Res.string.settings_made_by)
+    override val settingsSourceCode: String get() = text(Res.string.settings_source_code)
+    override val settingsAboutTagline: String get() = text(Res.string.settings_about_tagline)
+    override val settingsReportIssue: String get() = text(Res.string.settings_report_issue)
     override val settingsSyncedNever: String get() = text(Res.string.settings_synced_never)
     override val settingsSignOut: String get() = text(Res.string.settings_sign_out)
     override val settingsSignOutNote: String get() = text(Res.string.settings_sign_out_note)

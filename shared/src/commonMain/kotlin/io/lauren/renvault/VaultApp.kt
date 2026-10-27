@@ -562,6 +562,7 @@ fun RvVaultApp(
                         backup = backupActions,
                         onQuick = setQuick,
                         onQuickCredential = setCredential,
+                        onOpenUrl = openUrl,
                         onSignOut = {
                                 scope.launch {
                                     leaving = true

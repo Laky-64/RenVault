@@ -99,6 +99,10 @@ interface RvStrings {
     val settingsPwnedNever: String
     val settingsAboutTitle: String
     val settingsLastSync: String
+    val settingsMadeBy: String
+    val settingsSourceCode: String
+    val settingsAboutTagline: String
+    val settingsReportIssue: String
     val settingsSyncedNever: String
     val settingsSignOut: String
     val settingsSignOutNote: String

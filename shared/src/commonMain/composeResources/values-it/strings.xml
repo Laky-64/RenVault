@@ -164,6 +164,10 @@
     <string name="totp_key_placeholder">Chiave di configurazione</string>
     <string name="totp_key_confirm">Usa chiave di configurazione</string>
     <string name="settings_based_on">Basato su %1$s</string>
+    <string name="settings_made_by">Creata da</string>
+    <string name="settings_source_code">Codice sorgente</string>
+    <string name="settings_about_tagline">Le tue password, dal Portachiavi iCloud o solo sui tuoi dispositivi</string>
+    <string name="settings_report_issue">Segnala un problema</string>
     <string name="settings_channel_stable">Stabile</string>
 
     <string name="auth_sign_in_title">Accedi con il tuo Apple ID</string>

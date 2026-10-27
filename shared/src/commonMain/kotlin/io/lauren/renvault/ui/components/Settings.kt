@@ -4,6 +4,10 @@ import androidx.compose.animation.AnimatedContent
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.SnackbarResult
@@ -25,6 +29,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -33,6 +38,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
+import androidx.compose.ui.draw.clip
+import io.lauren.renvault.resources.Res
+import io.lauren.renvault.resources.app_logo
+import io.lauren.renvault.resources.author
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -76,6 +86,16 @@ import kotlin.time.Duration.Companion.seconds
 
 private val ClockTick = 30.seconds
 
+private const val Author = "LaurenTheStoat"
+
+private const val Handle = "@Laky-64"
+
+private const val SourceLabel = "github.com/Laky-64/RenVault"
+
+private const val SourceUrl = "https://github.com/Laky-64/RenVault"
+
+private const val ProfileUrl = "https://github.com/Laky-64"
+
 data class RvSettingsState(
     val profileName: String = "",
     val appleId: String = "",
@@ -102,7 +122,7 @@ data class RvSettingsState(
     val devices: List<RvDevice> = emptyList(),
 )
 
-private enum class SettingsPage { Root, Language, Names, Devices }
+private enum class SettingsPage { Root, Language, Names, Devices, About }
 
 @Composable
 fun RvSettingsScreen(
@@ -126,6 +146,7 @@ fun RvSettingsScreen(
     backup: RvBackupActions? = null,
     onQuick: suspend (Boolean) -> Unit = {},
     onQuickCredential: suspend (Boolean) -> Unit = {},
+    onOpenUrl: (String) -> Unit = {},
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
@@ -162,6 +183,13 @@ fun RvSettingsScreen(
                     onBack = { page = SettingsPage.Root },
                 )
             }
+            SettingsPage.About -> AboutPage(
+                state = state,
+                strings = strings,
+                dialog = dialog,
+                onBack = { page = SettingsPage.Root },
+                onOpenUrl = onOpenUrl,
+            )
             SettingsPage.Root -> RootPage(
                 state = state,
                 photo = photo,
@@ -175,6 +203,7 @@ fun RvSettingsScreen(
                 backup = backup,
                 onQuick = onQuick,
                 onQuickCredential = onQuickCredential,
+                onAbout = { page = SettingsPage.About },
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onCheckPwned = onCheckPwned,
@@ -220,6 +249,7 @@ private fun RootPage(
     backup: RvBackupActions?,
     onQuick: suspend (Boolean) -> Unit,
     onQuickCredential: suspend (Boolean) -> Unit,
+    onAbout: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onCheckPwned: suspend () -> Int,
@@ -256,22 +286,6 @@ private fun RootPage(
                 snackbar.showSnackbar(text)
             }
         })
-    }
-    val copyBuild: () -> Unit = {
-        copy(
-            listOf(
-                "${state.appName} v${state.version}",
-                state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
-                "#${state.channel}",
-                state.commit.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
-                state.platform,
-            ).filter { it.isNotEmpty() }.joinToString(" "),
-            false,
-        )
-        scope.launch {
-            snackbar.currentSnackbarData?.dismiss()
-            snackbar.showSnackbar(strings.fieldCopied)
-        }
     }
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
@@ -675,17 +689,24 @@ private fun RootPage(
                     RvSegment(
                         index = 1,
                         count = 2,
-                        onClick = copyBuild,
+                        onClick = onAbout,
                         leading = { SettingBadge(RvInfoIcon, accents.blue) },
                         supporting = {
-                            Text(
-                                listOfNotNull(
-                                    listOf(state.commit, state.platform).filter { it.isNotEmpty() }.joinToString(" · "),
-                                    state.core.takeIf { it.isNotEmpty() }?.let(strings::settingsBasedOn),
-                                ).filter { it.isNotEmpty() }.joinToString("\n"),
-                            )
+                            Column {
+                                Text(
+                                    listOfNotNull(
+                                        listOf(state.commit, state.platform).filter { it.isNotEmpty() }.joinToString(" · "),
+                                        state.core.takeIf { it.isNotEmpty() }?.let(strings::settingsBasedOn),
+                                    ).filter { it.isNotEmpty() }.joinToString("\n"),
+                                )
+                            }
                         },
-                        trailing = { ChannelPill(state.channel, strings) },
+                        trailing = {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                ChannelPill(state.channel, strings)
+                                Icon(RvChevronRightIcon, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
+                            }
+                        },
                     ) {
                         Text(listOf("${state.appName} ${state.version}", state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty()).filter { it.isNotEmpty() }.joinToString(" "))
                     }
@@ -789,6 +810,9 @@ private class BackupRow(
     val detail: String,
 )
 
+private fun channelLabel(channel: String, strings: RvStrings): String =
+    if (channel == "stable") strings.settingsChannelStable else channel.replaceFirstChar { it.uppercase() }
+
 @Composable
 private fun ChannelPill(channel: String, strings: RvStrings) {
     val accents = RenVault.accents
@@ -799,10 +823,168 @@ private fun ChannelPill(channel: String, strings: RvStrings) {
     }
     Surface(shape = CircleShape, color = tone.container, contentColor = tone.content) {
         Text(
-            text = if (channel == "stable") strings.settingsChannelStable else channel.replaceFirstChar { it.uppercase() },
+            text = channelLabel(channel, strings),
             style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
         )
+    }
+}
+
+@Composable
+private fun AboutPage(
+    state: RvSettingsState,
+    strings: RvStrings,
+    dialog: Boolean,
+    onBack: () -> Unit,
+    onOpenUrl: (String) -> Unit,
+) {
+    val accents = RenVault.accents
+    val copy = rememberClipboardCopy()
+    val scope = rememberCoroutineScope()
+    val snackbar = remember { SnackbarHostState() }
+    val list = rememberLazyListState()
+    val scrolled by list.scrolledPast()
+    val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
+    val copyBuild: () -> Unit = {
+        copy(
+            listOf(
+                "${state.appName} v${state.version}",
+                state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+                "#${state.channel}",
+                state.commit.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+                state.platform,
+            ).filter { it.isNotEmpty() }.joinToString(" "),
+            false,
+        )
+        scope.launch {
+            snackbar.currentSnackbarData?.dismiss()
+            snackbar.showSnackbar(strings.fieldCopied)
+        }
+    }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = background,
+        snackbarHost = { SnackbarHost(snackbar) },
+        topBar = {
+            RvPageBar(
+                title = strings.settingsAboutTitle,
+                scrolled = scrolled,
+                background = background,
+                navigationIcon = {
+                    IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
+                        Icon(RvBackIcon, contentDescription = strings.navBack)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            state = list,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = RvLayout.gutter,
+                end = RvLayout.gutter,
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 32.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(112.dp)
+                            .clip(MaterialShapes.Cookie12Sided.toShape())
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Image(
+                            painter = painterResource(Res.drawable.app_logo),
+                            contentDescription = null,
+                            modifier = Modifier.size(78.dp),
+                        )
+                    }
+                    Text(
+                        text = state.appName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier.padding(top = 20.dp),
+                    )
+                    Text(
+                        text = strings.settingsAboutTagline,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 4.dp, start = 24.dp, end = 24.dp),
+                    )
+                    Text(
+                        text = listOf(
+                            listOf("v${state.version}", state.versionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty()).filter { it.isNotEmpty() }.joinToString(" "),
+                            channelLabel(state.channel, strings),
+                        ).joinToString(" · "),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                }
+            }
+
+            item {
+                RvSection {
+                    RvSegment(
+                        index = 0,
+                        count = 4,
+                        onClick = { onOpenUrl(ProfileUrl) },
+                        leading = {
+                            Image(
+                                painter = painterResource(Res.drawable.author),
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp).clip(MaterialShapes.Cookie9Sided.toShape()),
+                            )
+                        },
+                        overline = { Text(strings.settingsMadeBy) },
+                        supporting = { Text(Handle) },
+                        trailing = { Icon(RvOpenInNewIcon, contentDescription = null) },
+                    ) {
+                        Text(Author)
+                    }
+                    RvSegment(
+                        index = 1,
+                        count = 4,
+                        onClick = { onOpenUrl(SourceUrl) },
+                        leading = { SettingBadge(RvGithubIcon, accents.teal) },
+                        supporting = { Text(SourceLabel) },
+                        trailing = { Icon(RvOpenInNewIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.settingsSourceCode)
+                    }
+                    RvSegment(
+                        index = 2,
+                        count = 4,
+                        onClick = { onOpenUrl("$SourceUrl/issues") },
+                        leading = { SettingBadge(RvWarningIcon, accents.orange) },
+                        trailing = { Icon(RvOpenInNewIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.settingsReportIssue)
+                    }
+                    RvSegment(
+                        index = 3,
+                        count = 4,
+                        onClick = copyBuild,
+                        leading = { SettingBadge(RvInfoIcon, accents.blue) },
+                        supporting = {
+                            state.core.takeIf { it.isNotEmpty() }?.let { Text(strings.settingsBasedOn(it)) }
+                        },
+                        trailing = { Icon(RvCopyIcon, contentDescription = null) },
+                    ) {
+                        Text(listOf(state.commit, state.platform).filter { it.isNotEmpty() }.joinToString(" · "))
+                    }
+                }
+            }
+        }
     }
 }
 
