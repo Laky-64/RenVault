@@ -120,6 +120,7 @@ private fun vaultApplication() = application {
         state = state,
         visible = visible,
         title = appName,
+        icon = rememberAppIcon(),
     ) {
         LaunchedEffect(visible, raises) {
             if (!visible) return@LaunchedEffect
@@ -182,6 +183,12 @@ private fun rememberTrayIcon(): Painter {
     return remember(variant) {
         BitmapPainter(Image.makeFromEncoded(trayIcons(variant).last()).toComposeImageBitmap())
     }
+}
+
+@Composable
+private fun rememberAppIcon(): Painter = remember {
+    val stream = RvInstance::class.java.getResourceAsStream("/app/renvault.png") ?: error("app icon missing")
+    BitmapPainter(Image.makeFromEncoded(stream.use { it.readBytes() }).toComposeImageBitmap())
 }
 
 private fun trayIcons(variant: String): List<ByteArray> = TraySizes.map { size ->

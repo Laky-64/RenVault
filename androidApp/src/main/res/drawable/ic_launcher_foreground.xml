@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.46" android:scaleY="0.46">
+        <path android:pathData="M160,40H352A120,120 0 0,1 472,160V352A120,120 0 0,1 352,472H160A120,120 0 0,1 40,352V160A120,120 0 0,1 160,40Z" android:strokeWidth="44">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="40" android:startY="40" android:endX="472" android:endY="472"
+                    android:startColor="#FF8C9EFF" android:endColor="#FF5B3FD6" />
+            </aapt:attr>
+        </path>
+        <group android:pivotX="256" android:pivotY="256" android:rotation="-45">
+            <path android:pathData="M256.0,91.0H256.0A60.0,60.0 0 0,1 316.0,151.0V361.0A60.0,60.0 0 0,1 256.0,421.0H256.0A60.0,60.0 0 0,1 196.0,361.0V151.0A60.0,60.0 0 0,1 256.0,91.0Z" android:strokeColor="#FFC7C2FF" android:strokeWidth="48" />
+        </group>
+        <group android:pivotX="256" android:pivotY="256" android:rotation="45">
+            <path android:pathData="M256.0,91.0H256.0A60.0,60.0 0 0,1 316.0,151.0V361.0A60.0,60.0 0 0,1 256.0,421.0H256.0A60.0,60.0 0 0,1 196.0,361.0V151.0A60.0,60.0 0 0,1 256.0,91.0Z" android:strokeColor="#FF5B3FD6" android:strokeWidth="48" />
+        </group>
+    </group>
+</vector>

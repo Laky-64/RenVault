@@ -34,9 +34,11 @@ compose.desktop {
             packageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
             macOS {
                 bundleID = "io.lauren.renvault"
+                iconFile.set(project.file("icons/renvault.icns"))
             }
             windows {
                 upgradeUuid = "737d67c8-f74c-4bc3-8e60-847cdd4be676"
+                iconFile.set(project.file("icons/renvault.ico"))
                 menuGroup = "RenVault"
                 shortcut = true
                 menu = true
@@ -44,6 +46,7 @@ compose.desktop {
             }
             linux {
                 packageName = "io.lauren.renvault"
+                iconFile.set(project.file("icons/renvault.png"))
             }
         }
     }
