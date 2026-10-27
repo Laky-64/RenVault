@@ -526,15 +526,15 @@ fun RvAuthFlow(
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
         val previousPage = steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
-        val transition = rememberBackTransition(
+        val navigation = rememberBackTransition(
             screen = page to depth,
             previous = (previousPage to depth - 1).takeIf { canGoBack },
             label = "authStep",
             onBack = goBack,
         )
-        transition.AnimatedContent(
+        navigation.transition.AnimatedContent(
             modifier = Modifier.fillMaxSize(),
-            transitionSpec = { slideBetween(targetState.second >= initialState.second, motion, 4) },
+            transitionSpec = { slideBetween(targetState.second >= initialState.second, motion, 4, navigation.peeking) },
         ) { (shown, _) ->
             when (shown) {
                 "entry:${AuthEntry.Master.name}" -> AuthPage(

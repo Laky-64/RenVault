@@ -417,11 +417,11 @@ fun RvHomePage(
     Box(modifier = modifier.fillMaxSize()) {
         if (compact) {
             val motion = MaterialTheme.motionScheme
-            val transition = rememberBackTransition(screen, previous, "homeScreen", back)
+            val navigation = rememberBackTransition(screen, previous, "homeScreen", back)
 
-            transition.AnimatedContent(
+            navigation.transition.AnimatedContent(
                 modifier = Modifier.fillMaxSize(),
-                transitionSpec = { slideBetween(targetState.ordinal > initialState.ordinal, motion, 3) },
+                transitionSpec = { slideBetween(targetState.ordinal > initialState.ordinal, motion, 3, navigation.peeking) },
             ) { shown ->
                 val fill = Modifier.fillMaxSize()
                 when (shown) {

@@ -130,15 +130,15 @@ fun RvSettingsScreen(
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
 
-    val transition = rememberBackTransition(
+    val navigation = rememberBackTransition(
         screen = page,
         previous = SettingsPage.Root.takeIf { page != SettingsPage.Root },
         label = "settingsPage",
     ) { page = SettingsPage.Root }
 
-    transition.AnimatedContent(
+    navigation.transition.AnimatedContent(
         modifier = modifier,
-        transitionSpec = { slideBetween(targetState != SettingsPage.Root, motion, 3) },
+        transitionSpec = { slideBetween(targetState != SettingsPage.Root, motion, 3, navigation.peeking) },
     ) { shown ->
         when (shown) {
             SettingsPage.Language -> LanguagePage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })
