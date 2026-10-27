@@ -5,7 +5,7 @@
     android:height="108dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
-    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.46" android:scaleY="0.46">
+    <group android:pivotX="256" android:pivotY="256" android:scaleX="0.42" android:scaleY="0.42">
         <path android:pathData="M160,40H352A120,120 0 0,1 472,160V352A120,120 0 0,1 352,472H160A120,120 0 0,1 40,352V160A120,120 0 0,1 160,40Z" android:strokeWidth="44">
             <aapt:attr name="android:strokeColor">
                 <gradient android:type="linear" android:startX="40" android:startY="40" android:endX="472" android:endY="472"
