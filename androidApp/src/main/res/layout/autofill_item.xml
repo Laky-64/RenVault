@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/autofill_surface"
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingStart="16dp"
@@ -30,7 +29,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/autofill_title" />
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/autofill_detail"
@@ -39,6 +38,6 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@color/autofill_detail" />
+            android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 </LinearLayout>
