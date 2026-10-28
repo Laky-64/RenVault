@@ -300,11 +300,12 @@ internal fun <S> BackTransition<S>.Content(
         }
         val leaving = predictive && shown == navigation.currentState && shown != navigation.targetState
         val behind = predictive && shown == navigation.targetState && (shown != navigation.currentState || released)
-        when {
-            leaving -> Box(modifier = Modifier.fillMaxSize().closing(this@Content, corner)) { content(shown) }
-            behind -> Box(modifier = Modifier.fillMaxSize().entering(this@Content, corner, scrim)) { content(shown) }
-            else -> Box(modifier = Modifier.fillMaxSize()) { content(shown) }
+        val role = when {
+            leaving -> Modifier.closing(this@Content, corner)
+            behind -> Modifier.entering(this@Content, corner, scrim)
+            else -> Modifier
         }
+        Box(modifier = Modifier.fillMaxSize().then(role)) { content(shown) }
     }
 }
 
