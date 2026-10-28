@@ -1,11 +1,11 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -48,11 +49,12 @@ fun RvPageBar(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val motion = MaterialTheme.motionScheme
-    val container by animateColorAsState(
-        targetValue = if (scrolled) MaterialTheme.colorScheme.surfaceContainer else background,
+    val tint by animateFloatAsState(
+        targetValue = if (scrolled) 1f else 0f,
         animationSpec = motion.defaultEffectsSpec(),
         label = "barTint",
     )
+    val container = lerp(background, MaterialTheme.colorScheme.surfaceContainer, tint)
 
     TopAppBar(
         title = {
