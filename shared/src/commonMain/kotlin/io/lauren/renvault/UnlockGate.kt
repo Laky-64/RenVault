@@ -1,5 +1,12 @@
 package io.lauren.renvault
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -26,16 +33,22 @@ fun RvUnlockGate(onUnlocked: () -> Unit, modifier: Modifier = Modifier) {
     val quick = rememberQuickUnlock(strings, rememberBiometrics())
     if (!strings.loaded) return
     CompositionLocalProvider(LocalStrings provides strings) {
-        RvAuthFlow(
-            modifier = modifier,
-            strings = strings,
-            describe = { strings.failureText(it) },
-            unlocked = { Vault.state().unlocked },
-            configured = { Vault.state().configured },
-            unlock = { secret -> Vault.unlock(secret) },
-            quick = quick,
-            onDone = onUnlocked,
-        )
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .windowInsetsPadding(WindowInsets.safeDrawing),
+        ) {
+            RvAuthFlow(
+                strings = strings,
+                describe = { strings.failureText(it) },
+                unlocked = { Vault.state().unlocked },
+                configured = { Vault.state().configured },
+                unlock = { secret -> Vault.unlock(secret) },
+                quick = quick,
+                onDone = onUnlocked,
+            )
+        }
     }
 }
 
