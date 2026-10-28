@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -150,6 +151,7 @@ fun RvSettingsScreen(
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
     val motion = MaterialTheme.motionScheme
+    val rootList = rememberLazyListState()
 
     val navigation = rememberBackTransition(
         screen = page,
@@ -191,6 +193,7 @@ fun RvSettingsScreen(
                 onOpenUrl = onOpenUrl,
             )
             SettingsPage.Root -> RootPage(
+                list = rootList,
                 state = state,
                 photo = photo,
                 strings = strings,
@@ -237,6 +240,7 @@ fun RvSettingsDialog(onDismiss: () -> Unit, content: @Composable () -> Unit) {
 @OptIn(ExperimentalTime::class)
 @Composable
 private fun RootPage(
+    list: LazyListState,
     state: RvSettingsState,
     photo: ImageBitmap?,
     strings: RvStrings,
@@ -268,7 +272,6 @@ private fun RootPage(
     var copyTotp by remember { mutableStateOf(autofillCopyTotp()) }
     var clipboardClear by remember { mutableIntStateOf(clipboardClearSeconds()) }
     val accents = RenVault.accents
-    val list = rememberLazyListState()
     val scrolled by list.scrolledPast()
     val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
 
