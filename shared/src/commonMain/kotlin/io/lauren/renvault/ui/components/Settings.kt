@@ -1,6 +1,5 @@
 package io.lauren.renvault.ui.components
 
-import androidx.compose.animation.AnimatedContent
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Row
@@ -150,7 +149,6 @@ fun RvSettingsScreen(
     onOpenUrl: (String) -> Unit = {},
 ) {
     var page by remember { mutableStateOf(SettingsPage.Root) }
-    val motion = MaterialTheme.motionScheme
     val rootList = rememberLazyListState()
 
     val navigation = rememberBackTransition(
@@ -159,9 +157,10 @@ fun RvSettingsScreen(
         label = "settingsPage",
     ) { page = SettingsPage.Root }
 
-    navigation.transition.AnimatedContent(
+    navigation.Content(
         modifier = modifier,
-        transitionSpec = { slideBetween(targetState != SettingsPage.Root, motion, 3, navigation.peeking) },
+        fraction = 3,
+        forward = { targetState != SettingsPage.Root },
     ) { shown ->
         when (shown) {
             SettingsPage.Language -> LanguagePage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })

@@ -1,6 +1,5 @@
 package io.lauren.renvault.ui.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -522,7 +521,6 @@ fun RvAuthFlow(
 
     val page = here?.let { "step:${it.name}" } ?: "entry:${entry.name}"
     val depth = steps.size
-    val motion = MaterialTheme.motionScheme
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
         val previousPage = steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
@@ -532,9 +530,10 @@ fun RvAuthFlow(
             label = "authStep",
             onBack = goBack,
         )
-        navigation.transition.AnimatedContent(
+        navigation.Content(
             modifier = Modifier.fillMaxSize(),
-            transitionSpec = { slideBetween(targetState.second >= initialState.second, motion, 4, navigation.peeking) },
+            fraction = 4,
+            forward = { targetState.second >= initialState.second },
         ) { (shown, _) ->
             when (shown) {
                 "entry:${AuthEntry.Master.name}" -> AuthPage(

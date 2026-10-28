@@ -1,6 +1,5 @@
 package io.lauren.renvault.ui.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.animation.AnimatedVisibility
@@ -418,12 +417,12 @@ fun RvHomePage(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (compact) {
-            val motion = MaterialTheme.motionScheme
             val navigation = rememberBackTransition(screen, previous, "homeScreen", back)
 
-            navigation.transition.AnimatedContent(
+            navigation.Content(
                 modifier = Modifier.fillMaxSize(),
-                transitionSpec = { slideBetween(targetState.ordinal > initialState.ordinal, motion, 3, navigation.peeking) },
+                fraction = 3,
+                forward = { targetState.ordinal > initialState.ordinal },
             ) { shown ->
                 val fill = Modifier.fillMaxSize()
                 when (shown) {
