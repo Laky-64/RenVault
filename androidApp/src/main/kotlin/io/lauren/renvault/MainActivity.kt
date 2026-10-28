@@ -31,6 +31,6 @@ class MainActivity : FragmentActivity() {
 
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
         super.onTopResumedActivityChanged(isTopResumedActivity)
-        if (!isTopResumedActivity) RvLeaveSignal.left()
+        if (isTopResumedActivity) RvLeaveSignal.returned() else RvLeaveSignal.left()
     }
 }

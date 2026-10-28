@@ -90,5 +90,7 @@ internal suspend fun nativeQuick(block: suspend () -> Unit) {
     } catch (failure: VaultException) {
         if (failure.failure.reason == FailureReason.Cancelled) throw RvBiometricCancelled()
         throw failure
+    } finally {
+        RvLockGuard.disarm()
     }
 }

@@ -45,6 +45,9 @@ import io.lauren.renvault.ui.components.RvDeviceActions
 import io.lauren.renvault.ui.components.RvImported
 import io.lauren.renvault.ui.components.RvPairCode
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.key
 import io.lauren.renvault.bridge.EditPassword
 import io.lauren.renvault.bridge.Profile
 import io.lauren.renvault.bridge.Settings
@@ -54,6 +57,7 @@ import io.lauren.renvault.lib.writePreference
 import io.lauren.renvault.lib.readPreference
 import io.lauren.renvault.ui.LocalNameNotice
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import io.lauren.renvault.ui.LocalNameMask
 import io.lauren.renvault.lib.RvNameMask
@@ -83,10 +87,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -219,16 +225,35 @@ fun RvVaultApp(
 
     val lockOnLeave = settings.autoLockMinutes < 0
     RvHideFromRecents(lockOnLeave)
-    val leave: () -> Unit = {
-        if (lockOnLeave && unlocked && !RvLockGuard.expected()) {
+    var away by remember { mutableStateOf(false) }
+    var authKey by remember { mutableIntStateOf(0) }
+    var pending by remember { mutableStateOf<Job?>(null) }
+    val scheduleLock: () -> Unit = {
+        pending?.cancel()
+        pending = scope.launch(NonCancellable) {
+            delay(LeaveDebounce)
+            if (!away || RvLockGuard.expected()) return@launch
+            if (!runCatching { Vault.settings().autoLockMinutes < 0 }.getOrDefault(false)) return@launch
             unlocked = false
             lanOpen = false
-            scope.launch { runCatching { Vault.lock() } }
+            runCatching { Vault.lock() }
         }
     }
+    val leave: () -> Unit = {
+        away = true
+        scheduleLock()
+    }
+    val comeBack: () -> Unit = {
+        away = false
+        RvLockGuard.disarm()
+    }
     LifecycleEventEffect(leaveEvent) { leave() }
-    LaunchedEffect(lockOnLeave) {
-        if (lockOnLeave) RvLeaveSignal.events.collect { leave() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { comeBack() }
+    LaunchedEffect(Unit) {
+        RvLeaveSignal.events.collect { leave() }
+    }
+    LaunchedEffect(Unit) {
+        RvLeaveSignal.comebacks.collect { comeBack() }
     }
 
     LaunchedEffect(Unit) {
@@ -408,66 +433,77 @@ fun RvVaultApp(
             modifier = modifier.fillMaxSize(),
             auth = {
                 if (!ready) return@RvVaultShell
-                RvAuthFlow(
-                    photo = photo,
-                    strings = strings,
-                    describe = { strings.failureText(it) },
-                    unlocked = { Vault.state().unlocked },
-                    configured = { Vault.state().configured },
-                    startLogin = { appleId, secret -> Vault.startLogin(appleId, secret) },
-                    requestCode = { Vault.requestCode() },
-                    submitCode = { code -> Vault.submitCode(code) },
-                    loadDevices = {
-                        coroutineScope {
-                            Vault.bottles().map { device ->
-                                async {
-                                    RvAuthDevice(
-                                        name = device.name,
-                                        model = device.shortModel,
-                                        art = deviceArt(device.imageUrl),
-                                    )
-                                }
-                            }.awaitAll()
-                        }
-                    },
-                    loadProfile = {
-                        val meta = runCatching { Vault.profile() }.getOrNull()
-                        val raw = if (meta?.hasPhoto == true) {
-                            runCatching { Vault.profilePhoto() }.getOrNull()
-                        } else {
-                            null
-                        }
+                key(authKey) {
+                    RvAuthFlow(
+                        photo = photo,
+                        strings = strings,
+                        describe = { strings.failureText(it) },
+                        unlocked = { Vault.state().unlocked },
+                        configured = { Vault.state().configured },
+                        startLogin = { appleId, secret -> Vault.startLogin(appleId, secret) },
+                        requestCode = { Vault.requestCode() },
+                        submitCode = { code -> Vault.submitCode(code) },
+                        loadDevices = {
+                            coroutineScope {
+                                Vault.bottles().map { device ->
+                                    async {
+                                        RvAuthDevice(
+                                            name = device.name,
+                                            model = device.shortModel,
+                                            art = deviceArt(device.imageUrl),
+                                        )
+                                    }
+                                }.awaitAll()
+                            }
+                        },
+                        loadProfile = {
+                            val meta = runCatching { Vault.profile() }.getOrNull()
+                            val raw = if (meta?.hasPhoto == true) {
+                                runCatching { Vault.profilePhoto() }.getOrNull()
+                            } else {
+                                null
+                            }
 
-                        RvAuthProfile(
-                            local = meta?.local == true,
-                            name = meta?.name.orEmpty(),
-                            photo = raw?.let {
-                                withContext(Dispatchers.Default) {
-                                    runCatching { it.decodeToImageBitmap() }.getOrNull()
-                                }
-                            },
-                        )
-                    },
-                    recoverDevice = { index, passcode -> Vault.recoverBottle(index, passcode) },
-                    finishSetup = { secret -> Vault.finishSetup(secret) },
-                    finishLocal = { secret, name, picture ->
-                        Vault.localSetup(secret, name, withContext(Dispatchers.Default) { RvLan.deviceName() }, picture)
-                        lanOpen = true
-                    },
-                    joinPairing = { text -> Vault.joinPairing(text) },
-                    unlock = { secret -> Vault.unlock(secret) },
-                    quick = quickUnlock,
-                    reset = {
-                        Vault.signOut()
-                        biometrics?.forget()
-                        quick = QuickState()
-                    },
-                    onPrivacy = { openUrl(PrivacyUrl) },
-                    anisette = anisette,
-                    onAnisette = chooseAnisette,
-                    backup = backupActions,
-                    onDone = { unlocked = true },
-                )
+                            RvAuthProfile(
+                                local = meta?.local == true,
+                                name = meta?.name.orEmpty(),
+                                photo = raw?.let {
+                                    withContext(Dispatchers.Default) {
+                                        runCatching { it.decodeToImageBitmap() }.getOrNull()
+                                    }
+                                },
+                            )
+                        },
+                        recoverDevice = { index, passcode -> Vault.recoverBottle(index, passcode) },
+                        finishSetup = { secret -> Vault.finishSetup(secret) },
+                        finishLocal = { secret, name, picture ->
+                            Vault.localSetup(secret, name, withContext(Dispatchers.Default) { RvLan.deviceName() }, picture)
+                            lanOpen = true
+                        },
+                        joinPairing = { text -> Vault.joinPairing(text) },
+                        unlock = { secret ->
+                            Vault.unlock(secret)
+                            if (away) scheduleLock()
+                        },
+                        quick = quickUnlock,
+                        reset = {
+                            Vault.signOut()
+                            biometrics?.forget()
+                            quick = QuickState()
+                        },
+                        onPrivacy = { openUrl(PrivacyUrl) },
+                        anisette = anisette,
+                        onAnisette = chooseAnisette,
+                        backup = backupActions,
+                        onDone = {
+                            scope.launch {
+                                val open = runCatching { Vault.state().unlocked }.getOrDefault(false)
+                                unlocked = open
+                                if (!open) authKey++
+                            }
+                        },
+                    )
+                }
             },
             home = {
                 val mask = remember(names) { RvNameMask(names) }
@@ -587,6 +623,8 @@ private const val PrivacyUrl = "https://www.apple.com/legal/privacy/data/en/appl
 private const val PasskeyUrl = "https://support.apple.com/en-us/102195"
 
 private val DeviceArtTimeout = 4.seconds
+
+private val LeaveDebounce = 300.milliseconds
 
 private const val NameNoticeKey = "name_notice"
 

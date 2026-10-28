@@ -71,7 +71,7 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
         runCatching { keyStore().deleteEntry(KeyAlias) }
     }
 
-    private suspend fun prompt(cipher: Cipher, title: String, cancel: String): Cipher =
+    private suspend fun prompt(cipher: Cipher, title: String, cancel: String): Cipher = try {
         suspendCancellableCoroutine { cont ->
             val prompt = BiometricPrompt(
                 activity,
@@ -103,6 +103,9 @@ private class AndroidBiometrics(private val activity: FragmentActivity) : RvBiom
             prompt.authenticate(info, BiometricPrompt.CryptoObject(cipher))
             cont.invokeOnCancellation { prompt.cancelAuthentication() }
         }
+    } finally {
+        RvLockGuard.disarm()
+    }
 
     private fun keyStore(): KeyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
