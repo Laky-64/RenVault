@@ -228,15 +228,30 @@ fun RvVaultApp(
     var away by remember { mutableStateOf(false) }
     var authKey by remember { mutableIntStateOf(0) }
     var pending by remember { mutableStateOf<Job?>(null) }
+    val lockIfImmediate: suspend () -> Unit = {
+        if (runCatching { Vault.settings().autoLockMinutes < 0 }.getOrDefault(false)) {
+            unlocked = false
+            lanOpen = false
+            runCatching { Vault.lock() }
+        }
+    }
     val scheduleLock: () -> Unit = {
         pending?.cancel()
         pending = scope.launch(NonCancellable) {
             delay(LeaveDebounce)
             if (!away || RvLockGuard.expected()) return@launch
-            if (!runCatching { Vault.settings().autoLockMinutes < 0 }.getOrDefault(false)) return@launch
-            unlocked = false
-            lanOpen = false
-            runCatching { Vault.lock() }
+            lockIfImmediate()
+        }
+    }
+    val hidden: () -> Unit = {
+        away = true
+        pending?.cancel()
+        if (!RvLockGuard.expected()) {
+            if (settings.autoLockMinutes < 0 && unlocked) {
+                unlocked = false
+                lanOpen = false
+            }
+            scope.launch(NonCancellable) { lockIfImmediate() }
         }
     }
     val leave: () -> Unit = {
@@ -245,9 +260,11 @@ fun RvVaultApp(
     }
     val comeBack: () -> Unit = {
         away = false
+        pending?.cancel()
         RvLockGuard.disarm()
     }
     LifecycleEventEffect(leaveEvent) { leave() }
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { hidden() }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { comeBack() }
     LaunchedEffect(Unit) {
         RvLeaveSignal.events.collect { leave() }
