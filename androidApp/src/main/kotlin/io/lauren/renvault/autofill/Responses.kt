@@ -12,6 +12,7 @@ import android.view.View
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import java.util.regex.Pattern
 import android.graphics.drawable.Icon
 import android.service.autofill.InlinePresentation
 import android.service.autofill.Presentations
@@ -80,11 +81,8 @@ internal suspend fun datasetOf(context: Context, form: Form, entry: WebEntry, sl
         builder.setAuthentication(totpSender(context, form, entry.id))
         return builder.build()
     }
-    val values = listOfNotNull(
-        form.username?.let { it to AutofillValue.forText(entry.username) },
-        form.password?.let { it to AutofillValue.forText(Vault.password(entry.id)) },
-    )
-    values.forEach { (id, value) -> builder.setField(id, value, views, chip) }
+    form.username?.let { builder.setField(it, AutofillValue.forText(entry.username), views, chip) }
+    form.password?.let { builder.setField(it, AutofillValue.forText(Vault.password(entry.id)), views, chip, filtered = false) }
     return builder.build()
 }
 
@@ -108,21 +106,44 @@ private fun datasetBuilder(views: RemoteViews, chip: Any?): Dataset.Builder =
 private fun legacyDatasetBuilder(views: RemoteViews): Dataset.Builder = Dataset.Builder(views)
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun Dataset.Builder.setField(id: AutofillId, value: AutofillValue?, views: RemoteViews, chip: Any?) {
+private fun Dataset.Builder.setField(
+    id: AutofillId,
+    value: AutofillValue?,
+    views: RemoteViews,
+    chip: Any?,
+    filtered: Boolean = true,
+) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        setField(id, Field.Builder().apply { if (value != null) setValue(value) }.build())
+        setField(
+            id,
+            Field.Builder()
+                .apply {
+                    if (value != null) setValue(value)
+                    if (!filtered) setFilter(null)
+                }
+                .build(),
+        )
     } else {
-        setLegacyField(id, value, views, chip)
+        setLegacyField(id, value, views, chip, filtered)
     }
 }
 
 @Suppress("DEPRECATION")
 @RequiresApi(Build.VERSION_CODES.O)
-private fun Dataset.Builder.setLegacyField(id: AutofillId, value: AutofillValue?, views: RemoteViews, chip: Any?) {
-    if (chip != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        setValue(id, value, views, chip as InlinePresentation)
-    } else {
-        setValue(id, value)
+private fun Dataset.Builder.setLegacyField(
+    id: AutofillId,
+    value: AutofillValue?,
+    views: RemoteViews,
+    chip: Any?,
+    filtered: Boolean,
+) {
+    val inline = chip != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+    when {
+        filtered && inline -> setValue(id, value, views, chip as InlinePresentation)
+        filtered -> setValue(id, value)
+        inline -> setValue(id, value, null as Pattern?, views, chip as InlinePresentation)
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> setValue(id, value, null as Pattern?, views)
+        else -> setValue(id, value)
     }
 }
 
