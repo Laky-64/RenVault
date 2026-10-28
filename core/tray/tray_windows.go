@@ -15,6 +15,8 @@ import (
 )
 
 const (
+	wsPopup         = 0x80000000
+	wsExToolWindow  = 0x00000080
 	wmClose         = 0x0010
 	wmNull          = 0x0000
 	wmDestroy       = 0x0002
@@ -165,7 +167,7 @@ func loop(ready chan<- error) {
 	class.size = uint32(unsafe.Sizeof(class))
 	procRegisterClassEx.Call(uintptr(unsafe.Pointer(&class)))
 
-	hwnd, _, err := procCreateWindowEx.Call(0, uintptr(unsafe.Pointer(className)), 0, 0, 0, 0, 0, 0, 0, 0, instance, 0)
+	hwnd, _, err := procCreateWindowEx.Call(wsExToolWindow, uintptr(unsafe.Pointer(className)), 0, wsPopup, 0, 0, 0, 0, 0, 0, instance, 0)
 	if hwnd == 0 {
 		ready <- err
 		return
