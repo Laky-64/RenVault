@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/Laky-64/appleservices"
 )
@@ -20,6 +21,7 @@ type Session struct {
 	profile *appleservices.Profile
 
 	anisette string
+	epoch    atomic.Uint64
 }
 
 func NewSession(store appleservices.Store) *Session {
@@ -27,6 +29,7 @@ func NewSession(store appleservices.Store) *Session {
 }
 
 func (s *Session) SetCredentials(c appleservices.Credentials) {
+	s.epoch.Add(1)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.creds == c {
@@ -37,6 +40,7 @@ func (s *Session) SetCredentials(c appleservices.Credentials) {
 }
 
 func (s *Session) Start(c appleservices.Credentials) (bool, error) {
+	s.epoch.Add(1)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.resetLoginLocked()
@@ -199,10 +203,16 @@ func (s *Session) Keychain(peer appleservices.PeerKey) (*appleservices.KeychainV
 }
 
 func (s *Session) Close() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.resetLoginLocked()
-	s.creds = appleservices.Credentials{}
+	epoch := s.epoch.Add(1)
+	go func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+		if s.epoch.Load() != epoch {
+			return
+		}
+		s.resetLoginLocked()
+		s.creds = appleservices.Credentials{}
+	}()
 }
 
 func (s *Session) ensureClientLocked() (*appleservices.Client, error) {
