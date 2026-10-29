@@ -11,6 +11,7 @@ import (
 type Vault interface {
 	ListPasskey() []vault.PasskeyMeta
 	SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (vault.Assertion, error)
+	CreatePasskey(rp, userName, displayName string, userHandle []byte, userVerified bool) (vault.Registration, error)
 }
 
 type store struct {
@@ -49,4 +50,12 @@ func (s store) SignAssertion(id string, clientDataHash []byte, userVerified bool
 		Signature:         got.Signature,
 		UserHandle:        got.UserHandle,
 	}, nil
+}
+
+func (s store) CreatePasskey(c ctap.NewCredential) (ctap.Registration, error) {
+	got, err := s.v.CreatePasskey(c.RelyingParty, c.UserName, c.DisplayName, c.UserHandle, true)
+	if err != nil {
+		return ctap.Registration{}, err
+	}
+	return ctap.Registration{CredentialID: got.CredentialID, AuthenticatorData: got.AuthenticatorData}, nil
 }

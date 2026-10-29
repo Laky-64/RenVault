@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"bytes"
 	"crypto/rand"
 	"errors"
 	"fmt"
@@ -24,6 +25,12 @@ const (
 	opDelete  opKind = "delete"
 	opRestore opKind = "restore"
 	opPurge   opKind = "purge"
+
+	opPasskeyAdd     opKind = "passkey_add"
+	opPasskeyDelete  opKind = "passkey_delete"
+	opPasskeyRestore opKind = "passkey_restore"
+	opPasskeyPurge   opKind = "passkey_purge"
+	opPasskeyEdit    opKind = "passkey_edit"
 )
 
 type outboxOp struct {
@@ -44,6 +51,9 @@ type outboxOp struct {
 	DropTOTP    bool     `cbor:"drop_totp,omitempty"`
 	Manual      bool     `cbor:"manual,omitempty"`
 	Rewrite     bool     `cbor:"rewrite,omitempty"`
+
+	CredentialID []byte        `cbor:"credential_id,omitempty"`
+	Passkey      *passkeyEntry `cbor:"passkey,omitempty"`
 }
 
 func (o outboxOp) key() string { return o.Domain + "\x00" + o.Username }
@@ -146,8 +156,18 @@ func findOp(p *payload, kind opKind, domain, username string, inflight uint64) i
 
 func dropOps(p *payload, domain, username string, inflight uint64) {
 	p.Outbox = slices.DeleteFunc(p.Outbox, func(op outboxOp) bool {
-		return op.Seq > inflight && op.Domain == domain && op.Username == username
+		drop := op.Seq > inflight && op.Domain == domain && op.Username == username
+		if drop {
+			zeroOp(op)
+		}
+		return drop
 	})
+}
+
+func zeroOp(op outboxOp) {
+	if op.Passkey != nil {
+		zero(op.Passkey.PrivateKeyD)
+	}
 }
 
 const maxBatch = 25
@@ -186,6 +206,9 @@ func (v *Vault) settleOps(batch []outboxOp) error {
 	}
 	if n == 0 {
 		return nil
+	}
+	for _, op := range v.p.Outbox[:n] {
+		zeroOp(op)
 	}
 	v.p.Outbox = slices.Delete(v.p.Outbox, 0, n)
 	return v.saveLocked()
@@ -335,6 +358,10 @@ func runBulk(bulk bulkFunc, web []keychain.WebPassword, batch []outboxOp, delete
 }
 
 func runOp(src *appleservices.KeychainVault, items []keychain.Item, web []keychain.WebPassword, op outboxOp) error {
+	switch op.Kind {
+	case opPasskeyAdd, opPasskeyDelete, opPasskeyRestore, opPasskeyPurge, opPasskeyEdit:
+		return runPasskeyOp(src, items, op)
+	}
 	if op.Kind == opAdd {
 		if w, ok := matchWeb(web, op, false); ok {
 			return reconcileAdd(src, items, op, w)
@@ -469,4 +496,40 @@ func (v *Vault) clearFailure() {
 	v.mu.Lock()
 	v.lastErr = nil
 	v.mu.Unlock()
+}
+
+func matchPasskey(found []keychain.Passkey, credentialID []byte, deleted bool) (keychain.Passkey, bool) {
+	for _, pk := range found {
+		if bytes.Equal(pk.CredentialID, credentialID) && pk.IsDeleted == deleted {
+			return pk, true
+		}
+	}
+	return keychain.Passkey{}, false
+}
+
+func runPasskeyOp(src *appleservices.KeychainVault, items []keychain.Item, op outboxOp) error {
+	if op.Kind == opPasskeyAdd {
+		if op.Passkey == nil {
+			return nil
+		}
+		pk, err := op.Passkey.passkey()
+		if err != nil {
+			return err
+		}
+		return src.AddPasskey(pk)
+	}
+	pk, ok := matchPasskey(keychain.Passkeys(items), op.CredentialID, op.Kind != opPasskeyDelete)
+	if !ok {
+		return nil
+	}
+	switch op.Kind {
+	case opPasskeyDelete:
+		return src.DeletePasskeys([]keychain.Passkey{pk})[0].Err
+	case opPasskeyRestore:
+		return src.RestorePasskey(pk)
+	case opPasskeyEdit:
+		return src.EditPasskey(pk, op.Title, op.NewUsername, op.Note, op.Domains)
+	default:
+		return src.PurgePasskeys([]keychain.Passkey{pk})[0].Err
+	}
 }

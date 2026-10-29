@@ -194,6 +194,37 @@ object Vault {
 
     suspend fun purgePasswords(ids: List<String>) = send(Op.PURGE_PASSWORDS, IdentifiersRequest(ids))
 
+    suspend fun deletePasskeys(ids: List<String>) = send(Op.DELETE_PASSKEYS, IdentifiersRequest(ids))
+
+    suspend fun restorePasskey(id: String) = send(Op.RESTORE_PASSKEY, IdentifierRequest(id))
+
+    suspend fun purgePasskeys(ids: List<String>) = send(Op.PURGE_PASSKEYS, IdentifiersRequest(ids))
+
+    suspend fun createPasskey(relyingParty: String, username: String, displayName: String, userHandle: ByteArray): PasskeyRegistration =
+        exchange(Op.CREATE_PASSKEY, CreatePasskeyRequest(relyingParty, username, displayName, userHandle))
+
+    suspend fun signPasskey(id: String, clientDataHash: ByteArray): PasskeyAssertion =
+        exchange(Op.SIGN_PASSKEY, SignPasskeyRequest(id, clientDataHash))
+
+    suspend fun hybridStart(qr: String): HybridStart = exchange(Op.HYBRID_START, HybridStartRequest(qr))
+
+    suspend fun hybridDecide(id: String, approve: Boolean, account: Int) =
+        send(Op.HYBRID_DECIDE, HybridDecideRequest(id, approve, account))
+
+    suspend fun hybridCancel(session: String) = send(Op.HYBRID_CANCEL, HybridSessionRequest(session))
+
+    fun hybridProgress(event: Event): HybridProgress? =
+        if (event.kind == EventKind.AGENT_PROGRESS) runCatching { cbor.decodeFromByteArray(HybridProgress.serializer(), event.payload) }.getOrNull() else null
+
+    fun hybridPrompt(event: Event): HybridPrompt? =
+        if (event.kind == EventKind.SIGN_REQUESTED) runCatching { cbor.decodeFromByteArray(HybridPrompt.serializer(), event.payload) }.getOrNull() else null
+
+    suspend fun editPasskey(id: String, title: String, username: String, note: String, sites: List<String>): String =
+        exchange<EditPasskeyRequest, IdentifierResponse>(
+            Op.EDIT_PASSKEY,
+            EditPasskeyRequest(id, title, username, note, sites),
+        ).id
+
     suspend fun changePasswordUrl(domain: String): String =
         exchange<DomainRequest, SecretResponse>(Op.CHANGE_PASSWORD_AT, DomainRequest(domain)).secret
 

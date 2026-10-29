@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Laky-64/renvault-core/bridge"
 )
@@ -104,5 +105,59 @@ func installItems() {
 			return err
 		}
 		return active.PurgePasswords(request.IDs)
+	})
+
+	command(bridge.OpDeletePasskeys, func(_ context.Context, request identifiersRequest) error {
+		active, err := unlocked()
+		if err != nil {
+			return err
+		}
+		return active.DeletePasskeys(request.IDs)
+	})
+
+	command(bridge.OpRestorePasskey, func(_ context.Context, request identifierRequest) error {
+		active, err := unlocked()
+		if err != nil {
+			return err
+		}
+		return active.RestorePasskey(request.ID)
+	})
+
+	command(bridge.OpPurgePasskeys, func(_ context.Context, request identifiersRequest) error {
+		active, err := unlocked()
+		if err != nil {
+			return err
+		}
+		return active.PurgePasskeys(request.IDs)
+	})
+
+	handle(bridge.OpCreatePasskey, func(_ context.Context, request createPasskeyRequest) (createPasskeyResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return createPasskeyResponse{}, err
+		}
+		reg, err := active.CreatePasskey(request.RelyingParty, request.Username, request.DisplayName, request.UserHandle, true)
+		return createPasskeyResponse{CredentialID: reg.CredentialID, AuthenticatorData: reg.AuthenticatorData}, err
+	})
+
+	handle(bridge.OpSignPasskey, func(_ context.Context, request signPasskeyRequest) (signPasskeyResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return signPasskeyResponse{}, err
+		}
+		if len(request.ClientDataHash) != 32 {
+			return signPasskeyResponse{}, errors.New("service: client data hash must be 32 bytes")
+		}
+		got, err := active.SignAssertion(request.ID, request.ClientDataHash, true, 0)
+		return signPasskeyResponse{AuthenticatorData: got.AuthenticatorData, Signature: got.Signature, UserHandle: got.UserHandle}, err
+	})
+
+	handle(bridge.OpEditPasskey, func(_ context.Context, request editPasskeyRequest) (identifierResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return identifierResponse{}, err
+		}
+		id, err := active.EditPasskey(request.ID, request.Title, request.Username, request.Note, request.Sites)
+		return identifierResponse{ID: id}, err
 	})
 }

@@ -2,6 +2,7 @@ package io.lauren.renvault.ui.components
 
 import io.lauren.renvault.lib.RvLockGuard
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
@@ -59,6 +60,17 @@ internal actual fun rememberQrScanner(onScanned: (String) -> Unit): (() -> Unit)
             GmsBarcodeScanning.getClient(context, options)
                 .startScan()
                 .addOnSuccessListener { code -> code.rawValue?.let { latest(it) } }
+        }
+    }
+}
+
+@Composable
+internal actual fun rememberHybridLauncher(): (() -> Unit)? {
+    val context = LocalContext.current
+    return remember(context) {
+        {
+            RvLockGuard.expectLeave()
+            context.startActivity(Intent("io.lauren.renvault.HYBRID").setPackage(context.packageName))
         }
     }
 }

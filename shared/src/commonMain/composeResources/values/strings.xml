@@ -72,6 +72,8 @@
     <string name="edit_delete_code">Delete Verification Code</string>
     <string name="edit_set_up_code">Set Up Verification Code</string>
     <string name="edit_delete">Delete Password</string>
+    <string name="edit_delete_passkey">Delete Passkey</string>
+    <string name="passkey_computer">Sign in on a computer</string>
     <string name="editor_username_hint">username</string>
     <string name="editor_notes">Notes</string>
     <string name="editor_new_password">New Password</string>
@@ -136,6 +138,18 @@
     <plurals name="delete_confirm">
         <item quantity="one">Delete Password</item>
         <item quantity="other">Delete %1$d Passwords</item>
+    </plurals>
+    <plurals name="delete_passkey_title">
+        <item quantity="one">Delete Passkey</item>
+        <item quantity="other">Delete %1$d Passkeys</item>
+    </plurals>
+    <plurals name="delete_passkey_soft_desc">
+        <item quantity="one">The passkey will be moved to Deleted. After 30 days, it will be permanently deleted.</item>
+        <item quantity="other">The passkeys will be moved to Deleted. After 30 days, they will be permanently deleted.</item>
+    </plurals>
+    <plurals name="delete_passkey_hard_desc">
+        <item quantity="one">If you delete it, the passkey will be removed from the Passwords app on all your devices. This action cannot be undone.</item>
+        <item quantity="other">If you delete them, the passkeys will be removed from the Passwords app on all your devices. This action cannot be undone.</item>
     </plurals>
     <plurals name="deleted_countdown">
         <item quantity="one">The password will be permanently deleted in %1$d day unless it is recovered.</item>
@@ -214,6 +228,7 @@
 
     <string name="websites_title">Websites</string>
     <string name="websites_desc">AutoFill will suggest the password for \"%1$s\" on these websites.</string>
+    <string name="websites_desc_passkey">AutoFill will suggest the passkey for \"%1$s\" on these websites.</string>
     <string name="websites_placeholder">example.com</string>
     <string name="websites_add">Add website</string>
     <string name="totp_setup_desc">If \"%1$s\" supports verification codes, visit the website to get a setup key and enter it here.</string>

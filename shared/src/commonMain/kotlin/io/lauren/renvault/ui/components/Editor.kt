@@ -38,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvDraft
+import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.domainOf
@@ -207,6 +208,100 @@ fun RvItemEditor(
         title = strings.deleteTitle(1),
         description = strings.deleteSoftDesc(1),
         confirm = strings.deleteConfirm(1),
+        cancel = strings.cancel,
+        danger = true,
+        icon = RvDeleteIcon,
+        onConfirm = onDelete,
+    )
+}
+
+@Composable
+fun RvPasskeyEditor(
+    draft: RvDraft,
+    onDraft: (RvDraft) -> Unit,
+    relyingParty: String,
+    strings: RvStrings,
+    onDelete: () -> Unit,
+) {
+    var dropOpen by remember { mutableStateOf(false) }
+    var websitesOpen by remember { mutableStateOf(false) }
+
+    val extra = tidyWebsites(draft.websites).filter { it != relyingParty }
+    val websiteLabel = if (extra.isEmpty()) relyingParty else strings.fieldWebsiteMore(relyingParty, extra.size)
+
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            RvTextField(
+                value = draft.title,
+                onValueChange = { onDraft(draft.copy(title = it)) },
+                label = draft.titleHint.ifEmpty { strings.editorTitle },
+                capitalization = KeyboardCapitalization.Sentences,
+            )
+            RvTextField(
+                value = draft.username,
+                onValueChange = { onDraft(draft.copy(username = it)) },
+                label = strings.fieldUsername,
+                leading = RvPersonIcon,
+                keyboard = KeyboardType.Email,
+            )
+            RvTextField(
+                value = draft.password,
+                onValueChange = { onDraft(draft.copy(password = it)) },
+                label = strings.fieldPassword,
+                leading = RvKeyIcon,
+                secret = true,
+            )
+            if (draft.password.isNotEmpty()) {
+                StrengthFor(draft.password, strings)
+            }
+        }
+        RvSection {
+            RvSegment(
+                index = 0,
+                count = 1,
+                onClick = { websitesOpen = true },
+                leading = { Icon(RvGlobeIcon, contentDescription = null) },
+                supporting = { Text(websiteLabel, maxLines = 1) },
+                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+            ) {
+                Text(strings.fieldWebsite)
+            }
+        }
+        RvTextField(
+            value = draft.note,
+            onValueChange = { onDraft(draft.copy(note = it)) },
+            label = strings.editorNotes,
+            lines = 4,
+            capitalization = KeyboardCapitalization.Sentences,
+        )
+        RvButton(
+            text = strings.editDeletePasskey,
+            onClick = { dropOpen = true },
+            kind = RvButtonKind.DangerTonal,
+            icon = RvDeleteIcon,
+        )
+    }
+
+    RvWebsitesDialog(
+        open = websitesOpen,
+        onOpenChange = { websitesOpen = it },
+        title = titleOf(draft),
+        websites = draft.websites,
+        onWebsites = { onDraft(draft.copy(websites = it)) },
+        confirm = strings.editorSave,
+        cancel = strings.cancel,
+        heading = strings.websitesTitle,
+        description = strings.websitesDescPasskey(titleOf(draft)),
+        placeholder = strings.websitesPlaceholder,
+        addLabel = strings.websitesAdd,
+    )
+
+    RvConfirmDialog(
+        open = dropOpen,
+        onOpenChange = { dropOpen = it },
+        title = strings.deletePasskeyTitle(1),
+        description = strings.deletePasskeySoftDesc(1),
+        confirm = strings.deletePasskeyTitle(1),
         cancel = strings.cancel,
         danger = true,
         icon = RvDeleteIcon,

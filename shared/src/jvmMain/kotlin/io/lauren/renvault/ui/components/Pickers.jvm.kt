@@ -49,6 +49,9 @@ internal actual fun rememberPhotoPicker(onPicked: (ByteArray) -> Unit): (() -> U
 internal actual fun rememberQrScanner(onScanned: (String) -> Unit): (() -> Unit)? = null
 
 @Composable
+internal actual fun rememberHybridLauncher(): (() -> Unit)? = null
+
+@Composable
 internal actual fun rememberFileOpener(
     title: String,
     filter: FileFilter,

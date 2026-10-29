@@ -58,6 +58,12 @@ const (
 	OpRestorePassword  uint32 = 0x1109
 	OpPurgePasswords   uint32 = 0x110A
 	OpChangePasswordAt uint32 = 0x110B
+	OpDeletePasskeys   uint32 = 0x110C
+	OpRestorePasskey   uint32 = 0x110D
+	OpPurgePasskeys    uint32 = 0x110E
+	OpEditPasskey      uint32 = 0x110F
+	OpCreatePasskey    uint32 = 0x1110
+	OpSignPasskey      uint32 = 0x1111
 )
 
 const (
@@ -84,4 +90,10 @@ const (
 	OpTray      uint32 = 0x3008
 	OpTrayHide  uint32 = 0x3009
 	OpRaise     uint32 = 0x300A
+)
+
+const (
+	OpHybridStart  uint32 = 0x1301
+	OpHybridDecide uint32 = 0x1302
+	OpHybridCancel uint32 = 0x1303
 )

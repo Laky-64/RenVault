@@ -27,6 +27,9 @@ func zeroPayloadSecrets(p *payload) {
 		zero(p.Local.Key)
 		zero(p.Local.Identity)
 	}
+	for _, op := range p.Outbox {
+		zeroOp(op)
+	}
 	for i := range p.Passkey {
 		zero(p.Passkey[i].PrivateKeyD)
 	}
@@ -55,6 +58,7 @@ type Vault struct {
 	sh        *share
 	net       *peerNet
 	recIDs    []string
+	keyIDs    []string
 	syncer    *syncer
 	inflight  uint64
 	lastErr   error
@@ -226,6 +230,7 @@ func (v *Vault) lockLocked() {
 	v.pending = appleservices.Credentials{}
 	v.pairing = nil
 	v.recIDs = nil
+	v.keyIDs = nil
 	v.sess.Close()
 	v.store.clear()
 	v.stopSyncLocked()
@@ -423,6 +428,7 @@ func (v *Vault) saveLocked() error {
 			return err
 		}
 		stored.Web = nil
+		stored.Passkey = nil
 		stored.Names = nil
 		stored.ProfileName = ""
 		stored.ProfilePhoto = nil

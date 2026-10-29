@@ -5,7 +5,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -32,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvItem
 import io.lauren.renvault.lib.RvPasskeyItem
+import io.lauren.renvault.lib.websitesOk
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvSortField
 import io.lauren.renvault.lib.RvStrings
@@ -50,6 +51,7 @@ import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.canSave
 import io.lauren.renvault.lib.draftOf
 import io.lauren.renvault.lib.editableOf
+import io.lauren.renvault.lib.passkeyEditableOf
 import io.lauren.renvault.lib.matchesQuery
 import io.lauren.renvault.lib.sortItems
 import io.lauren.renvault.ui.LocalStrings
@@ -102,7 +104,8 @@ fun homeZones(
                 kind = RvZoneKind.Deleted,
                 icon = ZoneGlyph.Deleted,
                 tone = accents.orange,
-                items = web.filter { it.entry.isDeleted && !it.entry.shared },
+                items = web.filter { it.entry.isDeleted && !it.entry.shared } +
+                    passkeys.filter { it.entry.isDeleted && it.linked == null },
             ),
         )
     }
@@ -136,6 +139,7 @@ fun RvHomePage(
     onLearnMore: () -> Unit = {},
     onCreate: suspend (RvEditorDraft) -> Unit = {},
     onSave: suspend (RvWebItem, RvDraft) -> String? = { _, _ -> null },
+    onSavePasskey: suspend (RvPasskeyItem, RvDraft) -> String? = { _, _ -> null },
     onDelete: suspend (String) -> Unit = {},
     onRestore: suspend (String) -> Unit = {},
     onPurge: suspend (String) -> Unit = {},
@@ -163,6 +167,7 @@ fun RvHomePage(
     var itemId by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
+    var addOpen by rememberSaveable { mutableStateOf(false) }
 
     var query by remember { mutableStateOf("") }
     var searching by remember { mutableStateOf(false) }
@@ -196,9 +201,11 @@ fun RvHomePage(
     var lastOpen by remember { mutableStateOf<RvItem?>(null) }
 
     val target = editableOf(current)
+    val passkeyTarget = passkeyEditableOf(current)
     val purging = active.kind == RvZoneKind.Deleted
-    val pickedWeb = items.filter { it is RvWebItem && it.id in picked }
-    val draftOk = canSave(draft)
+    val pickedItems = items.filter { (it is RvWebItem || it is RvPasskeyItem) && it.id in picked }
+    val onlyPasskeys = pickedItems.isNotEmpty() && pickedItems.all { it is RvPasskeyItem }
+    val draftOk = if (passkeyTarget != null) websitesOk(draft.websites) else canSave(draft)
 
     LaunchedEffect(selecting, active.kind, zoneKind == null) { picked = emptySet() }
     LaunchedEffect(itemId) { editing = false }
@@ -217,6 +224,7 @@ fun RvHomePage(
 
     LaunchedEffect(editing, target?.id) {
         if (!editing) return@LaunchedEffect
+        passkeyTarget?.let { draft = draftOf(it) }
         val item = target ?: return@LaunchedEffect
         draft = draftOf(item)
         if (!item.entry.hasPassword) return@LaunchedEffect
@@ -238,6 +246,18 @@ fun RvHomePage(
 
     val saveEdit: () -> Unit = save@{
         if (!draftOk || saving) return@save
+        passkeyTarget?.let { passkey ->
+            scope.launch {
+                saving = true
+                try {
+                    itemId = runCatching { onSavePasskey(passkey, draft) }.getOrNull()
+                    editing = false
+                } finally {
+                    saving = false
+                }
+            }
+            return@save
+        }
         val item = target
         if (item == null) {
             editing = false
@@ -337,7 +357,7 @@ fun RvHomePage(
             onOpen = { itemId = it },
             onAdd = { creating = true },
             onDeleteSelected = { confirmDelete = true },
-            canDeleteSelected = pickedWeb.isNotEmpty(),
+            canDeleteSelected = pickedItems.isNotEmpty(),
         )
     }
 
@@ -352,7 +372,7 @@ fun RvHomePage(
             compact = compact,
             editing = editing,
             onEditing = { editing = it },
-            canEdit = active.kind != RvZoneKind.Deleted && target != null,
+            canEdit = active.kind != RvZoneKind.Deleted && (target != null || passkeyTarget != null),
             draft = draft,
             onDraft = { draft = it },
             canSave = draftOk && !saving,
@@ -364,10 +384,22 @@ fun RvHomePage(
             onLearnMore = onLearnMore,
             onDelete = {
                 editing = false
-                target?.let { write(it.entry.id, onDelete) }
+                target?.let { web ->
+                    val ids = (withLinked(web) + listOfNotNull((current as? RvPasskeyItem)?.id)).distinct()
+                    scope.launch { runCatching { onDeleteMany(ids, false) }.onSuccess { itemId = null } }
+                }
             },
-            onRecover = { current?.let { write(it.id, onRestore) } },
-            onPurge = { current?.let { write(it.id, onPurge) } },
+            onDeletePasskey = { (current as? RvPasskeyItem)?.let { write(it.id, onDelete) } },
+            onRecover = {
+                current?.let { item ->
+                    scope.launch { runCatching { withLinked(item).forEach { onRestore(it) } }.onSuccess { itemId = null } }
+                }
+            },
+            onPurge = {
+                current?.let { item ->
+                    scope.launch { runCatching { onDeleteMany(withLinked(item), true) }.onSuccess { itemId = null } }
+                }
+            },
         )
     }
 
@@ -435,9 +467,12 @@ fun RvHomePage(
 
             val zonesScrolled by zonesGrid.scrolledPast()
             val listScrolled by listState.scrolledPast()
+            val addVisible = screen == Screen.Zones ||
+                (screen == Screen.List && active.kind == RvZoneKind.All && !selecting && !searching)
+            LaunchedEffect(addVisible, screen) { addOpen = false }
+            RvScrim(visible = addOpen, onDismiss = { addOpen = false })
             AnimatedVisibility(
-                visible = screen == Screen.Zones ||
-                    (screen == Screen.List && active.kind == RvZoneKind.All && !selecting && !searching),
+                visible = addVisible,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .navigationBarsPadding()
@@ -445,11 +480,12 @@ fun RvHomePage(
                 enter = scaleIn(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
                 exit = scaleOut(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),
             ) {
-                ExtendedFloatingActionButton(
-                    text = { Text(strings.listAdd) },
-                    icon = { Icon(RvAddIcon, contentDescription = null) },
-                    onClick = { creating = true },
-                    expanded = if (screen == Screen.Zones) !zonesScrolled else !listScrolled,
+                RvAddMenu(
+                    strings = strings,
+                    open = addOpen,
+                    onOpenChange = { addOpen = it },
+                    extended = if (screen == Screen.Zones) !zonesScrolled else !listScrolled,
+                    onAdd = { creating = true },
                 )
             }
         } else {
@@ -505,14 +541,19 @@ fun RvHomePage(
     RvConfirmDialog(
         open = confirmDelete,
         onOpenChange = { confirmDelete = it },
-        title = strings.deleteTitle(pickedWeb.size),
-        description = if (purging) strings.deleteHardDesc(pickedWeb.size) else strings.deleteSoftDesc(pickedWeb.size),
-        confirm = strings.deleteConfirm(pickedWeb.size),
+        title = if (onlyPasskeys) strings.deletePasskeyTitle(pickedItems.size) else strings.deleteTitle(pickedItems.size),
+        description = when {
+            onlyPasskeys && purging -> strings.deletePasskeyHardDesc(pickedItems.size)
+            onlyPasskeys -> strings.deletePasskeySoftDesc(pickedItems.size)
+            purging -> strings.deleteHardDesc(pickedItems.size)
+            else -> strings.deleteSoftDesc(pickedItems.size)
+        },
+        confirm = if (onlyPasskeys) strings.deletePasskeyTitle(pickedItems.size) else strings.deleteConfirm(pickedItems.size),
         cancel = strings.cancel,
         danger = true,
         icon = RvDeleteIcon,
         onConfirm = {
-            val ids = pickedWeb.map { it.id }
+            val ids = pickedItems.flatMap(::withLinked).distinct()
             if (ids.isNotEmpty()) {
                 scope.launch {
                     runCatching { onDeleteMany(ids, purging) }.onSuccess { selecting = false }
@@ -520,4 +561,10 @@ fun RvHomePage(
             }
         },
     )
+}
+
+private fun withLinked(item: RvItem): List<String> = when (item) {
+    is RvWebItem -> listOfNotNull(item.id, item.passkey?.id)
+    is RvPasskeyItem -> listOf(item.id)
+    is RvWifiItem -> listOf(item.id)
 }

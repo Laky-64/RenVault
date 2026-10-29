@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_computer"
+        android:shortcutId="hybrid"
+        android:shortcutShortLabel="@string/hybrid_title">
+        <intent
+            android:action="io.lauren.renvault.HYBRID"
+            android:targetClass="io.lauren.renvault.passkey.HybridActivity"
+            android:targetPackage="io.lauren.renvault" />
+    </shortcut>
+</shortcuts>

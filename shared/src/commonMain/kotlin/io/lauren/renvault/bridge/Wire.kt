@@ -90,6 +90,15 @@ internal data class AddPasswordRequest(
 )
 
 @Serializable
+internal data class EditPasskeyRequest(
+    @SerialName("id") val id: String,
+    @SerialName("title") val title: String,
+    @SerialName("username") val username: String,
+    @SerialName("note") val note: String,
+    @SerialName("sites") val sites: List<String>,
+)
+
+@Serializable
 internal data class EditPasswordRequest(
     @SerialName("id") val id: String,
     @SerialName("title") val title: String,
@@ -333,9 +342,13 @@ data class WifiEntry(
 data class PasskeyEntry(
     @SerialName("id") val id: String = "",
     @SerialName("title") val title: String = "",
+    @SerialName("custom_title") val customTitle: String = "",
+    @SerialName("site_title") val siteTitle: String = "",
     @SerialName("relying_party") val relyingParty: String = "",
     @SerialName("username") val username: String = "",
     @SerialName("display_name") val displayName: String = "",
+    @SerialName("note") val note: String = "",
+    @SerialName("sites") val sites: List<String>? = null,
     @SerialName("credential_id") val credentialId: String = "",
     @SerialName("is_deleted") val isDeleted: Boolean = false,
     @SerialName("created") val created: Long = 0,
@@ -416,3 +429,83 @@ internal data class TrayEvent(@SerialName("item") val item: String = "")
 
 @Serializable
 internal data class RaiseRequest(@SerialName("token") val token: String)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+internal data class CreatePasskeyRequest(
+    @SerialName("relying_party") val relyingParty: String,
+    @SerialName("username") val username: String,
+    @SerialName("display_name") val displayName: String,
+    @ByteString @SerialName("user_handle") val userHandle: ByteArray,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+class PasskeyRegistration(
+    @ByteString @SerialName("credential_id") val credentialId: ByteArray = ByteArray(0),
+    @ByteString @SerialName("authenticator_data") val authenticatorData: ByteArray = ByteArray(0),
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+internal data class SignPasskeyRequest(
+    @SerialName("id") val id: String,
+    @ByteString @SerialName("client_data_hash") val clientDataHash: ByteArray,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+class PasskeyAssertion(
+    @ByteString @SerialName("authenticator_data") val authenticatorData: ByteArray = ByteArray(0),
+    @ByteString @SerialName("signature") val signature: ByteArray = ByteArray(0),
+    @ByteString @SerialName("user_handle") val userHandle: ByteArray = ByteArray(0),
+)
+
+@Serializable
+internal data class HybridStartRequest(
+    @SerialName("qr") val qr: String,
+)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+class HybridStart(
+    @SerialName("session") val session: String = "",
+    @ByteString @SerialName("advert") val advert: ByteArray = ByteArray(0),
+)
+
+@Serializable
+internal data class HybridDecideRequest(
+    @SerialName("id") val id: String,
+    @SerialName("approve") val approve: Boolean,
+    @SerialName("account") val account: Int,
+)
+
+@Serializable
+internal data class HybridSessionRequest(
+    @SerialName("session") val session: String,
+)
+
+@Serializable
+data class HybridProgress(
+    @SerialName("session") val session: String = "",
+    @SerialName("stage") val stage: String = "",
+    @SerialName("error") val error: String = "",
+    @SerialName("command") val command: Int = 0,
+    @SerialName("status") val status: Int = 0,
+)
+
+@Serializable
+data class HybridAccount(
+    @SerialName("title") val title: String = "",
+    @SerialName("username") val username: String = "",
+)
+
+@Serializable
+data class HybridPrompt(
+    @SerialName("id") val id: String = "",
+    @SerialName("session") val session: String = "",
+    @SerialName("relying_party") val relyingParty: String = "",
+    @SerialName("create") val create: Boolean = false,
+    @SerialName("username") val username: String = "",
+    @SerialName("accounts") val accounts: List<HybridAccount> = emptyList(),
+)

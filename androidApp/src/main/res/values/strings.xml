@@ -1,8 +1,36 @@
 <resources>
     <string name="app_name">RenVault</string>
     <string name="autofill_unlock">Unlock RenVault</string>
+    <string name="passkey_unlock">Unlock RenVault to use your passkeys</string>
+    <string name="passkey_verify">Confirm it\'s you</string>
     <string name="autofill_search">Search in RenVault</string>
     <string name="autofill_search_hint">Search</string>
     <string name="autofill_empty">No passwords match</string>
     <string name="autofill_totp_copied">2FA code copied</string>
+    <string name="hybrid_title">Sign in on a computer</string>
+    <string name="hybrid_tile">Passkey for computer</string>
+    <string name="hybrid_connecting">Keep your phone close to the computer</string>
+    <string name="hybrid_connecting_hint">Connecting securely over Bluetooth</string>
+    <string name="hybrid_bluetooth_title">Turn on Bluetooth</string>
+    <string name="hybrid_bluetooth_enable">Turn on</string>
+    <string name="hybrid_get_hint">Choose the passkey to use on the computer</string>
+    <string name="hybrid_create_hint">The passkey will be saved in RenVault</string>
+    <string name="hybrid_done_title">All set</string>
+    <string name="hybrid_bluetooth">Turn on Bluetooth to use your phone as a passkey for the computer.</string>
+    <string name="hybrid_invalid">This QR code is not a passkey request</string>
+    <string name="hybrid_create">Save a passkey for %1$s?</string>
+    <string name="hybrid_get">Sign in to %1$s?</string>
+    <string name="hybrid_save">Save</string>
+    <string name="hybrid_cancel">Cancel</string>
+    <string name="hybrid_done">You can go back to the computer</string>
+    <string name="hybrid_no_passkey">No passkey for this site in RenVault</string>
+    <string name="hybrid_qr_used">This QR code was already used</string>
+    <string name="hybrid_new_qr">Close the window on the computer and try again to get a new QR code</string>
+    <string name="hybrid_not_found">The computer didn\'t find your phone</string>
+    <string name="hybrid_not_found_hint">Reload the page on the computer and scan the new QR code. Keep Bluetooth on for both devices and keep them close</string>
+    <string name="hybrid_already_saved">You already have a passkey for this account</string>
+    <string name="hybrid_already_saved_hint">RenVault already has a passkey for this site and account. Use it to sign in on the computer</string>
+    <string name="hybrid_failed">The sign-in could not be completed</string>
+    <string name="hybrid_retry">Try again</string>
+    <string name="hybrid_close">Close</string>
 </resources>

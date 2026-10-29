@@ -38,6 +38,7 @@ type backupData struct {
 	Photo     []byte                 `cbor:"photo,omitempty"`
 	PhotoType string                 `cbor:"photo_type,omitempty"`
 	Names     []NameSwap             `cbor:"names,omitempty"`
+	Passkey   []passkeyEntry         `cbor:"passkey,omitempty"`
 }
 
 type ImportResult struct {
@@ -65,8 +66,10 @@ func (v *Vault) ExportBackup(password string) ([]byte, error) {
 		Photo:     v.p.ProfilePhoto,
 		PhotoType: v.p.ProfilePhotoType,
 		Names:     slices.Clone(v.p.Names),
+		Passkey:   activePasskeyCopies(v.p.Passkey),
 	}
 	v.mu.Unlock()
+	defer zeroPasskeys(data.Passkey)
 
 	plain, err := cborEnc.Marshal(data)
 	if err != nil {
@@ -129,11 +132,81 @@ func (v *Vault) ImportBackup(raw []byte, password string) (ImportResult, error) 
 	if err != nil {
 		return ImportResult{}, err
 	}
+	defer zeroPasskeys(data.Passkey)
 	res, err := v.importWeb(data.Web)
 	if err != nil {
 		return res, err
 	}
+	keys, err := v.importPasskeys(data.Passkey)
+	res.Added += keys.Added
+	res.Updated += keys.Updated
+	res.Skipped += keys.Skipped
+	if err != nil {
+		return res, err
+	}
 	return res, v.mergeProfile(data)
+}
+
+func activePasskeyCopies(entries []passkeyEntry) []passkeyEntry {
+	out := make([]passkeyEntry, 0, len(entries))
+	for _, e := range entries {
+		if e.IsDeleted {
+			continue
+		}
+		e.PrivateKeyD = slices.Clone(e.PrivateKeyD)
+		e.CredentialID = slices.Clone(e.CredentialID)
+		e.UserHandle = slices.Clone(e.UserHandle)
+		out = append(out, e)
+	}
+	return out
+}
+
+func zeroPasskeys(entries []passkeyEntry) {
+	for i := range entries {
+		zero(entries[i].PrivateKeyD)
+	}
+}
+
+func passkeyImportKey(rp string, credentialID []byte) string {
+	return normalizeRP(rp) + "\x00" + string(credentialID)
+}
+
+func (v *Vault) importPasskeys(entries []passkeyEntry) (ImportResult, error) {
+	var res ImportResult
+	err := v.mutate(func(p *payload) error {
+		known := make(map[string]bool, len(p.Passkey))
+		for _, e := range p.Passkey {
+			known[passkeyImportKey(e.RelyingParty, e.CredentialID)] = true
+		}
+		key := v.sharedKeyLocked()
+		dirty := false
+		for _, e := range entries {
+			k := passkeyImportKey(e.RelyingParty, e.CredentialID)
+			if e.IsDeleted || known[k] || normalizeRP(e.RelyingParty) == "" || len(e.CredentialID) == 0 || len(e.PrivateKeyD) != p256ScalarLen {
+				res.Skipped++
+				continue
+			}
+			e.RelyingParty = normalizeRP(e.RelyingParty)
+			if e.Created.IsZero() {
+				e.Created = time.Now().UTC()
+			}
+			if v.sh == nil {
+				queuePasskeyAdd(p, e)
+			} else {
+				if err := v.sh.putPasskey(key, "", e); err != nil {
+					return err
+				}
+				dirty = true
+			}
+			known[k] = true
+			res.Added++
+		}
+		if dirty {
+			v.rebuildShareLocked()
+		}
+		return nil
+	})
+	return res, err
 }
 
 func (v *Vault) mergeProfile(data backupData) error {

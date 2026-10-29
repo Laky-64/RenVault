@@ -44,3 +44,11 @@ func (s store) SignAssertion(id string, clientDataHash []byte, userVerified bool
 		UserHandle:        got.UserHandle,
 	}, nil
 }
+
+func (s store) CreatePasskey(c ctap.NewCredential) (ctap.Registration, error) {
+	got, err := s.v.CreatePasskey(c.RelyingParty, c.UserName, c.DisplayName, c.UserHandle, true)
+	if err != nil {
+		return ctap.Registration{}, err
+	}
+	return ctap.Registration{CredentialID: got.CredentialID, AuthenticatorData: got.AuthenticatorData}, nil
+}

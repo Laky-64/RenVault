@@ -39,6 +39,13 @@ fun tidyWebsites(websites: List<String>): List<String> =
 
 fun titleOf(draft: RvDraft): String = draft.title.trim().ifEmpty { draft.titleHint }
 
+fun draftOf(item: RvPasskeyItem): RvDraft = RvDraft(
+    titleHint = item.entry.title,
+    username = item.entry.username,
+    note = item.entry.note,
+    websites = (listOf(item.entry.relyingParty) + item.entry.sites.orEmpty()).distinct(),
+)
+
 fun canSave(draft: RvDraft): Boolean {
     if (!websitesOk(draft.websites)) return false
     if (tidyWebsites(draft.websites).isEmpty() && titleOf(draft).isEmpty()) return false

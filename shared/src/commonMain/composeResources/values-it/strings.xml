@@ -16,6 +16,8 @@
     <string name="edit_delete_code">Elimina codice di verifica</string>
     <string name="edit_set_up_code">Configura codice di verifica</string>
     <string name="edit_delete">Elimina password</string>
+    <string name="edit_delete_passkey">Elimina passkey</string>
+    <string name="passkey_computer">Accedi su un computer</string>
     <string name="editor_username_hint">nome utente</string>
     <string name="editor_notes">Note</string>
     <string name="editor_new_password">Nuova password</string>
@@ -80,6 +82,18 @@
     <plurals name="delete_confirm">
         <item quantity="one">Elimina password</item>
         <item quantity="other">Elimina %1$d password</item>
+    </plurals>
+    <plurals name="delete_passkey_title">
+        <item quantity="one">Elimina passkey</item>
+        <item quantity="other">Elimina %1$d passkey</item>
+    </plurals>
+    <plurals name="delete_passkey_soft_desc">
+        <item quantity="one">La passkey verrà spostata in Eliminate. Dopo 30 giorni verrà eliminata definitivamente.</item>
+        <item quantity="other">Le passkey verranno spostate in Eliminate. Dopo 30 giorni verranno eliminate definitivamente.</item>
+    </plurals>
+    <plurals name="delete_passkey_hard_desc">
+        <item quantity="one">Se la elimini, la passkey verrà rimossa dall\'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata.</item>
+        <item quantity="other">Se le elimini, le passkey verranno rimosse dall\'app Password su tutti i tuoi dispositivi. Questa operazione non può essere annullata.</item>
     </plurals>
     <plurals name="deleted_countdown">
         <item quantity="one">La password verrà eliminata definitivamente tra %1$d giorno se non viene recuperata.</item>
@@ -158,6 +172,7 @@
 
     <string name="websites_title">Siti web</string>
     <string name="websites_desc">La compilazione automatica suggerirà la password di \"%1$s\" su questi siti web.</string>
+    <string name="websites_desc_passkey">La compilazione automatica suggerirà la passkey di \"%1$s\" su questi siti web.</string>
     <string name="websites_placeholder">esempio.com</string>
     <string name="websites_add">Aggiungi sito web</string>
     <string name="totp_setup_desc">Se \"%1$s\" supporta i codici di verifica, visita il sito web per ottenere una chiave di configurazione e inseriscila qui.</string>

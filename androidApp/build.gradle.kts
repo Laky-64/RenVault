@@ -35,6 +35,8 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.autofill)
+    implementation(libs.androidx.credentials)
+    implementation(libs.play.services.codeScanner)
     implementation(libs.androidx.biometric)
     implementation(libs.compose.foundation)
     implementation(libs.compose.material3)

@@ -21,6 +21,7 @@ func Install() {
 		installBackup()
 		installQuick()
 		installIcons()
+		installHybrid()
 	})
 }
 

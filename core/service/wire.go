@@ -85,6 +85,14 @@ type addPasswordRequest struct {
 	Note     string `cbor:"note"`
 }
 
+type editPasskeyRequest struct {
+	ID       string   `cbor:"id"`
+	Title    string   `cbor:"title"`
+	Username string   `cbor:"username"`
+	Note     string   `cbor:"note"`
+	Sites    []string `cbor:"sites"`
+}
+
 type editPasswordRequest struct {
 	ID       string   `cbor:"id"`
 	Title    string   `cbor:"title"`
@@ -108,6 +116,29 @@ type startLoginResponse struct {
 
 type identifierResponse struct {
 	ID string `cbor:"id"`
+}
+
+type createPasskeyRequest struct {
+	RelyingParty string `cbor:"relying_party"`
+	Username     string `cbor:"username"`
+	DisplayName  string `cbor:"display_name"`
+	UserHandle   []byte `cbor:"user_handle"`
+}
+
+type createPasskeyResponse struct {
+	CredentialID      []byte `cbor:"credential_id"`
+	AuthenticatorData []byte `cbor:"authenticator_data"`
+}
+
+type signPasskeyRequest struct {
+	ID             string `cbor:"id"`
+	ClientDataHash []byte `cbor:"client_data_hash"`
+}
+
+type signPasskeyResponse struct {
+	AuthenticatorData []byte `cbor:"authenticator_data"`
+	Signature         []byte `cbor:"signature"`
+	UserHandle        []byte `cbor:"user_handle"`
 }
 
 type secretResponse struct {
@@ -321,16 +352,20 @@ type wifiEntry struct {
 }
 
 type passkeyEntry struct {
-	ID           string `cbor:"id"`
-	Title        string `cbor:"title"`
-	RelyingParty string `cbor:"relying_party"`
-	UserName     string `cbor:"username"`
-	DisplayName  string `cbor:"display_name"`
-	CredentialID string `cbor:"credential_id"`
-	IsDeleted    bool   `cbor:"is_deleted"`
-	Created      int64  `cbor:"created"`
-	Modified     int64  `cbor:"modified"`
-	Deleted      int64  `cbor:"deleted"`
+	ID           string   `cbor:"id"`
+	Title        string   `cbor:"title"`
+	CustomTitle  string   `cbor:"custom_title"`
+	SiteTitle    string   `cbor:"site_title"`
+	RelyingParty string   `cbor:"relying_party"`
+	UserName     string   `cbor:"username"`
+	DisplayName  string   `cbor:"display_name"`
+	Note         string   `cbor:"note"`
+	Sites        []string `cbor:"sites"`
+	CredentialID string   `cbor:"credential_id"`
+	IsDeleted    bool     `cbor:"is_deleted"`
+	Created      int64    `cbor:"created"`
+	Modified     int64    `cbor:"modified"`
+	Deleted      int64    `cbor:"deleted"`
 }
 
 type bottleEntry struct {
@@ -403,9 +438,13 @@ func passkeyEntriesOf(items []vault.PasskeyMeta) []passkeyEntry {
 		converted = append(converted, passkeyEntry{
 			ID:           item.ID,
 			Title:        item.Title,
+			CustomTitle:  item.CustomTitle,
+			SiteTitle:    item.SiteTitle,
 			RelyingParty: item.RelyingParty,
 			UserName:     item.UserName,
 			DisplayName:  item.DisplayName,
+			Note:         item.Note,
+			Sites:        item.Sites,
 			CredentialID: item.CredentialID,
 			IsDeleted:    item.IsDeleted,
 			Created:      millis(item.Created),

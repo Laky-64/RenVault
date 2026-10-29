@@ -21,6 +21,8 @@ const (
 	fieldNote     = "note"
 	fieldTrash    = "trash"
 	fieldCreated  = "created"
+	fieldPasskey  = "passkey"
+	fieldSites    = "sites"
 )
 
 type sealedField struct {
@@ -54,6 +56,15 @@ type trashValue struct {
 	At      time.Time `cbor:"at"`
 }
 
+type passkeyValue struct {
+	RelyingParty string `cbor:"rp"`
+	UserName     string `cbor:"username"`
+	DisplayName  string `cbor:"display_name"`
+	CredentialID []byte `cbor:"credential_id"`
+	UserHandle   []byte `cbor:"user_handle"`
+	PrivateKeyD  []byte `cbor:"private_key_d"`
+}
+
 type fieldPlain struct {
 	At    time.Time       `cbor:"at"`
 	Value cbor.RawMessage `cbor:"value"`
@@ -77,6 +88,24 @@ func webFields(w keychain.WebPassword) map[string]any {
 		fieldNote:     w.Note,
 		fieldTrash:    trashValue{Deleted: w.IsDeleted, At: w.DeletedAt},
 		fieldCreated:  w.Created,
+	}
+}
+
+func passkeyFields(e passkeyEntry) map[string]any {
+	return map[string]any{
+		fieldPasskey: passkeyValue{
+			RelyingParty: e.RelyingParty,
+			UserName:     e.UserName,
+			DisplayName:  e.DisplayName,
+			CredentialID: e.CredentialID,
+			UserHandle:   e.UserHandle,
+			PrivateKeyD:  e.PrivateKeyD,
+		},
+		fieldTitle:   e.CustomTitle,
+		fieldNote:    e.Note,
+		fieldSites:   e.Sites,
+		fieldTrash:   trashValue{Deleted: e.IsDeleted, At: e.DeletedAt},
+		fieldCreated: e.Created,
 	}
 }
 
@@ -132,6 +161,14 @@ func openField(key []byte, id, name string, f sealedField) (fieldPlain, error) {
 }
 
 func (sh *share) putWeb(key []byte, id string, w keychain.WebPassword) error {
+	return sh.putFields(key, id, webFields(w))
+}
+
+func (sh *share) putPasskey(key []byte, id string, e passkeyEntry) error {
+	return sh.putFields(key, id, passkeyFields(e))
+}
+
+func (sh *share) putFields(key []byte, id string, fields map[string]any) error {
 	now := time.Now().UTC()
 	rec := sealedRecord{ID: cmp.Or(id, newLocalID())}
 	i := sh.record(rec.ID)
@@ -142,7 +179,7 @@ func (sh *share) putWeb(key []byte, id string, w keychain.WebPassword) error {
 		rec.Fields = map[string]sealedField{}
 	}
 	clock := sh.tick()
-	for name, value := range webFields(w) {
+	for name, value := range fields {
 		raw, err := cborEnc.Marshal(value)
 		if err != nil {
 			return err
@@ -232,6 +269,55 @@ func openRecord(key []byte, r sealedRecord) (keychain.WebPassword, bool) {
 		}
 	}
 	return w, found && w.Domain != ""
+}
+
+func openPasskeyRecord(key []byte, r sealedRecord) (passkeyEntry, bool) {
+	var e passkeyEntry
+	if r.Purge != nil || r.legacy() {
+		return e, false
+	}
+	if _, ok := r.Fields[fieldPasskey]; !ok {
+		return e, false
+	}
+	found := false
+	for name, f := range r.Fields {
+		p, err := openField(key, r.ID, name, f)
+		if err != nil {
+			continue
+		}
+		if name != fieldCreated && p.At.After(e.Modified) {
+			e.Modified = p.At
+		}
+		switch name {
+		case fieldPasskey:
+			var value passkeyValue
+			if cborDec.Unmarshal(p.Value, &value) == nil {
+				e.RelyingParty, e.UserName, e.DisplayName = value.RelyingParty, value.UserName, value.DisplayName
+				e.CredentialID, e.UserHandle, e.PrivateKeyD = value.CredentialID, value.UserHandle, value.PrivateKeyD
+				found = true
+			}
+		case fieldTitle:
+			_ = cborDec.Unmarshal(p.Value, &e.CustomTitle)
+		case fieldNote:
+			_ = cborDec.Unmarshal(p.Value, &e.Note)
+		case fieldSites:
+			_ = cborDec.Unmarshal(p.Value, &e.Sites)
+		case fieldTrash:
+			var trash trashValue
+			if cborDec.Unmarshal(p.Value, &trash) == nil {
+				e.IsDeleted, e.DeletedAt = trash.Deleted, trash.At
+			}
+		case fieldCreated:
+			_ = cborDec.Unmarshal(p.Value, &e.Created)
+		}
+	}
+	e.SiteTitle = e.RelyingParty
+	e.Title = cmp.Or(e.CustomTitle, e.RelyingParty)
+	ok := found && e.RelyingParty != "" && len(e.CredentialID) > 0 && len(e.PrivateKeyD) == p256ScalarLen
+	if !ok {
+		zero(e.PrivateKeyD)
+	}
+	return e, ok
 }
 
 func mergeRecord(have *sealedRecord, in sealedRecord) bool {

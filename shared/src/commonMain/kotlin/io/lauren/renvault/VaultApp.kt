@@ -65,6 +65,7 @@ import io.lauren.renvault.lib.RvNameSwap
 import io.lauren.renvault.bridge.NameSwap
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasskeyItem
+import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvSortField
 import io.lauren.renvault.lib.RvStrings
@@ -579,13 +580,14 @@ fun RvVaultApp(
                             onLearnMore = { openUrl(PasskeyUrl) },
                             onCreate = { draft -> create(draft); revision++ },
                             onSave = { item, draft -> save(item, draft).also { revision++ } },
-                            onDelete = { id -> Vault.deletePasswords(listOf(id)); revision++ },
-                            onRestore = { id -> Vault.restorePassword(id); revision++ },
-                            onPurge = { id -> Vault.purgePasswords(listOf(id)); revision++ },
-                            onDeleteMany = { ids, purge ->
-                                if (purge) Vault.purgePasswords(ids) else Vault.deletePasswords(ids)
+                            onSavePasskey = { item, draft -> savePasskey(item, draft).also { revision++ } },
+                            onDelete = { id -> deleteItems(listOf(id), purge = false); revision++ },
+                            onRestore = { id ->
+                                if (id.isPasskeyId()) Vault.restorePasskey(id) else Vault.restorePassword(id)
                                 revision++
                             },
+                            onPurge = { id -> deleteItems(listOf(id), purge = true); revision++ },
+                            onDeleteMany = { ids, purge -> deleteItems(ids, purge); revision++ },
                             onAutoLock = { minutes ->
                                 settings = settings.copy(autoLockMinutes = minutes)
                                 scope.launch { runCatching { Vault.setAutoLock(minutes) } }
@@ -700,3 +702,30 @@ private suspend fun deviceArt(url: String): ImageBitmap? {
 }
 
 private fun ImportResult.imported(): RvImported = RvImported(added, updated)
+
+private fun String.isPasskeyId(): Boolean = startsWith("passkey:")
+
+private suspend fun deleteItems(ids: List<String>, purge: Boolean) {
+    val (passkeys, passwords) = ids.partition { it.isPasskeyId() }
+    if (passwords.isNotEmpty()) {
+        if (purge) Vault.purgePasswords(passwords) else Vault.deletePasswords(passwords)
+    }
+    if (passkeys.isNotEmpty()) {
+        if (purge) Vault.purgePasskeys(passkeys) else Vault.deletePasskeys(passkeys)
+    }
+}
+
+private suspend fun savePasskey(item: RvPasskeyItem, draft: RvDraft): String? = runCatching {
+    val title = draft.title.trim().ifEmpty { item.entry.customTitle }
+    val id = Vault.editPasskey(item.id, title, draft.username.trim(), draft.note, tidyWebsites(draft.websites).filter { it != item.entry.relyingParty })
+    if (draft.password.isNotEmpty()) {
+        Vault.addPassword(
+            title = "",
+            website = item.entry.relyingParty,
+            username = draft.username.trim(),
+            password = draft.password,
+            note = "",
+        )
+    }
+    id
+}.getOrNull()

@@ -19,6 +19,8 @@ interface RvStrings {
     val editDeleteCode: String
     val editSetUpCode: String
     val editDelete: String
+    val editDeletePasskey: String
+    val passkeyComputer: String
     val editorUsernameHint: String
     val editorNotes: String
     val editorNewPassword: String
@@ -280,11 +282,15 @@ interface RvStrings {
 
     fun authDevicePasscodeHint(device: String): String
     fun websitesDesc(title: String): String
+    fun websitesDescPasskey(title: String): String
     fun totpSetupDesc(site: String): String
     fun authMasterTooShort(count: Int): String
     fun fieldWebsiteMore(domain: String, count: Int): String
     fun fieldPasskeyCreationDate(date: String): String
     fun deleteTitle(count: Int): String
+    fun deletePasskeyTitle(count: Int): String
+    fun deletePasskeySoftDesc(count: Int): String
+    fun deletePasskeyHardDesc(count: Int): String
     fun deleteSoftDesc(count: Int): String
     fun deleteHardDesc(count: Int): String
     fun deleteConfirm(count: Int): String

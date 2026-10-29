@@ -65,6 +65,7 @@ import io.lauren.renvault.lib.code
 import io.lauren.renvault.lib.daysLeft
 import io.lauren.renvault.lib.detailOf
 import io.lauren.renvault.lib.labelOf
+import io.lauren.renvault.lib.passkeyEditableOf
 import io.lauren.renvault.lib.plain
 import io.lauren.renvault.lib.secret
 import io.lauren.renvault.lib.siteOf
@@ -100,6 +101,7 @@ fun RvDetailPane(
     onChangePassword: (String) -> Unit,
     onLearnMore: () -> Unit,
     onDelete: () -> Unit,
+    onDeletePasskey: () -> Unit,
     onRecover: () -> Unit,
     onPurge: () -> Unit,
     modifier: Modifier = Modifier,
@@ -201,7 +203,15 @@ fun RvDetailPane(
                     label = "detailMode",
                 ) { edit ->
                     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-                        if (edit) {
+                        if (edit && passkeyEditableOf(item) != null) {
+                            RvPasskeyEditor(
+                                draft = draft,
+                                onDraft = onDraft,
+                                relyingParty = (item as RvPasskeyItem).entry.relyingParty,
+                                strings = strings,
+                                onDelete = onDeletePasskey,
+                            )
+                        } else if (edit) {
                             RvItemEditor(
                                 draft = draft,
                                 onDraft = onDraft,
@@ -380,9 +390,9 @@ private fun ItemView(
     RvConfirmDialog(
         open = purgeOpen,
         onOpenChange = { purgeOpen = it },
-        title = strings.deleteTitle(1),
-        description = strings.deleteHardDesc(1),
-        confirm = strings.deleteConfirm(1),
+        title = if (item is RvPasskeyItem) strings.deletePasskeyTitle(1) else strings.deleteTitle(1),
+        description = if (item is RvPasskeyItem) strings.deletePasskeyHardDesc(1) else strings.deleteHardDesc(1),
+        confirm = if (item is RvPasskeyItem) strings.deletePasskeyTitle(1) else strings.deleteConfirm(1),
         cancel = strings.cancel,
         danger = true,
         icon = RvDeleteIcon,

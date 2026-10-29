@@ -333,6 +333,14 @@ func (v *Vault) recordOfLocked(id string) string {
 	return v.recIDs[i]
 }
 
+func (v *Vault) passkeyRecordOfLocked(id string) string {
+	i := slices.IndexFunc(v.p.Passkey, func(e passkeyEntry) bool { return passkeyID(e) == id })
+	if i < 0 || i >= len(v.keyIDs) {
+		return ""
+	}
+	return v.keyIDs[i]
+}
+
 func (v *Vault) rebuildShareLocked() {
 	key := v.sharedKeyLocked()
 	if key == nil {
@@ -363,6 +371,22 @@ func (v *Vault) rebuildShareLocked() {
 	v.p.Web = web
 	v.recIDs = ids
 	prunePwned(v.p)
+
+	for i := range v.p.Passkey {
+		zero(v.p.Passkey[i].PrivateKeyD)
+	}
+	keys := make([]passkeyEntry, 0)
+	keyIDs := make([]string, 0)
+	for _, r := range v.sh.Records {
+		e, ok := openPasskeyRecord(key, r)
+		if !ok {
+			continue
+		}
+		keys = append(keys, e)
+		keyIDs = append(keyIDs, r.ID)
+	}
+	v.p.Passkey = keys
+	v.keyIDs = keyIDs
 
 	var profile profileState
 	openBlob(key, "profile", v.sh.Profile, &profile)

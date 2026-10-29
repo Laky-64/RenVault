@@ -33,6 +33,7 @@ var (
 type Vault interface {
 	ListPasskey() []vault.PasskeyMeta
 	SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (vault.Assertion, error)
+	CreatePasskey(rp, userName, displayName string, userHandle []byte, userVerified bool) (vault.Registration, error)
 	Unlocked() bool
 }
 
@@ -87,7 +88,7 @@ func (s *Service) Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.device, s.stop = device, cancel
 
-	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, s.approve, ctap.TransportsUSB))
+	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, s.approve, nil, ctap.TransportsUSB))
 	go func() {
 		_ = server.Serve(ctx)
 		s.Stop()

@@ -9,6 +9,9 @@ internal expect fun rememberPhotoPicker(onPicked: (ByteArray) -> Unit): (() -> U
 @Composable
 internal expect fun rememberQrScanner(onScanned: (String) -> Unit): (() -> Unit)?
 
+@Composable
+internal expect fun rememberHybridLauncher(): (() -> Unit)?
+
 internal const val PhotoSize = 512
 
 @Composable

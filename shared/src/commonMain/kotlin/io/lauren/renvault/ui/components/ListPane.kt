@@ -161,8 +161,15 @@ fun RvListPane(
                             IconButton(onClick = { onSearching(true) }, shapes = IconButtonDefaults.shapes()) {
                                 Icon(RvSearchIcon, contentDescription = placeholder)
                             }
+                            if (zone.kind == RvZoneKind.Passkeys) {
+                                rememberHybridLauncher()?.let { launch ->
+                                    IconButton(onClick = launch, shapes = IconButtonDefaults.shapes()) {
+                                        Icon(RvQrScanIcon, contentDescription = strings.passkeyComputer)
+                                    }
+                                }
+                            }
                             SortMenu(sortField, sortAscending, strings, onSort)
-                            val deletable = zone.kind != RvZoneKind.Passkeys && zone.kind != RvZoneKind.Networks
+                            val deletable = zone.kind != RvZoneKind.Networks
                             if (items.isNotEmpty() && deletable) {
                                 IconButton(onClick = { onSelecting(true) }, shapes = IconButtonDefaults.shapes()) {
                                     Icon(RvSelectIcon, contentDescription = strings.listSelect)
@@ -189,7 +196,7 @@ fun RvListPane(
                         start = RvLayout.gutter,
                         end = RvLayout.gutter,
                         top = 8.dp,
-                        bottom = padding.calculateBottomPadding() + 112.dp,
+                        bottom = padding.calculateBottomPadding() + if (zone.kind == RvZoneKind.All || selecting) 112.dp else 24.dp,
                     ),
                     verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap),
                 ) {

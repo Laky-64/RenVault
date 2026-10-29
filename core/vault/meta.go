@@ -51,9 +51,13 @@ type WiFiMeta struct {
 type PasskeyMeta struct {
 	ID           string    `json:"id"`
 	Title        string    `json:"title"`
+	CustomTitle  string    `json:"customTitle"`
+	SiteTitle    string    `json:"siteTitle"`
 	RelyingParty string    `json:"relyingParty"`
 	UserName     string    `json:"username"`
 	DisplayName  string    `json:"displayName"`
+	Note         string    `json:"note"`
+	Sites        []string  `json:"sites"`
 	CredentialID string    `json:"credentialId"`
 	IsDeleted    bool      `json:"isDeleted"`
 	Created      time.Time `json:"created"`
@@ -63,9 +67,13 @@ type PasskeyMeta struct {
 
 type passkeyEntry struct {
 	Title        string    `json:"title"`
+	CustomTitle  string    `cbor:"custom_title,omitempty"`
+	SiteTitle    string    `cbor:"site_title,omitempty"`
 	RelyingParty string    `cbor:"rp"`
 	UserName     string    `cbor:"username"`
 	DisplayName  string    `cbor:"display_name"`
+	Note         string    `cbor:"note,omitempty"`
+	Sites        []string  `cbor:"sites,omitempty"`
 	CredentialID []byte    `cbor:"credential_id"`
 	UserHandle   []byte    `cbor:"user_handle"`
 	PrivateKeyD  []byte    `cbor:"private_key_d"`
@@ -80,9 +88,13 @@ const p256ScalarLen = 32
 func newPasskeyEntry(p keychain.Passkey) (passkeyEntry, error) {
 	e := passkeyEntry{
 		Title:        p.Title,
+		CustomTitle:  p.CustomTitle,
+		SiteTitle:    p.SiteTitle,
 		RelyingParty: p.RelyingParty,
 		UserName:     p.UserName,
 		DisplayName:  p.DisplayName,
+		Note:         p.Note,
+		Sites:        p.Sites,
 		CredentialID: p.CredentialID,
 		UserHandle:   p.UserHandle,
 		Created:      p.Created,
@@ -115,9 +127,13 @@ func (e passkeyEntry) passkey() (keychain.Passkey, error) {
 	}
 	return keychain.Passkey{
 		Title:        e.Title,
+		CustomTitle:  e.CustomTitle,
+		SiteTitle:    e.SiteTitle,
 		RelyingParty: e.RelyingParty,
 		UserName:     e.UserName,
 		DisplayName:  e.DisplayName,
+		Note:         e.Note,
+		Sites:        e.Sites,
 		CredentialID: e.CredentialID,
 		UserHandle:   e.UserHandle,
 		PrivateKey:   key,
@@ -219,9 +235,13 @@ func passkeyMetas(p payload) []PasskeyMeta {
 		out = append(out, PasskeyMeta{
 			ID:           passkeyID(k),
 			Title:        k.Title,
+			CustomTitle:  k.CustomTitle,
+			SiteTitle:    k.SiteTitle,
 			RelyingParty: k.RelyingParty,
 			UserName:     k.UserName,
 			DisplayName:  k.DisplayName,
+			Note:         k.Note,
+			Sites:        slices.Clone(k.Sites),
 			CredentialID: hex.EncodeToString(k.CredentialID),
 			IsDeleted:    k.IsDeleted,
 			Created:      k.Created,

@@ -85,6 +85,7 @@ import io.lauren.renvault.resources.totp_setup_desc
 import io.lauren.renvault.resources.websites_add
 import io.lauren.renvault.resources.websites_placeholder
 import io.lauren.renvault.resources.websites_desc
+import io.lauren.renvault.resources.websites_desc_passkey
 import io.lauren.renvault.resources.websites_title
 import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_made_by
@@ -197,10 +198,15 @@ import io.lauren.renvault.resources.delete_confirm
 import io.lauren.renvault.resources.delete_hard_desc
 import io.lauren.renvault.resources.delete_soft_desc
 import io.lauren.renvault.resources.delete_title
+import io.lauren.renvault.resources.delete_passkey_title
+import io.lauren.renvault.resources.delete_passkey_soft_desc
+import io.lauren.renvault.resources.delete_passkey_hard_desc
 import io.lauren.renvault.resources.deleted_countdown
 import io.lauren.renvault.resources.deleted_delete
 import io.lauren.renvault.resources.deleted_recover
 import io.lauren.renvault.resources.edit_delete
+import io.lauren.renvault.resources.edit_delete_passkey
+import io.lauren.renvault.resources.passkey_computer
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
 import io.lauren.renvault.resources.edit_no_website
@@ -433,6 +439,7 @@ private val TextResources = listOf(
     Res.string.backup_file_type,
     Res.string.auth_restore,
     Res.string.websites_desc,
+    Res.string.websites_desc_passkey,
     Res.string.websites_placeholder,
     Res.string.websites_add,
     Res.string.totp_setup_desc,
@@ -484,6 +491,8 @@ private val TextResources = listOf(
     Res.string.deleted_delete,
     Res.string.deleted_recover,
     Res.string.edit_delete,
+    Res.string.edit_delete_passkey,
+    Res.string.passkey_computer,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
     Res.string.edit_no_website,
@@ -682,6 +691,9 @@ private val PluralResources = listOf(
     Res.plurals.delete_hard_desc,
     Res.plurals.delete_soft_desc,
     Res.plurals.delete_title,
+    Res.plurals.delete_passkey_title,
+    Res.plurals.delete_passkey_soft_desc,
+    Res.plurals.delete_passkey_hard_desc,
     Res.plurals.deleted_countdown,
     Res.plurals.field_website_more,
     Res.plurals.list_selected_count,
@@ -752,6 +764,8 @@ private class ResourceStrings(
     override val editDeleteCode: String get() = text(Res.string.edit_delete_code)
     override val editSetUpCode: String get() = text(Res.string.edit_set_up_code)
     override val editDelete: String get() = text(Res.string.edit_delete)
+    override val editDeletePasskey: String get() = text(Res.string.edit_delete_passkey)
+    override val passkeyComputer: String get() = text(Res.string.passkey_computer)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)
     override val editorNewPassword: String get() = text(Res.string.editor_new_password)
@@ -1015,6 +1029,7 @@ private class ResourceStrings(
     override val failureNoDevices: String get() = text(Res.string.failure_no_devices)
 
     override fun websitesDesc(title: String): String = text(Res.string.websites_desc, title)
+    override fun websitesDescPasskey(title: String): String = text(Res.string.websites_desc_passkey, title)
 
     override fun totpSetupDesc(site: String): String = text(Res.string.totp_setup_desc, site)
 
@@ -1031,6 +1046,9 @@ private class ResourceStrings(
         text(Res.string.field_passkey_creation_date, date)
 
     override fun deleteTitle(count: Int): String = many(Res.plurals.delete_title, count, count)
+    override fun deletePasskeyTitle(count: Int): String = many(Res.plurals.delete_passkey_title, count, count)
+    override fun deletePasskeySoftDesc(count: Int): String = many(Res.plurals.delete_passkey_soft_desc, count, count)
+    override fun deletePasskeyHardDesc(count: Int): String = many(Res.plurals.delete_passkey_hard_desc, count, count)
 
     override fun deleteSoftDesc(count: Int): String = many(Res.plurals.delete_soft_desc, count, count)
 

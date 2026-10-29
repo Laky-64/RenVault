@@ -95,17 +95,18 @@ data class RvLinkedItems(val web: List<RvWebItem>, val passkeys: List<RvPasskeyI
 
 fun linkItems(web: List<RvWebItem>, passkeys: List<RvPasskeyItem>): RvLinkedItems {
     val byHost = HashMap<String, RvWebItem>()
+    val byHostDeleted = HashMap<String, RvWebItem>()
     for (entry in web) {
-        if (entry.entry.isDeleted) continue
+        val target = if (entry.entry.isDeleted) byHostDeleted else byHost
         for (host in hostsOf(entry)) {
-            byHost.getOrPut(linkKey(host, entry.entry.username)) { entry }
+            target.getOrPut(linkKey(host, entry.entry.username)) { entry }
         }
     }
 
     val byWebId = HashMap<String, RvPasskeyItem>()
     val linkedPasskeys = passkeys.map { passkey ->
-        if (passkey.entry.isDeleted) return@map passkey
-        val match = byHost[linkKey(hostOf(passkey.entry.relyingParty), passkey.entry.username)]
+        val hosts = if (passkey.entry.isDeleted) byHostDeleted else byHost
+        val match = hosts[linkKey(hostOf(passkey.entry.relyingParty), passkey.entry.username)]
             ?: return@map passkey
         byWebId.getOrPut(match.entry.id) { passkey }
         passkey.copy(linked = match.copy(passkey = passkey))
@@ -129,6 +130,9 @@ fun labelOf(item: RvWebItem): String {
 }
 
 fun siteOf(item: RvWebItem): String = if (item.entry.website) item.entry.domain else ""
+
+fun passkeyEditableOf(item: RvItem?): RvPasskeyItem? =
+    (item as? RvPasskeyItem)?.takeIf { !it.entry.isDeleted && it.linked == null }
 
 fun editableOf(item: RvItem?): RvWebItem? = when (item) {
     null -> null
@@ -334,7 +338,16 @@ fun detailOf(
             fields.pushModified(linked.entry.modified, strings)
             fields.pushNote(linked.entry.note, strings)
         } else {
+            val others = item.entry.sites.orEmpty().filter { it.isNotEmpty() && it != item.entry.relyingParty }
+            fields += RvDetailField(
+                label = strings.fieldWebsite,
+                value = RvFieldValue.Shown(
+                    if (others.isEmpty()) item.entry.relyingParty
+                    else strings.fieldWebsiteMore(item.entry.relyingParty, others.size),
+                ),
+            )
             fields.pushModified(item.entry.modified, strings)
+            fields.pushNote(item.entry.note, strings)
         }
         RvItemDetail(title = item.entry.title, fields = fields)
     }
@@ -360,7 +373,7 @@ fun hidesName(item: RvItem, names: RvNameMask): Boolean {
     if (!names.active) return false
     val texts = haystack(item) + when (item) {
         is RvWebItem -> listOf(item.entry.note)
-        is RvPasskeyItem -> listOf(item.linked?.entry?.note.orEmpty())
+        is RvPasskeyItem -> listOf(item.linked?.entry?.note ?: item.entry.note)
         is RvWifiItem -> emptyList()
     }
     return texts.any { names.hides(it) }

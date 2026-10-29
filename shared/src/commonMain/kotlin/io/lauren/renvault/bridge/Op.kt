@@ -52,6 +52,15 @@ internal object Op {
     const val RESTORE_PASSWORD = 0x1109
     const val PURGE_PASSWORDS = 0x110A
     const val CHANGE_PASSWORD_AT = 0x110B
+    const val DELETE_PASSKEYS = 0x110C
+    const val RESTORE_PASSKEY = 0x110D
+    const val PURGE_PASSKEYS = 0x110E
+    const val EDIT_PASSKEY = 0x110F
+    const val CREATE_PASSKEY = 0x1110
+    const val SIGN_PASSKEY = 0x1111
+    const val HYBRID_START = 0x1301
+    const val HYBRID_DECIDE = 0x1302
+    const val HYBRID_CANCEL = 0x1303
 
     const val LOGIN_START = 0x2001
     const val LOGIN_CODE = 0x2002
