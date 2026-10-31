@@ -419,9 +419,24 @@ func metadataOf(w keychain.WebPassword) appleservices.Metadata {
 	}
 }
 
+func rewriteWeb(src *appleservices.KeychainVault, items []keychain.Item, w keychain.WebPassword, op outboxOp) error {
+	if len(w.MergedHosts) < 2 || op.NewDomain != w.Domain {
+		return src.EditWebPasswordIn(items, w, op.NewDomain, op.NewUsername, op.Password)
+	}
+	for _, host := range w.MergedHosts {
+		one := w
+		one.Domain = host
+		one.MergedHosts = nil
+		if err := src.EditWebPasswordIn(items, one, host, op.NewUsername, op.Password); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func runEdit(src *appleservices.KeychainVault, items []keychain.Item, op outboxOp, w keychain.WebPassword) error {
 	if op.Rewrite {
-		if err := src.EditWebPasswordIn(items, w, op.NewDomain, op.NewUsername, op.Password); err != nil {
+		if err := rewriteWeb(src, items, w, op); err != nil {
 			return err
 		}
 		w.Domain = op.NewDomain
