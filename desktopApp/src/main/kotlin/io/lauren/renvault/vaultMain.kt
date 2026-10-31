@@ -35,6 +35,7 @@ import java.awt.SystemTray
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Desktop
 import java.awt.Dimension
+import io.lauren.renvault.lib.RvWinPasskeys
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.Dispatchers
@@ -95,6 +96,7 @@ private fun vaultApplication() = application {
     val trayIcon = rememberTrayIcon()
 
     LaunchedEffect(Unit) {
+        RvWinPasskeys.onQuit = quit
         RvInstance.listen(open)
     }
 
@@ -196,10 +198,11 @@ private fun vaultApplication() = application {
                     runCatching { Desktop.getDesktop().browse(URI(target)) }
                 },
                 onLocalKeyPrompt = { prompt ->
+                    if (prompt?.session == "windows") open("")
                     scope.launch {
                         notice?.let { id -> runCatching { Vault.closeNotification(id) } }
                         notice = null
-                        if (prompt == null || window.isActive) return@launch
+                        if (prompt == null || prompt.session == "windows" || window.isActive) return@launch
                         val body = if (prompt.create) strings.localKeyCreate(prompt.relyingParty) else strings.localKeyGet(prompt.relyingParty)
                         notice = runCatching { Vault.notify(appName, body) }.getOrNull()
                     }

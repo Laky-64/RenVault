@@ -23,6 +23,7 @@ func Install() {
 		installIcons()
 		installHybrid()
 		installLocalKey()
+		installWinPasskeys()
 	})
 }
 

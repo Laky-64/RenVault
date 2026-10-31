@@ -97,13 +97,21 @@ func installLocalKey() {
 }
 
 func chooseLocalKey(ctx context.Context, rp string, options []ctap.Credential) (ctap.Credential, error) {
+	return chooseWith(ctx, localKeySession, rp, options)
+}
+
+func approveLocalKey(ctx context.Context, c ctap.NewCredential) error {
+	return approveWith(ctx, localKeySession, c)
+}
+
+func chooseWith(ctx context.Context, session, rp string, options []ctap.Credential) (ctap.Credential, error) {
 	ctx, cancel := context.WithTimeout(ctx, localKeyWait)
 	defer cancel()
 	accounts := make([]hybridAccount, len(options))
 	for i, o := range options {
 		accounts[i] = hybridAccount{Title: o.DisplayName, Username: o.UserName}
 	}
-	d, err := askHybrid(ctx, hybridPrompt{Session: localKeySession, RelyingParty: rp, Accounts: accounts})
+	d, err := askHybrid(ctx, hybridPrompt{Session: session, RelyingParty: rp, Accounts: accounts})
 	if err != nil {
 		return ctap.Credential{}, err
 	}
@@ -113,9 +121,9 @@ func chooseLocalKey(ctx context.Context, rp string, options []ctap.Credential) (
 	return options[d.account], nil
 }
 
-func approveLocalKey(ctx context.Context, c ctap.NewCredential) error {
+func approveWith(ctx context.Context, session string, c ctap.NewCredential) error {
 	ctx, cancel := context.WithTimeout(ctx, localKeyWait)
 	defer cancel()
-	_, err := askHybrid(ctx, hybridPrompt{Session: localKeySession, RelyingParty: c.RelyingParty, Create: true, Username: c.UserName})
+	_, err := askHybrid(ctx, hybridPrompt{Session: session, RelyingParty: c.RelyingParty, Create: true, Username: c.UserName})
 	return err
 }

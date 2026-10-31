@@ -29,13 +29,17 @@ func start(base string, secret []byte) {
 
 	opened := vault.New(base)
 	opened.SetOnLock(func() { bridge.Emit(bridge.EventLocked, none{}) })
-	opened.SetOnSync(func() { bridge.Emit(bridge.EventSyncChanged, syncStateOf(opened)) })
+	opened.SetOnSync(func() {
+		bridge.Emit(bridge.EventSyncChanged, syncStateOf(opened))
+		syncWinPasskeys()
+	})
 	opened.SetOnProfile(func() { bridge.Emit(bridge.EventProfile, none{}) })
 	opened.SetOnPeers(func() { bridge.Emit(bridge.EventDevices, none{}) })
 
 	mu.Lock()
-	defer mu.Unlock()
 	current = opened
+	mu.Unlock()
+	startWinPasskeys(opened)
 }
 
 func opened() (*vault.Vault, error) {

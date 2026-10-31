@@ -24,7 +24,7 @@ import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.lib.RvStrings
 import kotlinx.coroutines.launch
 
-private const val LocalKeySession = "localkey"
+private val PromptSessions = setOf("localkey", "windows")
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -34,11 +34,11 @@ fun RvLocalKeyPrompt(strings: RvStrings, onChange: (HybridPrompt?) -> Unit = {})
 
     LaunchedEffect(Unit) {
         Vault.events.collect { event ->
-            Vault.hybridPrompt(event)?.takeIf { it.session == LocalKeySession }?.let {
+            Vault.hybridPrompt(event)?.takeIf { it.session in PromptSessions }?.let {
                 prompt = it
                 onChange(it)
             }
-            Vault.hybridProgress(event)?.takeIf { it.session == LocalKeySession && it.stage == "resolved" }?.let { done ->
+            Vault.hybridProgress(event)?.takeIf { it.session in PromptSessions && it.stage == "resolved" }?.let { done ->
                 if (prompt?.id == done.error) {
                     prompt = null
                     onChange(null)

@@ -99,4 +99,10 @@ const (
 
 	OpNotifyShow  uint32 = 0x1308
 	OpNotifyClose uint32 = 0x1309
+
+	OpWinPasskeyStatus   uint32 = 0x130a
+	OpWinPasskeyEnable   uint32 = 0x130b
+	OpWinPasskeySync     uint32 = 0x130c
+	OpWinPasskeySettings uint32 = 0x130d
+	OpWinPasskeyRestart  uint32 = 0x130e
 )

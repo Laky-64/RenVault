@@ -64,6 +64,7 @@ import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
 import io.lauren.renvault.lib.RvLocalKey
+import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.screenshotBlockSupported
 import io.lauren.renvault.lib.clipboardClearSeconds
 import io.lauren.renvault.lib.autofillCopyTotp
@@ -624,6 +625,45 @@ private fun RootPage(
                 }
             }
 
+            if (RvWinPasskeys.status.supported) item {
+                val win = RvWinPasskeys.status
+                RvSection(title = strings.localKeySection) {
+                    RvSegment(
+                        index = 0,
+                        count = 1,
+                        onClick = {
+                            scope.launch {
+                                if (win.installed) {
+                                    RvWinPasskeys.openSettings()
+                                } else {
+                                    RvWinPasskeys.enable().onFailure { failure ->
+                                        snackbar.showSnackbar(failure.message ?: strings.winPasskeysFailed)
+                                    }
+                                }
+                            }
+                        },
+                        leading = { SettingBadge(RvPasskeyIcon, accents.green) },
+                        supporting = {
+                            Text(
+                                when {
+                                    win.enabled -> strings.winPasskeysActive
+                                    win.installed -> strings.winPasskeysEnableHint
+                                    else -> strings.winPasskeysDesc
+                                },
+                            )
+                        },
+                        trailing = {
+                            Text(
+                                if (win.installed) strings.winPasskeysOpen else strings.winPasskeysEnable,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        },
+                    ) {
+                        Text(strings.winPasskeysTitle)
+                    }
+                }
+            }
+
             item {
                 RvSection(title = strings.settingsPrivacyTitle) {
                     val shots = if (screenshotBlockSupported) 1 else 0
@@ -808,6 +848,17 @@ private fun RootPage(
         current = state.anisette,
         strings = strings,
         onSave = onAnisette,
+    )
+
+    RvConfirmDialog(
+        open = RvWinPasskeys.restartNeeded,
+        onOpenChange = { if (!it) RvWinPasskeys.dismissRestart() },
+        title = strings.winPasskeysRestartTitle,
+        description = strings.winPasskeysRestartDesc,
+        confirm = strings.winPasskeysRestart,
+        cancel = strings.cancel,
+        icon = RvPasskeyIcon,
+        onConfirm = { scope.launch { RvWinPasskeys.restart() } },
     )
 
     RvConfirmDialog(

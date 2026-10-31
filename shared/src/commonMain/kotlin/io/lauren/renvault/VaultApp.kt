@@ -26,6 +26,7 @@ import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvLocalKey
+import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.RvHideFromRecents
 import io.lauren.renvault.lib.RvLan
 import io.lauren.renvault.lib.RvLeaveSignal
@@ -217,6 +218,12 @@ fun RvVaultApp(
 
     LaunchedEffect(unlocked, profile.local) {
         if (unlocked && profile.local) RvLan.schedule(true)
+    }
+
+    LaunchedEffect(ready, unlocked) {
+        if (!ready) return@LaunchedEffect
+        RvWinPasskeys.refresh()
+        if (unlocked && RvWinPasskeys.status.installed) runCatching { Vault.winPasskeySync() }
     }
 
     LaunchedEffect(ready, unlocked, RvLocalKey.enabled, RvLocalKey.permitted) {

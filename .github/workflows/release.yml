@@ -91,9 +91,28 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y rpm
 
+      - name: Build the app image
+        run: |
+          ./gradlew :desktopApp:createDistributable \
+            -Drenvault.main=io.lauren.renvault.VaultMainKt \
+            -Prenvault.version="${{ steps.version.outputs.name }}" \
+            -Prenvault.version_code="${{ steps.version.outputs.code }}" \
+            -Prenvault.package_version="${{ steps.version.outputs.package }}"
+
+      - name: Add the Windows passkey package
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          WINDOWS_CERT_PFX: ${{ secrets.WINDOWS_CERT_PFX }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          .github/scripts/windows-sparse.ps1 `
+            -AppImage desktopApp/build/compose/binaries/main/app/RenVault `
+            -Version "${{ steps.version.outputs.package }}"
+
       - name: Build the packages
         run: |
-          ./gradlew :desktopApp:packageDistributionForCurrentOS :desktopApp:createDistributable \
+          ./gradlew :desktopApp:packageDistributionForCurrentOS -x :desktopApp:createDistributable \
             -Drenvault.main=io.lauren.renvault.VaultMainKt \
             -Prenvault.version="${{ steps.version.outputs.name }}" \
             -Prenvault.version_code="${{ steps.version.outputs.code }}" \

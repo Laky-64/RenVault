@@ -524,3 +524,16 @@ internal data class NotifyRequest(
 internal data class NotifyId(
     @SerialName("id") val id: Long = 0,
 )
+
+@Serializable
+data class WinPasskeyStatus(
+    @SerialName("supported") val supported: Boolean = false,
+    @SerialName("packaged") val packaged: Boolean = false,
+    @SerialName("installed") val installed: Boolean = false,
+    @SerialName("enabled") val enabled: Boolean = false,
+)
+
+@Serializable
+data class WinPasskeyEnable(
+    @SerialName("restart") val restart: Boolean = false,
+)

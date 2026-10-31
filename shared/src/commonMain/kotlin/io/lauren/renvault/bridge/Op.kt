@@ -64,6 +64,11 @@ internal object Op {
     const val LOCAL_KEY_GRANT = 0x1307
     const val NOTIFY_SHOW = 0x1308
     const val NOTIFY_CLOSE = 0x1309
+    const val WIN_PASSKEY_STATUS = 0x130a
+    const val WIN_PASSKEY_ENABLE = 0x130b
+    const val WIN_PASSKEY_SYNC = 0x130c
+    const val WIN_PASSKEY_SETTINGS = 0x130d
+    const val WIN_PASSKEY_RESTART = 0x130e
 
     const val LOGIN_START = 0x2001
     const val LOGIN_CODE = 0x2002

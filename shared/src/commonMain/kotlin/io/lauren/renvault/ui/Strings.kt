@@ -218,6 +218,16 @@ import io.lauren.renvault.resources.local_key_create_hint
 import io.lauren.renvault.resources.local_key_save
 import io.lauren.renvault.resources.local_key_permission
 import io.lauren.renvault.resources.local_key_grant
+import io.lauren.renvault.resources.win_passkeys_title
+import io.lauren.renvault.resources.win_passkeys_desc
+import io.lauren.renvault.resources.win_passkeys_enable_hint
+import io.lauren.renvault.resources.win_passkeys_active
+import io.lauren.renvault.resources.win_passkeys_enable
+import io.lauren.renvault.resources.win_passkeys_open
+import io.lauren.renvault.resources.win_passkeys_restart_title
+import io.lauren.renvault.resources.win_passkeys_restart_desc
+import io.lauren.renvault.resources.win_passkeys_restart
+import io.lauren.renvault.resources.win_passkeys_failed
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
 import io.lauren.renvault.resources.edit_no_website
@@ -515,6 +525,16 @@ private val TextResources = listOf(
     Res.string.local_key_save,
     Res.string.local_key_permission,
     Res.string.local_key_grant,
+    Res.string.win_passkeys_title,
+    Res.string.win_passkeys_desc,
+    Res.string.win_passkeys_enable_hint,
+    Res.string.win_passkeys_active,
+    Res.string.win_passkeys_enable,
+    Res.string.win_passkeys_open,
+    Res.string.win_passkeys_restart_title,
+    Res.string.win_passkeys_restart_desc,
+    Res.string.win_passkeys_restart,
+    Res.string.win_passkeys_failed,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
     Res.string.edit_no_website,
@@ -798,6 +818,16 @@ private class ResourceStrings(
     override val localKeySave: String get() = text(Res.string.local_key_save)
     override val localKeyPermission: String get() = text(Res.string.local_key_permission)
     override val localKeyGrant: String get() = text(Res.string.local_key_grant)
+    override val winPasskeysTitle: String get() = text(Res.string.win_passkeys_title)
+    override val winPasskeysDesc: String get() = text(Res.string.win_passkeys_desc)
+    override val winPasskeysEnableHint: String get() = text(Res.string.win_passkeys_enable_hint)
+    override val winPasskeysActive: String get() = text(Res.string.win_passkeys_active)
+    override val winPasskeysEnable: String get() = text(Res.string.win_passkeys_enable)
+    override val winPasskeysOpen: String get() = text(Res.string.win_passkeys_open)
+    override val winPasskeysRestartTitle: String get() = text(Res.string.win_passkeys_restart_title)
+    override val winPasskeysRestartDesc: String get() = text(Res.string.win_passkeys_restart_desc)
+    override val winPasskeysRestart: String get() = text(Res.string.win_passkeys_restart)
+    override val winPasskeysFailed: String get() = text(Res.string.win_passkeys_failed)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)
     override val editorNewPassword: String get() = text(Res.string.editor_new_password)

@@ -11,6 +11,10 @@ type store struct {
 	v Vault
 }
 
+func NewStore(v Vault) ctap.Store {
+	return store{v: v}
+}
+
 func (s store) Passkeys(relyingParty string) ([]ctap.Credential, error) {
 	target := strings.ToLower(strings.TrimSpace(relyingParty))
 	var out []ctap.Credential

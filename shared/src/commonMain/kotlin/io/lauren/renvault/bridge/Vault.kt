@@ -54,6 +54,16 @@ object Vault {
 
     suspend fun localKeyGrant() = send(Op.LOCAL_KEY_GRANT)
 
+    suspend fun winPasskeyStatus(): WinPasskeyStatus = receive(Op.WIN_PASSKEY_STATUS)
+
+    suspend fun winPasskeyEnable(): WinPasskeyEnable = receive(Op.WIN_PASSKEY_ENABLE)
+
+    suspend fun winPasskeySync() = send(Op.WIN_PASSKEY_SYNC)
+
+    suspend fun winPasskeySettings() = send(Op.WIN_PASSKEY_SETTINGS)
+
+    suspend fun winPasskeyRestart() = send(Op.WIN_PASSKEY_RESTART)
+
     suspend fun notify(title: String, body: String): Long =
         exchange<NotifyRequest, NotifyId>(Op.NOTIFY_SHOW, NotifyRequest(title, body)).id
 

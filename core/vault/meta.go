@@ -59,6 +59,7 @@ type PasskeyMeta struct {
 	Note         string    `json:"note"`
 	Sites        []string  `json:"sites"`
 	CredentialID string    `json:"credentialId"`
+	UserHandle   []byte    `json:"-"`
 	IsDeleted    bool      `json:"isDeleted"`
 	Created      time.Time `json:"created"`
 	Modified     time.Time `json:"modified"`
@@ -246,6 +247,7 @@ func passkeyMetas(p payload) []PasskeyMeta {
 			Note:         k.Note,
 			Sites:        slices.Clone(k.Sites),
 			CredentialID: hex.EncodeToString(k.CredentialID),
+			UserHandle:   slices.Clone(k.UserHandle),
 			IsDeleted:    k.IsDeleted,
 			Created:      k.Created,
 			Modified:     k.Modified,

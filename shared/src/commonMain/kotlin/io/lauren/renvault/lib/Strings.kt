@@ -31,6 +31,16 @@ interface RvStrings {
     val localKeySave: String
     val localKeyPermission: String
     val localKeyGrant: String
+    val winPasskeysTitle: String
+    val winPasskeysDesc: String
+    val winPasskeysEnableHint: String
+    val winPasskeysActive: String
+    val winPasskeysEnable: String
+    val winPasskeysOpen: String
+    val winPasskeysRestartTitle: String
+    val winPasskeysRestartDesc: String
+    val winPasskeysRestart: String
+    val winPasskeysFailed: String
     val editorUsernameHint: String
     val editorNotes: String
     val editorNewPassword: String

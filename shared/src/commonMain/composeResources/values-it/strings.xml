@@ -411,4 +411,14 @@
     <string name="local_key_save">Salva</string>
     <string name="local_key_permission">Serve un permesso una tantum: RenVault chiederà la password di amministratore</string>
     <string name="local_key_grant">Concedi</string>
+    <string name="win_passkeys_title">Passkey in Windows</string>
+    <string name="win_passkeys_desc">Usa le passkey di RenVault in Chrome, Edge e nelle app di Windows</string>
+    <string name="win_passkeys_enable_hint">Attiva RenVault in Impostazioni › Account › Passkey › Opzioni avanzate</string>
+    <string name="win_passkeys_active">RenVault compare quando un sito chiede una passkey</string>
+    <string name="win_passkeys_enable">Attiva</string>
+    <string name="win_passkeys_open">Apri</string>
+    <string name="win_passkeys_restart_title">Riavvia RenVault</string>
+    <string name="win_passkeys_restart_desc">RenVault deve riavviarsi per completare la configurazione. Poi torna qui e tocca di nuovo Attiva.</string>
+    <string name="win_passkeys_restart">Riavvia</string>
+    <string name="win_passkeys_failed">Non è stato possibile attivare le passkey in Windows</string>
 </resources>

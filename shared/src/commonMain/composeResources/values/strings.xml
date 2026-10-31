@@ -416,4 +416,14 @@
     <string name="local_key_save">Save</string>
     <string name="local_key_permission">Needs a one-time permission. RenVault will ask for the administrator password</string>
     <string name="local_key_grant">Allow</string>
+    <string name="win_passkeys_title">Passkeys in Windows</string>
+    <string name="win_passkeys_desc">Use your RenVault passkeys in Chrome, Edge and Windows apps</string>
+    <string name="win_passkeys_enable_hint">Turn on RenVault in Settings › Accounts › Passkeys › Advanced options</string>
+    <string name="win_passkeys_active">RenVault shows up when a site asks for a passkey</string>
+    <string name="win_passkeys_enable">Turn on</string>
+    <string name="win_passkeys_open">Open</string>
+    <string name="win_passkeys_restart_title">Restart RenVault</string>
+    <string name="win_passkeys_restart_desc">RenVault needs to restart to finish setting up. Then come back here and tap Turn on again.</string>
+    <string name="win_passkeys_restart">Restart</string>
+    <string name="win_passkeys_failed">Couldn\'t turn on passkeys in Windows</string>
 </resources>
