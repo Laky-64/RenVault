@@ -80,7 +80,7 @@ func installLogin() {
 		servers := active.AnisetteServers(ctx)
 		out := make([]anisetteEntry, len(servers))
 		for i, s := range servers {
-			out[i] = anisetteEntry{Name: s.Name, Address: s.Address, LatencyMs: s.Latency.Milliseconds(), Reachable: s.Reachable}
+			out[i] = anisetteEntry{Name: s.Name, Address: s.Address, Kind: s.Kind, LatencyMs: s.Latency.Milliseconds(), Reachable: s.Reachable}
 		}
 		return out, nil
 	})

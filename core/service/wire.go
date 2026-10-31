@@ -490,6 +490,7 @@ type quickStateResponse struct {
 type anisetteEntry struct {
 	Name      string `cbor:"name"`
 	Address   string `cbor:"address"`
+	Kind      int    `cbor:"kind"`
 	LatencyMs int64  `cbor:"latency_ms"`
 	Reachable bool   `cbor:"reachable"`
 }

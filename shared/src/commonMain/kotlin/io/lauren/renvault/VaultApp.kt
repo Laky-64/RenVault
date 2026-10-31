@@ -442,7 +442,7 @@ fun RvVaultApp(
     val zones = homeZones(linked.web, wifi, linked.passkeys)
 
     val loadAnisette: suspend () -> List<RvAnisetteChoice> = {
-        Vault.anisetteServers().map { RvAnisetteChoice(it.name, it.address, it.latencyMs, it.reachable) }
+        Vault.anisetteServers().map { RvAnisetteChoice(it.name, it.address, it.latencyMs, it.reachable, it.kind) }
     }
 
     CompositionLocalProvider(LocalAnisetteServers provides loadAnisette) {

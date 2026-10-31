@@ -67,6 +67,7 @@ data class AnisetteServer(
 data class AnisetteEntry(
     @SerialName("name") val name: String = "",
     @SerialName("address") val address: String = "",
+    @SerialName("kind") val kind: Int = 0,
     @SerialName("latency_ms") val latencyMs: Long = 0,
     @SerialName("reachable") val reachable: Boolean = false,
 )

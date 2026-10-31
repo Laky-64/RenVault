@@ -116,6 +116,7 @@ import io.lauren.renvault.resources.anisette_checking
 import io.lauren.renvault.resources.anisette_unreachable
 import io.lauren.renvault.resources.anisette_insecure
 import io.lauren.renvault.resources.anisette_latency
+import io.lauren.renvault.resources.anisette_recommended
 import io.lauren.renvault.resources.reset_forgot
 import io.lauren.renvault.resources.reset_title
 import io.lauren.renvault.resources.reset_icloud
@@ -404,6 +405,7 @@ private val TextResources = listOf(
     Res.string.anisette_unreachable,
     Res.string.anisette_insecure,
     Res.string.anisette_latency,
+    Res.string.anisette_recommended,
     Res.string.reset_forgot,
     Res.string.reset_title,
     Res.string.reset_icloud,
@@ -881,6 +883,7 @@ private class ResourceStrings(
     override val anisetteUnreachable: String get() = text(Res.string.anisette_unreachable)
     override val anisetteInsecure: String get() = text(Res.string.anisette_insecure)
     override fun anisetteLatency(ms: String): String = text(Res.string.anisette_latency, ms)
+    override fun anisetteRecommended(ms: String): String = text(Res.string.anisette_recommended, ms)
     override val resetForgot: String get() = text(Res.string.reset_forgot)
     override val resetTitle: String get() = text(Res.string.reset_title)
     override val resetIcloud: String get() = text(Res.string.reset_icloud)

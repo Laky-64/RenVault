@@ -89,6 +89,7 @@ func (v *Vault) SetAnisetteServer(raw string) error {
 type AnisetteServer struct {
 	Name      string
 	Address   string
+	Kind      int
 	Latency   time.Duration
 	Reachable bool
 }
@@ -99,7 +100,7 @@ func (v *Vault) AnisetteServers(ctx context.Context) []AnisetteServer {
 	client := &http.Client{Timeout: 5 * time.Second}
 	var wg sync.WaitGroup
 	for i, s := range list {
-		out[i] = AnisetteServer{Name: s.Name, Address: strings.TrimRight(s.Address, "/")}
+		out[i] = AnisetteServer{Name: s.Name, Address: strings.TrimRight(s.Address, "/"), Kind: s.Kind}
 		wg.Go(func() {
 			out[i].Latency, out[i].Reachable = probeAnisette(ctx, client, out[i].Address)
 		})
@@ -114,6 +115,9 @@ func (v *Vault) AnisetteServers(ctx context.Context) []AnisetteServer {
 		}
 		if !a.Reachable {
 			return 0
+		}
+		if a.Kind != b.Kind {
+			return cmp.Compare(b.Kind, a.Kind)
 		}
 		if sa, sb := strings.HasPrefix(a.Address, "https://"), strings.HasPrefix(b.Address, "https://"); sa != sb {
 			if sa {

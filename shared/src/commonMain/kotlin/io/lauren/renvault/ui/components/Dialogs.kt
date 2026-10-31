@@ -361,6 +361,7 @@ data class RvAnisetteChoice(
     val address: String,
     val latencyMs: Long,
     val reachable: Boolean,
+    val kind: Int = 0,
 )
 
 val LocalAnisetteServers = compositionLocalOf<suspend () -> List<RvAnisetteChoice>> { { emptyList() } }
@@ -433,6 +434,7 @@ fun RvAnisetteDialog(
                                 Text(strings.anisetteChecking, style = MaterialTheme.typography.bodyMedium)
                             }
                         } else {
+                            val best = loaded.filter { it.reachable && it.address.startsWith("https://") }.maxOfOrNull { it.kind }
                             loaded.forEach { server ->
                                 AnisetteRow(
                                     title = server.name,
@@ -442,6 +444,7 @@ fun RvAnisetteDialog(
                                     status = when {
                                         !server.reachable -> strings.anisetteUnreachable
                                         server.address.startsWith("http://") -> strings.anisetteInsecure
+                                        server.kind == best -> strings.anisetteRecommended(server.latencyMs.toString())
                                         else -> strings.anisetteLatency(server.latencyMs.toString())
                                     },
                                     good = server.reachable && server.address.startsWith("https://"),

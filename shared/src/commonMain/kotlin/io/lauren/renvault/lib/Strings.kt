@@ -136,6 +136,7 @@ interface RvStrings {
     val anisetteUnreachable: String
     val anisetteInsecure: String
     fun anisetteLatency(ms: String): String
+    fun anisetteRecommended(ms: String): String
     val resetForgot: String
     val resetTitle: String
     val resetIcloud: String
