@@ -47,6 +47,7 @@ foreach ($asset in @(@('StoreLogo.png', 50), @('Square44x44Logo.png', 44), @('Sq
 $icon.Dispose()
 
 $exe = Join-Path $AppImage 'RenVault.exe'
+Set-ItemProperty -Path $exe -Name IsReadOnly -Value $false
 & $mt -nologo -inputresource:"$exe;#1" -manifest (Join-Path $source 'RenVault.exe.manifest') -outputresource:"$exe;#1"
 if ($LASTEXITCODE -ne 0) { throw "mt.exe failed with $LASTEXITCODE" }
 
