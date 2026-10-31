@@ -162,13 +162,16 @@ func webKey(w keychain.WebPassword) string {
 }
 
 func webID(w keychain.WebPassword) string {
-	return hashID(
-		KindWeb,
+	material := []string{
 		w.Domain,
 		w.Username,
 		w.Name,
 		strconv.FormatInt(w.Created.UnixNano(), 10),
-	)
+	}
+	if w.IsDeleted && len(w.Deleted) > 0 {
+		material = append(material, w.Deleted[0].RecordName)
+	}
+	return hashID(KindWeb, material...)
 }
 
 func wifiID(w keychain.WiFiPassword) string {
