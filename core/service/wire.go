@@ -32,6 +32,10 @@ type domainRequest struct {
 	Domain string `cbor:"domain"`
 }
 
+type iconsRequest struct {
+	Enabled bool `cbor:"enabled"`
+}
+
 type sortRequest struct {
 	Field     string `cbor:"field"`
 	Ascending bool   `cbor:"ascending"`

@@ -426,4 +426,6 @@
     <string name="master_repeat">Ripeti la nuova password</string>
     <string name="master_change">Cambia</string>
     <string name="master_changed">Master password cambiata</string>
+    <string name="settings_site_icons">Icone dei siti</string>
+    <string name="settings_site_icons_desc">Le icone vengono scaricate da DuckDuckGo, che può vedere i siti che salvi. Disattivale per tenerlo privato.</string>
 </resources>

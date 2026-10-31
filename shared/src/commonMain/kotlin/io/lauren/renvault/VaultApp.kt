@@ -25,6 +25,7 @@ import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
 import io.lauren.renvault.bridge.NetInfo
+import io.lauren.renvault.lib.RvFavicons
 import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.RvHideFromRecents
@@ -330,9 +331,22 @@ fun RvVaultApp(
         }
     }
 
+    LaunchedEffect(ready, RvFavicons.enabled) {
+        if (!ready) return@LaunchedEffect
+        runCatching { Vault.setIconsEnabled(RvFavicons.enabled) }
+        if (!RvFavicons.enabled) {
+            wanted.clear()
+            icons.clear()
+        }
+    }
+
     val favicon: (String) -> Painter? = { domain ->
-        if (domain.isNotEmpty() && !icons.containsKey(domain) && domain !in wanted) wanted += domain
-        icons[domain]
+        if (!RvFavicons.enabled) {
+            null
+        } else {
+            if (domain.isNotEmpty() && !icons.containsKey(domain) && domain !in wanted) wanted += domain
+            icons[domain]
+        }
     }
 
     val secrets = remember {

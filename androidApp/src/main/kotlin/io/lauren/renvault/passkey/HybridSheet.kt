@@ -2,6 +2,7 @@
 
 package io.lauren.renvault.passkey
 
+import io.lauren.renvault.lib.RvFavicons
 import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
@@ -392,6 +393,7 @@ private fun rememberFavicon(domain: String): Painter? {
     val tile = with(LocalDensity.current) { HeroSize.roundToPx() }
     var favicon by remember(domain) { mutableStateOf<Painter?>(null) }
     LaunchedEffect(domain) {
+        if (!RvFavicons.enabled) return@LaunchedEffect
         favicon = withContext(Dispatchers.Default) {
             runCatching {
                 val bytes = Vault.icon(domain)

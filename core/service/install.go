@@ -33,6 +33,11 @@ func installIcons() {
 		return bytesResponse{Data: png}, err
 	})
 
+	command(bridge.OpIconsEnabled, func(_ context.Context, request iconsRequest) error {
+		tiles.SetEnabled(request.Enabled)
+		return nil
+	})
+
 	handle(bridge.OpIconImage, func(_ context.Context, request urlRequest) (bytesResponse, error) {
 		png, err := tiles.Image(request.URL)
 		return bytesResponse{Data: png}, err

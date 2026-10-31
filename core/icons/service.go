@@ -6,6 +6,7 @@ import (
 	"image"
 	"net/url"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/Laky-64/http"
@@ -19,7 +20,10 @@ const (
 	maxEntries   = 512
 )
 
-var ErrUnsupportedURL = errors.New("unsupported image url")
+var (
+	ErrUnsupportedURL = errors.New("unsupported image url")
+	ErrDisabled       = errors.New("icons: site icons are turned off")
+)
 
 type entry struct {
 	png     []byte
@@ -29,15 +33,23 @@ type entry struct {
 }
 
 type IconService struct {
-	mu    sync.Mutex
-	cache map[string]*entry
+	mu       sync.Mutex
+	cache    map[string]*entry
+	disabled atomic.Bool
 }
 
 func New() *IconService {
 	return &IconService{cache: make(map[string]*entry)}
 }
 
+func (s *IconService) SetEnabled(on bool) {
+	s.disabled.Store(!on)
+}
+
 func (s *IconService) Tile(domain string) ([]byte, error) {
+	if s.disabled.Load() {
+		return nil, ErrDisabled
+	}
 	return s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain))
 }
 

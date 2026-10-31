@@ -68,6 +68,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
+import io.lauren.renvault.lib.RvFavicons
 import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.screenshotBlockSupported
@@ -689,7 +690,7 @@ private fun RootPage(
                     val shots = if (screenshotBlockSupported) 1 else 0
                     RvSegment(
                         index = 0,
-                        count = 1 + shots,
+                        count = 2 + shots,
                         onClick = { clipboardOpen = true },
                         leading = { SettingBadge(RvCopyIcon, accents.blue) },
                         supporting = {
@@ -704,10 +705,20 @@ private fun RootPage(
                     ) {
                         Text(strings.settingsClipboard)
                     }
+                    RvSegment(
+                        index = 1,
+                        count = 2 + shots,
+                        onClick = { RvFavicons.setEnabled(!RvFavicons.enabled) },
+                        leading = { SettingBadge(RvLanguageIcon, accents.teal) },
+                        supporting = { Text(strings.settingsSiteIconsDesc) },
+                        trailing = { Switch(checked = RvFavicons.enabled, onCheckedChange = null) },
+                    ) {
+                        Text(strings.settingsSiteIcons)
+                    }
                     if (shots == 1) {
                         RvSegment(
-                            index = 1,
-                            count = 2,
+                            index = 2,
+                            count = 3,
                             onClick = { RvScreenshots.setBlocked(!RvScreenshots.blocked) },
                             leading = { SettingBadge(RvVisibilityOffIcon, accents.red) },
                             supporting = { Text(strings.settingsScreenshotsDesc) },
