@@ -27,6 +27,7 @@ compose.desktop {
         mainClass = System.getProperty("renvault.main") ?: "io.lauren.renvault.MainKt"
         javaHome = runtime.get().metadata.installationPath.asFile.absolutePath
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
+        jvmArgs += "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)

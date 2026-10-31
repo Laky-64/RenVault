@@ -52,9 +52,23 @@ private val MinimumSize = DpSize(350.dp, 690.dp)
 
 private val StartSize = DpSize(1000.dp, 670.dp)
 
+private const val DesktopEntry = "io.lauren.renvault-RenVault"
+
 fun main() {
+    nameWindowClass()
     if (!RvInstance.claim()) return
     vaultApplication()
+}
+
+private fun nameWindowClass() {
+    runCatching {
+        val toolkit = java.awt.Toolkit.getDefaultToolkit()
+        if (toolkit.javaClass.name != "sun.awt.X11.XToolkit") return
+        toolkit.javaClass.getDeclaredField("awtAppClassName").apply {
+            isAccessible = true
+            set(toolkit, DesktopEntry)
+        }
+    }
 }
 
 private fun vaultApplication() = application {
