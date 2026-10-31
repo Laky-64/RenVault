@@ -60,6 +60,8 @@ import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.theme.RvTone
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import io.lauren.renvault.ui.LocalNameMask
 import io.lauren.renvault.lib.viewOf
@@ -165,6 +167,7 @@ fun RvHomePage(
 
     var zoneKind by remember { mutableStateOf<RvZoneKind?>(null) }
     var itemId by remember { mutableStateOf<String?>(null) }
+    var awaiting by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
     var addOpen by rememberSaveable { mutableStateOf(false) }
@@ -197,8 +200,10 @@ fun RvHomePage(
     }
 
     val everything = remember(zones) { zones.flatMap { it.items }.distinctBy { it.id } }
-    val current = remember(everything, itemId) { everything.firstOrNull { it.id == itemId } }
     var lastOpen by remember { mutableStateOf<RvItem?>(null) }
+    val current = remember(everything, itemId, awaiting) {
+        everything.firstOrNull { it.id == itemId } ?: lastOpen.takeIf { awaiting != null && itemId == awaiting }
+    }
 
     val target = editableOf(current)
     val passkeyTarget = passkeyEditableOf(current)
@@ -209,14 +214,25 @@ fun RvHomePage(
 
     LaunchedEffect(selecting, active.kind, zoneKind == null) { picked = emptySet() }
     LaunchedEffect(itemId) { editing = false }
-    LaunchedEffect(current) { if (current != null) lastOpen = current }
+    LaunchedEffect(current) {
+        if (current == null) return@LaunchedEffect
+        lastOpen = current
+        if (current.id == awaiting) awaiting = null
+    }
+
+    LaunchedEffect(awaiting) {
+        if (awaiting == null) return@LaunchedEffect
+        delay(AwaitSaved)
+        awaiting = null
+    }
 
     LaunchedEffect(everything, itemId, editing) {
-        if (itemId == null || editing || current != null) return@LaunchedEffect
+        if (itemId == null || editing || current != null || itemId == awaiting) return@LaunchedEffect
         val gone = lastOpen as? RvWebItem
         val moved = gone?.let { previous ->
             everything.filterIsInstance<RvWebItem>().firstOrNull {
-                it.entry.domain == previous.entry.domain && it.entry.username == previous.entry.username
+                it.entry.domain == previous.entry.domain &&
+                    (it.entry.username == previous.entry.username || it.entry.username == draft.username)
             }
         }
         itemId = moved?.id
@@ -266,7 +282,8 @@ fun RvHomePage(
         scope.launch {
             saving = true
             try {
-                val next = runCatching { onSave(item, draft) }.getOrNull()
+                val next = runCatching { onSave(item, draft) }.getOrNull() ?: item.id
+                awaiting = next.takeIf { it != item.id }
                 itemId = next
                 editing = false
             } finally {
@@ -568,3 +585,5 @@ private fun withLinked(item: RvItem): List<String> = when (item) {
     is RvPasskeyItem -> listOf(item.id)
     is RvWifiItem -> listOf(item.id)
 }
+
+private val AwaitSaved = 3.seconds
