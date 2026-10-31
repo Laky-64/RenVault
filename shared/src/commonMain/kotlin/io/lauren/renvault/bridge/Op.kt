@@ -67,7 +67,7 @@ internal object Op {
     const val WIN_PASSKEY_STATUS = 0x130a
     const val WIN_PASSKEY_ENABLE = 0x130b
     const val WIN_PASSKEY_SYNC = 0x130c
-    const val WIN_PASSKEY_SETTINGS = 0x130d
+    const val WIN_PASSKEY_DISABLE = 0x130d
     const val WIN_PASSKEY_RESTART = 0x130e
 
     const val LOGIN_START = 0x2001

@@ -26,8 +26,10 @@ object RvWinPasskeys {
         return result.map { }
     }
 
-    suspend fun openSettings() {
-        runCatching { Vault.winPasskeySettings() }
+    suspend fun disable(): Result<Unit> {
+        val result = runCatching { Vault.winPasskeyDisable() }
+        refresh()
+        return result
     }
 
     suspend fun restart() {

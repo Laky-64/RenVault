@@ -16,6 +16,8 @@ func (s *Service) Status() Status { return Status{} }
 
 func (s *Service) Install() error { return ErrUnsupported }
 
+func (s *Service) Uninstall() error { return ErrUnsupported }
+
 func (s *Service) Sync() error { return nil }
 
 func (s *Service) Register() error { return ErrUnsupported }

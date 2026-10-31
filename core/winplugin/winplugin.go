@@ -25,6 +25,7 @@ type Vault interface {
 type Status struct {
 	Supported bool
 	Packaged  bool
+	Bundled   bool
 	Installed bool
 	Enabled   bool
 }

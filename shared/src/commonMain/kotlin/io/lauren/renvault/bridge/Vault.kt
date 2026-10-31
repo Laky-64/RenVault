@@ -60,7 +60,7 @@ object Vault {
 
     suspend fun winPasskeySync() = send(Op.WIN_PASSKEY_SYNC)
 
-    suspend fun winPasskeySettings() = send(Op.WIN_PASSKEY_SETTINGS)
+    suspend fun winPasskeyDisable() = send(Op.WIN_PASSKEY_DISABLE)
 
     suspend fun winPasskeyRestart() = send(Op.WIN_PASSKEY_RESTART)
 

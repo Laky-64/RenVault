@@ -66,6 +66,9 @@ func (s *Service) Start() error {
 
 func (s *Service) Status() Status {
 	st := Status{Supported: available(), Packaged: packaged()}
+	if exe, err := os.Executable(); err == nil {
+		st.Bundled = locate(filepath.Dir(exe), packageFile) != ""
+	}
 	if !st.Supported || !st.Packaged {
 		return st
 	}
@@ -104,6 +107,15 @@ func (s *Service) Install() error {
 		return err
 	}
 	return s.Sync()
+}
+
+func (s *Service) Uninstall() error {
+	if !available() || !packaged() {
+		return nil
+	}
+	procRemoveAllCredentials.Call(uintptr(unsafe.Pointer(&clsidRenVault)))
+	r, _, _ := procRemoveAuthenticator.Call(uintptr(unsafe.Pointer(&clsidRenVault)))
+	return hresult(r)
 }
 
 func (s *Service) Sync() error {

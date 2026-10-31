@@ -16,6 +16,7 @@ const winPasskeySession = "windows"
 type winPasskeyStatus struct {
 	Supported bool `cbor:"supported"`
 	Packaged  bool `cbor:"packaged"`
+	Bundled   bool `cbor:"bundled"`
 	Installed bool `cbor:"installed"`
 	Enabled   bool `cbor:"enabled"`
 }
@@ -66,7 +67,7 @@ func installWinPasskeys() {
 			return winPasskeyStatus{}, nil
 		}
 		st := s.Status()
-		return winPasskeyStatus{Supported: st.Supported, Packaged: st.Packaged, Installed: st.Installed, Enabled: st.Enabled}, nil
+		return winPasskeyStatus{Supported: st.Supported, Packaged: st.Packaged, Bundled: st.Bundled, Installed: st.Installed, Enabled: st.Enabled}, nil
 	})
 
 	query(bridge.OpWinPasskeyEnable, func(context.Context) (winPasskeyEnable, error) {
@@ -93,8 +94,11 @@ func installWinPasskeys() {
 		return nil
 	})
 
-	command(bridge.OpWinPasskeySettings, func(context.Context, none) error {
-		return winplugin.OpenSettings()
+	command(bridge.OpWinPasskeyDisable, func(context.Context, none) error {
+		if s := winPasskeyService(); s != nil {
+			return s.Uninstall()
+		}
+		return winplugin.ErrUnsupported
 	})
 
 	command(bridge.OpWinPasskeyRestart, func(context.Context, none) error {

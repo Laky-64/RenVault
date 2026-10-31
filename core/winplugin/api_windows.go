@@ -17,6 +17,7 @@ var (
 	procAddAuthenticator       = webauthn.NewProc("WebAuthNPluginAddAuthenticator")
 	procFreeAddResponse        = webauthn.NewProc("WebAuthNPluginFreeAddAuthenticatorResponse")
 	procAuthenticatorState     = webauthn.NewProc("WebAuthNPluginGetAuthenticatorState")
+	procRemoveAuthenticator    = webauthn.NewProc("WebAuthNPluginRemoveAuthenticator")
 	procAddCredentials         = webauthn.NewProc("WebAuthNPluginAuthenticatorAddCredentials")
 	procRemoveAllCredentials   = webauthn.NewProc("WebAuthNPluginAuthenticatorRemoveAllCredentials")
 	procPerformVerification    = webauthn.NewProc("WebAuthNPluginPerformUserVerification")

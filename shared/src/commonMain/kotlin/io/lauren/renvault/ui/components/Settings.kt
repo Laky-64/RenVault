@@ -1,5 +1,10 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.TooltipBox
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Row
@@ -268,6 +273,7 @@ private fun RootPage(
     var checking by remember { mutableStateOf(false) }
     var quickBusy by remember { mutableStateOf(false) }
     var clipboardOpen by remember { mutableStateOf(false) }
+    var actionBusy by remember { mutableStateOf(false) }
     var autofillStyleOpen by remember { mutableStateOf(false) }
     var inlineFill by remember { mutableStateOf(autofillInline()) }
     var copyTotp by remember { mutableStateOf(autofillCopyTotp()) }
@@ -599,28 +605,26 @@ private fun RootPage(
 
             if (RvLocalKey.supported) item {
                 RvSection(title = strings.localKeySection) {
-                    if (RvLocalKey.permitted) {
-                        RvSegment(
-                            index = 0,
-                            count = 1,
-                            onClick = { RvLocalKey.choose(!RvLocalKey.enabled) },
-                            leading = { SettingBadge(RvPasskeyIcon, accents.green) },
-                            supporting = { Text(strings.localKeyDesc) },
-                            trailing = { Switch(checked = RvLocalKey.enabled, onCheckedChange = null) },
-                        ) {
-                            Text(strings.localKeyTitle)
-                        }
-                    } else {
-                        RvSegment(
-                            index = 0,
-                            count = 1,
-                            onClick = { scope.launch { RvLocalKey.grant() } },
-                            leading = { SettingBadge(RvPasskeyIcon, accents.green) },
-                            supporting = { Text(strings.localKeyPermission) },
-                            trailing = { Text(strings.localKeyGrant, color = MaterialTheme.colorScheme.primary) },
-                        ) {
-                            Text(strings.localKeyTitle)
-                        }
+                    RvSegment(
+                        index = 0,
+                        count = 1,
+                        enabled = !actionBusy,
+                        onClick = {
+                            if (RvLocalKey.permitted) {
+                                RvLocalKey.choose(!RvLocalKey.enabled)
+                            } else {
+                                scope.launch {
+                                    actionBusy = true
+                                    if (RvLocalKey.grant()) RvLocalKey.choose(true)
+                                    actionBusy = false
+                                }
+                            }
+                        },
+                        leading = { SettingBadge(RvPasskeyIcon, accents.green) },
+                        supporting = { Text(if (RvLocalKey.permitted) strings.localKeyDesc else strings.localKeyPermission) },
+                        trailing = { Switch(checked = RvLocalKey.permitted && RvLocalKey.enabled, onCheckedChange = null, enabled = !actionBusy) },
+                    ) {
+                        Text(strings.localKeyTitle)
                     }
                 }
             }
@@ -628,38 +632,42 @@ private fun RootPage(
             if (RvWinPasskeys.status.supported) item {
                 val win = RvWinPasskeys.status
                 RvSection(title = strings.localKeySection) {
-                    RvSegment(
-                        index = 0,
-                        count = 1,
-                        onClick = {
-                            scope.launch {
-                                if (win.installed) {
-                                    RvWinPasskeys.openSettings()
-                                } else {
-                                    RvWinPasskeys.enable().onFailure { failure ->
-                                        snackbar.showSnackbar(failure.message ?: strings.winPasskeysFailed)
-                                    }
-                                }
-                            }
-                        },
-                        leading = { SettingBadge(RvPasskeyIcon, accents.green) },
-                        supporting = {
-                            Text(
-                                when {
-                                    win.enabled -> strings.winPasskeysActive
-                                    win.installed -> strings.winPasskeysEnableHint
-                                    else -> strings.winPasskeysDesc
-                                },
-                            )
-                        },
-                        trailing = {
-                            Text(
-                                if (win.installed) strings.winPasskeysOpen else strings.winPasskeysEnable,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        },
+                    val ready = win.packaged || win.bundled
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
+                        tooltip = { if (!ready) PlainTooltip { Text(strings.winPasskeysMissing) } },
+                        state = rememberTooltipState(),
+                        enableUserInput = !ready,
                     ) {
-                        Text(strings.winPasskeysTitle)
+                        RvSegment(
+                            index = 0,
+                            count = 1,
+                            enabled = !actionBusy && ready,
+                            onClick = {
+                                scope.launch {
+                                    actionBusy = true
+                                    val result = if (win.installed) RvWinPasskeys.disable() else RvWinPasskeys.enable()
+                                    result.onFailure { failure ->
+                                        println("winplugin: ${failure.message}")
+                                        snackbar.showSnackbar(strings.winPasskeysFailed)
+                                    }
+                                    actionBusy = false
+                                }
+                            },
+                            leading = { SettingBadge(RvPasskeyIcon, accents.green) },
+                            supporting = {
+                                Text(
+                                    when {
+                                        win.enabled -> strings.winPasskeysActive
+                                        win.installed -> strings.winPasskeysEnableHint
+                                        else -> strings.winPasskeysDesc
+                                    },
+                                )
+                            },
+                            trailing = { Switch(checked = win.installed, onCheckedChange = null, enabled = !actionBusy && ready) },
+                        ) {
+                            Text(strings.winPasskeysTitle)
+                        }
                     }
                 }
             }
