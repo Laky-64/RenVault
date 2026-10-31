@@ -35,6 +35,13 @@ import java.awt.SystemTray
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Desktop
 import java.awt.Dimension
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import javax.swing.SwingUtilities
+import java.awt.Frame
+import androidx.compose.ui.awt.ComposeWindow
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.net.URI
@@ -59,10 +66,21 @@ private fun vaultApplication() = application {
     var visible by remember { mutableStateOf(true) }
     var raises by remember { mutableIntStateOf(0) }
     var activation by remember { mutableStateOf("") }
+    var mainWindow by remember { mutableStateOf<ComposeWindow?>(null) }
     val open: (token: String) -> Unit = { token ->
-        visible = true
-        activation = token
-        raises++
+        val shown = mainWindow?.takeIf { visible && it.isShowing }
+        if (shown == null) {
+            visible = true
+            activation = token
+            raises++
+        } else {
+            SwingUtilities.invokeLater {
+                if (shown.extendedState and Frame.ICONIFIED != 0) shown.extendedState = shown.extendedState and Frame.ICONIFIED.inv()
+                shown.toFront()
+                shown.requestFocus()
+            }
+            CoroutineScope(Dispatchers.Default).launch { runCatching { Vault.raiseWindow(token) } }
+        }
     }
     val strings = rememberStrings(currentLocaleTag())
     val scope = rememberCoroutineScope()
@@ -93,11 +111,13 @@ private fun vaultApplication() = application {
             if (nativeTray != true) nativeTray = shown
         }
         LaunchedEffect(Unit) {
-            Vault.events.collect { event ->
-                if (event.kind != EventKind.TRAY) return@collect
-                when (Vault.trayItem(event)) {
-                    TrayQuit -> quit()
-                    else -> open("")
+            withContext(Dispatchers.Swing) {
+                Vault.events.collect { event ->
+                    if (event.kind != EventKind.TRAY) return@collect
+                    when (Vault.trayItem(event)) {
+                        TrayQuit -> quit()
+                        else -> open("")
+                    }
                 }
             }
         }
@@ -122,6 +142,8 @@ private fun vaultApplication() = application {
         title = appName,
         icon = rememberAppIcon(),
     ) {
+        LaunchedEffect(Unit) { mainWindow = window }
+
         LaunchedEffect(visible, raises) {
             if (!visible) return@LaunchedEffect
             state.isMinimized = false

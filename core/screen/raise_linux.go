@@ -4,6 +4,8 @@ package screen
 
 import (
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/jezek/xgb"
 	"github.com/jezek/xgb/xproto"
@@ -53,13 +55,12 @@ func Raise(token string) error {
 		}
 		if token != "" {
 			xproto.ChangeProperty(conn, xproto.PropModeReplace, window, startup, utf8, 8, uint32(len(token)), []byte(token))
-			continue
 		}
 		event := xproto.ClientMessageEvent{
 			Format: 32,
 			Window: window,
 			Type:   active,
-			Data:   xproto.ClientMessageDataUnionData32New([]uint32{sourcePager, xproto.TimeCurrentTime, 0, 0, 0}),
+			Data:   xproto.ClientMessageDataUnionData32New([]uint32{sourcePager, tokenTime(token), 0, 0, 0}),
 		}
 		xproto.SendEvent(conn, false, root,
 			xproto.EventMaskSubstructureRedirect|xproto.EventMaskSubstructureNotify, string(event.Bytes()))
@@ -74,4 +75,16 @@ func atom(conn *xgb.Conn, name string) (xproto.Atom, error) {
 		return 0, err
 	}
 	return reply.Atom, nil
+}
+
+func tokenTime(token string) uint32 {
+	index := strings.LastIndex(token, "_TIME")
+	if index < 0 {
+		return xproto.TimeCurrentTime
+	}
+	value, err := strconv.ParseUint(token[index+len("_TIME"):], 10, 32)
+	if err != nil {
+		return xproto.TimeCurrentTime
+	}
+	return uint32(value)
 }

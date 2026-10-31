@@ -221,7 +221,7 @@ fun RvVaultApp(
     }
 
     LaunchedEffect(Unit) {
-        scope.launch { runCatching { Vault.listen() } }
+        scope.launch(Dispatchers.Default) { runCatching { Vault.listen() } }
     }
 
     val lockOnLeave = settings.autoLockMinutes < 0
