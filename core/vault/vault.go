@@ -3,9 +3,7 @@ package vault
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
-	"net/http"
 	"slices"
 	"strings"
 	"sync"
@@ -171,19 +169,6 @@ func (v *Vault) notify() {
 	if fn != nil {
 		fn()
 	}
-}
-
-func (v *Vault) SetAutoLock(d time.Duration) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	v.autoLock = d
-	v.resetTimerLocked()
-}
-
-func (v *Vault) AutoLock() time.Duration {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.autoLock
 }
 
 func (v *Vault) resetTimerLocked() {
@@ -712,29 +697,6 @@ func cloneBytes(b []byte) []byte {
 
 func (v *Vault) ProfilePhoto() ([]byte, string) {
 	return v.photoBytes()
-}
-
-func (v *Vault) Middleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.HasPrefix(r.URL.Path, "/profile") {
-			next.ServeHTTP(w, r)
-			return
-		}
-		photo, ptype := v.photoBytes()
-		if len(photo) == 0 {
-			http.Error(w, "no profile photo", http.StatusNotFound)
-			return
-		}
-		if ptype == "" {
-			ptype = http.DetectContentType(photo)
-		}
-		w.Header().Set("Content-Type", ptype)
-		w.Header().Set("Content-Length", fmt.Sprint(len(photo)))
-		w.Header().Set("Cache-Control", "no-cache")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Content-Security-Policy", "default-src 'none'; sandbox")
-		_, _ = w.Write(photo)
-	})
 }
 
 func fetchCaches(src keychainSource, p *payload) error {

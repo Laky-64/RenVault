@@ -1,9 +1,6 @@
 package io.lauren.renvault.bridge
 
 internal object Op {
-    const val PING = 0x0001
-    const val SHUTDOWN = 0x0002
-
     const val VAULT_INIT = 0x1001
     const val VAULT_STATE = 0x1002
     const val VAULT_UNLOCK = 0x1003

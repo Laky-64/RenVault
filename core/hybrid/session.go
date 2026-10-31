@@ -49,10 +49,6 @@ func (s *Session) Domain() (string, error) {
 	return TunnelDomain(s.domain)
 }
 
-func (s *Session) TunnelID() []byte {
-	return s.tunnelID
-}
-
 func (s *Session) TunnelURL() (string, error) {
 	return NewTunnelURL(s.domain, s.tunnelID)
 }

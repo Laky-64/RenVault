@@ -1,11 +1,6 @@
 package bridge
 
 const (
-	OpPing     uint32 = 0x0001
-	OpShutdown uint32 = 0x0002
-)
-
-const (
 	OpVaultInit            uint32 = 0x1001
 	OpVaultState           uint32 = 0x1002
 	OpVaultUnlock          uint32 = 0x1003

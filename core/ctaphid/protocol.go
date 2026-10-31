@@ -37,19 +37,16 @@ const (
 	errInvalidLength  byte = 0x03
 	errInvalidSeq     byte = 0x04
 	errChannelBusy    byte = 0x06
-	errInvalidChannel byte = 0x0b
 	errOther          byte = 0x7f
 )
 
 const (
-	statusProcessing byte = 0x01
-	statusUpNeeded   byte = 0x02
-	statusCancelled  byte = 0x2d
-	keepaliveEvery        = 100 * time.Millisecond
+	statusUpNeeded  byte = 0x02
+	statusCancelled byte = 0x2d
+	keepaliveEvery       = 100 * time.Millisecond
 )
 
 const (
-	capabilityWink = 0x01
 	capabilityCBOR = 0x04
 	capabilityNMSG = 0x08
 )

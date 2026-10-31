@@ -239,12 +239,6 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 	return next, nil
 }
 
-func (v *Vault) DeletePassword(id string) error {
-	return v.mutate(func(p *payload) error {
-		return v.deleteWeb(p, id)
-	})
-}
-
 func (v *Vault) DeletePasswords(ids []string) error {
 	return v.mutate(func(p *payload) error {
 		return v.eachWeb(p, ids, v.deleteWeb)
@@ -304,12 +298,6 @@ func (v *Vault) RestorePassword(id string) error {
 		p.Web[i].IsDeleted = false
 		p.Web[i].DeletedAt = time.Time{}
 		return nil
-	})
-}
-
-func (v *Vault) PurgePassword(id string) error {
-	return v.mutate(func(p *payload) error {
-		return v.purgeWeb(p, id)
 	})
 }
 

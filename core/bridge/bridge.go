@@ -38,13 +38,3 @@ func Call(op uint32, token int64, request []byte) ([]byte, []byte) {
 	}
 	return response, nil
 }
-
-func init() {
-	Register(OpPing, func(_ context.Context, request []byte) ([]byte, error) {
-		return request, nil
-	})
-	Register(OpShutdown, func(_ context.Context, _ []byte) ([]byte, error) {
-		Shutdown()
-		return nil, nil
-	})
-}

@@ -15,11 +15,6 @@ import (
 const Prefix = "FIDO:/"
 
 const (
-	OperationAssert = "ga"
-	OperationCreate = "mc"
-)
-
-const (
 	chunkSize      = 7
 	chunkMaxDigits = 17
 	publicKeySize  = 33
@@ -77,31 +72,6 @@ func DecodeQR(url string) (QR, error) {
 	}, nil
 }
 
-func EncodeQR(q QR) (string, error) {
-	if len(q.PublicKey) != publicKeySize {
-		return "", fmt.Errorf("hybrid: public key is %d bytes, want %d", len(q.PublicKey), publicKeySize)
-	}
-	if len(q.Secret) != secretSize {
-		return "", fmt.Errorf("hybrid: secret is %d bytes, want %d", len(q.Secret), secretSize)
-	}
-	mode, err := cbor.CTAP2EncOptions().EncMode()
-	if err != nil {
-		return "", fmt.Errorf("hybrid: cbor mode: %w", err)
-	}
-	raw, err := mode.Marshal(qrPayload{
-		PublicKey:     q.PublicKey,
-		Secret:        q.Secret,
-		KnownDomains:  uint64(q.KnownDomains),
-		Created:       q.Created.Unix(),
-		StateAssisted: q.StateAssisted,
-		Operation:     q.Operation,
-	})
-	if err != nil {
-		return "", fmt.Errorf("hybrid: encode qr payload: %w", err)
-	}
-	return Prefix + encodeDigits(raw), nil
-}
-
 func (q QR) PeerKey() (*ecdh.PublicKey, error) {
 	return decompressP256(q.PublicKey)
 }
@@ -152,23 +122,6 @@ func decodeDigits(s string) ([]byte, error) {
 		s = s[digits:]
 	}
 	return out, nil
-}
-
-func encodeDigits(b []byte) string {
-	var sb strings.Builder
-	for len(b) > 0 {
-		size := chunkSize
-		if len(b) < chunkSize {
-			size = len(b)
-		}
-		var v uint64
-		for i := size - 1; i >= 0; i-- {
-			v = v<<8 | uint64(b[i])
-		}
-		sb.WriteString(fmt.Sprintf("%0*d", chunkDigits[size], v))
-		b = b[size:]
-	}
-	return sb.String()
 }
 
 func chunkBytes(digits int) int {

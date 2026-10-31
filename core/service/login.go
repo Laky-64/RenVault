@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Laky-64/renvault-core/bridge"
-	"github.com/Laky-64/renvault-core/vault"
 )
 
 func installLogin() {
@@ -58,7 +57,7 @@ func installLogin() {
 		if err != nil {
 			return anisetteResponse{}, err
 		}
-		return anisetteResponse{URL: active.AnisetteServer(), DefaultList: vault.DefaultAnisetteList}, nil
+		return anisetteResponse{URL: active.AnisetteServer()}, nil
 	})
 
 	command(bridge.OpAnisetteSetServer, func(_ context.Context, request anisetteRequest) error {

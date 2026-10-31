@@ -2,66 +2,10 @@ package agent
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/Laky-64/renvault-core/ctap"
 	"github.com/Laky-64/renvault-core/hybrid"
 )
-
-type Advertiser interface {
-	Start(ctx context.Context, advert []byte) error
-	Stop() error
-}
-
-type Agent struct {
-	vault      Vault
-	scanner    Scanner
-	advertiser Advertiser
-	choose     ctap.Chooser
-}
-
-func New(v Vault, scanner Scanner, advertiser Advertiser, choose ctap.Chooser) *Agent {
-	return &Agent{vault: v, scanner: scanner, advertiser: advertiser, choose: choose}
-}
-
-func NewDefault(v Vault, choose ctap.Chooser) *Agent {
-	return New(v, defaultScanner(), newAdvertiser(), choose)
-}
-
-func (a *Agent) Run(ctx context.Context) error {
-	if !Supported() {
-		return ErrUnsupported
-	}
-	if a.scanner == nil {
-		return errors.New("agent: no qr scanner")
-	}
-	if a.advertiser == nil {
-		return errors.New("agent: no bluetooth advertiser")
-	}
-	qrURL, err := a.scanner.Scan(ctx)
-	if err != nil {
-		return err
-	}
-	stopped := make(chan error, 1)
-	advert, done, err := Start(ctx, a.vault, qrURL, a.choose, nil, func() { stopped <- a.advertiser.Stop() }, nil)
-	if err != nil {
-		return err
-	}
-	if err := a.advertiser.Start(ctx, advert); err != nil {
-		return fmt.Errorf("agent: start advertising: %w", err)
-	}
-	err = <-done
-	select {
-	case stopErr := <-stopped:
-		if stopErr != nil && err == nil {
-			err = fmt.Errorf("agent: stop advertising: %w", stopErr)
-		}
-	default:
-		_ = a.advertiser.Stop()
-	}
-	return err
-}
 
 func Start(ctx context.Context, v Vault, qrURL string, choose ctap.Chooser, approve ctap.Approver, connected func(), observe func(command, status byte)) ([]byte, <-chan error, error) {
 	qr, err := hybrid.DecodeQR(qrURL)

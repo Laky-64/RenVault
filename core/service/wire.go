@@ -64,8 +64,7 @@ type anisetteRequest struct {
 }
 
 type anisetteResponse struct {
-	URL         string `cbor:"url"`
-	DefaultList string `cbor:"default_list"`
+	URL string `cbor:"url"`
 }
 
 type submitCodeRequest struct {
@@ -355,7 +354,6 @@ type passkeyEntry struct {
 	ID           string   `cbor:"id"`
 	Title        string   `cbor:"title"`
 	CustomTitle  string   `cbor:"custom_title"`
-	SiteTitle    string   `cbor:"site_title"`
 	RelyingParty string   `cbor:"relying_party"`
 	UserName     string   `cbor:"username"`
 	DisplayName  string   `cbor:"display_name"`
@@ -373,9 +371,7 @@ type bottleEntry struct {
 	Name       string `cbor:"name"`
 	Model      string `cbor:"model"`
 	ShortModel string `cbor:"short_model"`
-	Class      string `cbor:"class"`
 	OS         string `cbor:"os"`
-	OSVersion  string `cbor:"os_version"`
 	ImageURL   string `cbor:"image_url"`
 }
 
@@ -439,7 +435,6 @@ func passkeyEntriesOf(items []vault.PasskeyMeta) []passkeyEntry {
 			ID:           item.ID,
 			Title:        item.Title,
 			CustomTitle:  item.CustomTitle,
-			SiteTitle:    item.SiteTitle,
 			RelyingParty: item.RelyingParty,
 			UserName:     item.UserName,
 			DisplayName:  item.DisplayName,
@@ -463,9 +458,7 @@ func bottleEntriesOf(items []apple.BottleInfo) []bottleEntry {
 			Name:       item.Name,
 			Model:      item.Model,
 			ShortModel: item.ShortModel,
-			Class:      item.Class,
 			OS:         item.OS,
-			OSVersion:  item.OSVersion,
 			ImageURL:   item.ImageURL,
 		})
 	}

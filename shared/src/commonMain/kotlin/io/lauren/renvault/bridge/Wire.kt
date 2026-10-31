@@ -60,7 +60,6 @@ internal data class AnisetteRequest(@SerialName("url") val url: String)
 @Serializable
 data class AnisetteServer(
     @SerialName("url") val url: String = "",
-    @SerialName("default_list") val defaultList: String = "",
 )
 
 @Serializable
@@ -344,7 +343,6 @@ data class PasskeyEntry(
     @SerialName("id") val id: String = "",
     @SerialName("title") val title: String = "",
     @SerialName("custom_title") val customTitle: String = "",
-    @SerialName("site_title") val siteTitle: String = "",
     @SerialName("relying_party") val relyingParty: String = "",
     @SerialName("username") val username: String = "",
     @SerialName("display_name") val displayName: String = "",
@@ -363,9 +361,7 @@ data class TrustedDevice(
     @SerialName("name") val name: String = "",
     @SerialName("model") val model: String = "",
     @SerialName("short_model") val shortModel: String = "",
-    @SerialName("class") val deviceClass: String = "",
     @SerialName("os") val os: String = "",
-    @SerialName("os_version") val osVersion: String = "",
     @SerialName("image_url") val imageUrl: String = "",
 )
 

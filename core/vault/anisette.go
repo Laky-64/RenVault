@@ -20,8 +20,6 @@ import (
 	"github.com/Laky-64/appleservices/anisette"
 )
 
-const DefaultAnisetteList = anisette.DefaultServerListURL
-
 type anisetteFile struct {
 	URL string `json:"url,omitempty"`
 }
