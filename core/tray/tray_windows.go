@@ -347,6 +347,8 @@ func emit(id string) {
 	}
 }
 
+func GiveActivationToken(string) {}
+
 func TakeActivationToken() string {
 	return ""
 }

@@ -510,3 +510,21 @@ data class HybridPrompt(
     @SerialName("username") val username: String = "",
     @SerialName("accounts") val accounts: List<HybridAccount> = emptyList(),
 )
+
+@Serializable
+data class LocalKeyStatus(
+    @SerialName("supported") val supported: Boolean = false,
+    @SerialName("permitted") val permitted: Boolean = false,
+    @SerialName("running") val running: Boolean = false,
+)
+
+@Serializable
+internal data class NotifyRequest(
+    @SerialName("title") val title: String,
+    @SerialName("body") val body: String,
+)
+
+@Serializable
+internal data class NotifyId(
+    @SerialName("id") val id: Long = 0,
+)

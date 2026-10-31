@@ -20,10 +20,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
+import io.lauren.renvault.bridge.HybridPrompt
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
 import io.lauren.renvault.bridge.NetInfo
+import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvHideFromRecents
 import io.lauren.renvault.lib.RvLan
 import io.lauren.renvault.lib.RvLeaveSignal
@@ -39,6 +41,7 @@ import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.components.RvDevice
 import io.lauren.renvault.ui.components.LocalAnisetteServers
+import io.lauren.renvault.ui.components.RvLocalKeyPrompt
 import io.lauren.renvault.ui.components.RvAnisetteChoice
 import io.lauren.renvault.ui.components.RvBackupActions
 import io.lauren.renvault.ui.components.RvDeviceActions
@@ -103,6 +106,7 @@ fun RvVaultApp(
     version: String = RvAppVersion,
     strings: RvStrings = LocalStrings.current,
     onOpenUrl: ((String) -> Unit)? = null,
+    onLocalKeyPrompt: (HybridPrompt?) -> Unit = {},
 ) {
     val links = LocalUriHandler.current
     val openUrl: (String) -> Unit = onOpenUrl ?: { target -> runCatching { links.openUri(target) } }
@@ -212,6 +216,18 @@ fun RvVaultApp(
 
     LaunchedEffect(unlocked, profile.local) {
         if (unlocked && profile.local) RvLan.schedule(true)
+    }
+
+    LaunchedEffect(ready, unlocked, RvLocalKey.enabled, RvLocalKey.permitted) {
+        if (!ready) return@LaunchedEffect
+        val status = runCatching { Vault.localKeyStatus() }.getOrNull()
+        RvLocalKey.update(status?.supported == true, status?.permitted == true)
+        if (!RvLocalKey.supported) return@LaunchedEffect
+        if (unlocked && RvLocalKey.enabled && RvLocalKey.permitted) {
+            runCatching { Vault.localKeyStart() }
+        } else {
+            runCatching { Vault.localKeyStop() }
+        }
     }
 
     LaunchedEffect(unlocked, revision) {
@@ -632,6 +648,7 @@ fun RvVaultApp(
                 }
             },
         )
+        if (unlocked) RvLocalKeyPrompt(strings, onLocalKeyPrompt)
     }
 }
 

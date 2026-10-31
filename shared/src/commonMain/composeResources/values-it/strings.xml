@@ -401,4 +401,14 @@
     <string name="settings_autofill_totp_desc">Dopo la compilazione automatica il codice 2FA viene copiato negli appunti</string>
     <string name="quick_credential">Sblocca anche con il blocco schermo</string>
     <string name="quick_credential_desc">Usa PIN, sequenza o password quando la biometria non funziona</string>
+    <string name="local_key_section">Passkey</string>
+    <string name="local_key_title">Chiave di sicurezza virtuale</string>
+    <string name="local_key_desc">Usa le passkey di RenVault nei browser di questo computer</string>
+    <string name="local_key_get">Accedere a %1$s?</string>
+    <string name="local_key_create">Salvare una passkey per %1$s?</string>
+    <string name="local_key_get_hint">Scegli la passkey da usare</string>
+    <string name="local_key_create_hint">La passkey verrà salvata in RenVault</string>
+    <string name="local_key_save">Salva</string>
+    <string name="local_key_permission">Serve un permesso una tantum: RenVault chiederà la password di amministratore</string>
+    <string name="local_key_grant">Concedi</string>
 </resources>

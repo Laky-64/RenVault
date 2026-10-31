@@ -185,6 +185,12 @@ func emit(id string) {
 	}
 }
 
+func GiveActivationToken(token string) {
+	mu.Lock()
+	activation = token
+	mu.Unlock()
+}
+
 func TakeActivationToken() string {
 	mu.Lock()
 	defer mu.Unlock()

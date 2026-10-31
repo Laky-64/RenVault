@@ -22,6 +22,7 @@ func Install() {
 		installQuick()
 		installIcons()
 		installHybrid()
+		installLocalKey()
 	})
 }
 

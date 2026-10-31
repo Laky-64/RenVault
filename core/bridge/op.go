@@ -96,4 +96,12 @@ const (
 	OpHybridStart  uint32 = 0x1301
 	OpHybridDecide uint32 = 0x1302
 	OpHybridCancel uint32 = 0x1303
+
+	OpLocalKeyStatus uint32 = 0x1304
+	OpLocalKeyStart  uint32 = 0x1305
+	OpLocalKeyStop   uint32 = 0x1306
+	OpLocalKeyGrant  uint32 = 0x1307
+
+	OpNotifyShow  uint32 = 0x1308
+	OpNotifyClose uint32 = 0x1309
 )

@@ -21,6 +21,16 @@ interface RvStrings {
     val editDelete: String
     val editDeletePasskey: String
     val passkeyComputer: String
+    val localKeySection: String
+    val localKeyTitle: String
+    val localKeyDesc: String
+    fun localKeyGet(site: String): String
+    fun localKeyCreate(site: String): String
+    val localKeyGetHint: String
+    val localKeyCreateHint: String
+    val localKeySave: String
+    val localKeyPermission: String
+    val localKeyGrant: String
     val editorUsernameHint: String
     val editorNotes: String
     val editorNewPassword: String

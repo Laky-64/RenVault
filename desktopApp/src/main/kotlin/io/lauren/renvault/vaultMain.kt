@@ -66,6 +66,7 @@ private fun vaultApplication() = application {
     var visible by remember { mutableStateOf(true) }
     var raises by remember { mutableIntStateOf(0) }
     var activation by remember { mutableStateOf("") }
+    var notice by remember { mutableStateOf<Long?>(null) }
     var mainWindow by remember { mutableStateOf<ComposeWindow?>(null) }
     val open: (token: String) -> Unit = { token ->
         val shown = mainWindow?.takeIf { visible && it.isShowing }
@@ -193,6 +194,15 @@ private fun vaultApplication() = application {
                 title = appName,
                 onOpenUrl = { target ->
                     runCatching { Desktop.getDesktop().browse(URI(target)) }
+                },
+                onLocalKeyPrompt = { prompt ->
+                    scope.launch {
+                        notice?.let { id -> runCatching { Vault.closeNotification(id) } }
+                        notice = null
+                        if (prompt == null || window.isActive) return@launch
+                        val body = if (prompt.create) strings.localKeyCreate(prompt.relyingParty) else strings.localKeyGet(prompt.relyingParty)
+                        notice = runCatching { Vault.notify(appName, body) }.getOrNull()
+                    }
                 },
             )
         }

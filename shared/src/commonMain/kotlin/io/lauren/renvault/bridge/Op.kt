@@ -61,6 +61,12 @@ internal object Op {
     const val HYBRID_START = 0x1301
     const val HYBRID_DECIDE = 0x1302
     const val HYBRID_CANCEL = 0x1303
+    const val LOCAL_KEY_STATUS = 0x1304
+    const val LOCAL_KEY_START = 0x1305
+    const val LOCAL_KEY_STOP = 0x1306
+    const val LOCAL_KEY_GRANT = 0x1307
+    const val NOTIFY_SHOW = 0x1308
+    const val NOTIFY_CLOSE = 0x1309
 
     const val LOGIN_START = 0x2001
     const val LOGIN_CODE = 0x2002

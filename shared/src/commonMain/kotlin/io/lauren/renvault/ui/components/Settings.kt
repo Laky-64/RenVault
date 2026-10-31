@@ -63,6 +63,7 @@ import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
+import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.screenshotBlockSupported
 import io.lauren.renvault.lib.clipboardClearSeconds
 import io.lauren.renvault.lib.autofillCopyTotp
@@ -591,6 +592,34 @@ private fun RootPage(
                         supporting = { Text(if (checking) strings.pwnedChecking else pwnedChecked) },
                     ) {
                         Text(strings.settingsCheckPwned)
+                    }
+                }
+            }
+
+            if (RvLocalKey.supported) item {
+                RvSection(title = strings.localKeySection) {
+                    if (RvLocalKey.permitted) {
+                        RvSegment(
+                            index = 0,
+                            count = 1,
+                            onClick = { RvLocalKey.choose(!RvLocalKey.enabled) },
+                            leading = { SettingBadge(RvPasskeyIcon, accents.green) },
+                            supporting = { Text(strings.localKeyDesc) },
+                            trailing = { Switch(checked = RvLocalKey.enabled, onCheckedChange = null) },
+                        ) {
+                            Text(strings.localKeyTitle)
+                        }
+                    } else {
+                        RvSegment(
+                            index = 0,
+                            count = 1,
+                            onClick = { scope.launch { RvLocalKey.grant() } },
+                            leading = { SettingBadge(RvPasskeyIcon, accents.green) },
+                            supporting = { Text(strings.localKeyPermission) },
+                            trailing = { Text(strings.localKeyGrant, color = MaterialTheme.colorScheme.primary) },
+                        ) {
+                            Text(strings.localKeyTitle)
+                        }
                     }
                 }
             }

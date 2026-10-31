@@ -46,6 +46,19 @@ object Vault {
 
     suspend fun lock() = send(Op.VAULT_LOCK)
 
+    suspend fun localKeyStatus(): LocalKeyStatus = receive(Op.LOCAL_KEY_STATUS)
+
+    suspend fun localKeyStart() = send(Op.LOCAL_KEY_START)
+
+    suspend fun localKeyStop() = send(Op.LOCAL_KEY_STOP)
+
+    suspend fun localKeyGrant() = send(Op.LOCAL_KEY_GRANT)
+
+    suspend fun notify(title: String, body: String): Long =
+        exchange<NotifyRequest, NotifyId>(Op.NOTIFY_SHOW, NotifyRequest(title, body)).id
+
+    suspend fun closeNotification(id: Long) = send(Op.NOTIFY_CLOSE, NotifyId(id))
+
     suspend fun quickState(): QuickState = receive(Op.QUICK_STATE)
 
     suspend fun enableQuick(

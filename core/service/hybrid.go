@@ -156,6 +156,7 @@ func installHybrid() {
 
 func askHybrid(ctx context.Context, prompt hybridPrompt) (hybridDecision, error) {
 	prompt.ID = hybridID()
+	defer bridge.Emit(bridge.EventAgentProgress, hybridProgress{Session: prompt.Session, Stage: "resolved", Error: prompt.ID})
 	replies := make(chan hybridDecision, 1)
 	hybridState.Lock()
 	hybridState.prompts[prompt.ID] = replies

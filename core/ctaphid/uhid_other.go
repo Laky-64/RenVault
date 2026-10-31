@@ -25,4 +25,6 @@ func (*UHID) WriteReport(context.Context, []byte) error {
 
 func (*UHID) Close() error { return nil }
 
+func Present() bool { return false }
+
 func Available() bool { return false }

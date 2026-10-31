@@ -8,6 +8,8 @@ func Show(Config, func(id string)) error {
 
 func Hide() {}
 
+func GiveActivationToken(string) {}
+
 func TakeActivationToken() string {
 	return ""
 }

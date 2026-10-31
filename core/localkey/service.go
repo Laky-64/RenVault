@@ -2,33 +2,17 @@ package localkey
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"sync"
-	"time"
 
 	"github.com/Laky-64/renvault-core/ctap"
 	"github.com/Laky-64/renvault-core/ctaphid"
 	"github.com/Laky-64/renvault-core/vault"
 )
 
-const (
-	deviceName     = "RenVault Passkey"
-	approvalWindow = 60 * time.Second
-)
+const deviceName = "RenVault Passkey"
 
-type Notifier interface {
-	Requested(request Request)
-	Resolved(id string)
-}
-
-var (
-	errLocked  = errors.New("localkey: the vault is locked")
-	errDenied  = errors.New("localkey: the request was declined")
-	errExpired = errors.New("localkey: the request expired")
-)
+var errLocked = errors.New("localkey: the vault is locked")
 
 type Vault interface {
 	ListPasskey() []vault.PasskeyMeta
@@ -37,32 +21,25 @@ type Vault interface {
 	Unlocked() bool
 }
 
-type Request struct {
-	ID           string    `json:"id"`
-	RelyingParty string    `json:"relyingParty"`
-	Accounts     []Account `json:"accounts"`
-}
-
-type Account struct {
-	Label string `json:"label"`
-	Title string `json:"title"`
-}
-
 type Service struct {
-	vault  Vault
-	notify Notifier
+	vault   Vault
+	choose  ctap.Chooser
+	approve ctap.Approver
 
-	mu      sync.Mutex
-	device  *ctaphid.UHID
-	stop    context.CancelFunc
-	waiting map[string]chan int
+	mu     sync.Mutex
+	device *ctaphid.UHID
+	stop   context.CancelFunc
 }
 
-func NewService(v Vault, notify Notifier) *Service {
-	return &Service{vault: v, notify: notify, waiting: map[string]chan int{}}
+func NewService(v Vault, choose ctap.Chooser, approve ctap.Approver) *Service {
+	return &Service{vault: v, choose: choose, approve: approve}
 }
 
-func (s *Service) Supported() bool {
+func Supported() bool {
+	return ctaphid.Present()
+}
+
+func Permitted() bool {
 	return ctaphid.Available()
 }
 
@@ -88,10 +65,27 @@ func (s *Service) Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.device, s.stop = device, cancel
 
-	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, s.approve, nil, ctap.TransportsUSB))
+	choose := func(ctx context.Context, rp string, options []ctap.Credential) (ctap.Credential, error) {
+		if !s.vault.Unlocked() {
+			return ctap.Credential{}, errLocked
+		}
+		return s.choose(ctx, rp, options)
+	}
+	approve := func(ctx context.Context, c ctap.NewCredential) error {
+		if !s.vault.Unlocked() {
+			return errLocked
+		}
+		return s.approve(ctx, c)
+	}
+	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, choose, approve, ctap.TransportsUSB))
 	go func() {
 		_ = server.Serve(ctx)
-		s.Stop()
+		s.mu.Lock()
+		mine := s.device == device
+		s.mu.Unlock()
+		if mine {
+			_ = s.Stop()
+		}
 	}()
 	return nil
 }
@@ -100,10 +94,6 @@ func (s *Service) Stop() error {
 	s.mu.Lock()
 	device, stop := s.device, s.stop
 	s.device, s.stop = nil, nil
-	for id, ch := range s.waiting {
-		close(ch)
-		delete(s.waiting, id)
-	}
 	s.mu.Unlock()
 
 	if stop != nil {
@@ -113,85 +103,4 @@ func (s *Service) Stop() error {
 		return device.Close()
 	}
 	return nil
-}
-
-func (s *Service) Approve(id string, account int) {
-	s.resolve(id, account)
-}
-
-func (s *Service) Deny(id string) {
-	s.resolve(id, -1)
-}
-
-func (s *Service) resolve(id string, account int) {
-	s.mu.Lock()
-	ch, ok := s.waiting[id]
-	if ok {
-		delete(s.waiting, id)
-	}
-	s.mu.Unlock()
-	if ok {
-		ch <- account
-		close(ch)
-	}
-}
-
-func (s *Service) approve(ctx context.Context, relyingParty string, options []ctap.Credential) (ctap.Credential, error) {
-	if !s.vault.Unlocked() {
-		return ctap.Credential{}, errLocked
-	}
-	id, err := newID()
-	if err != nil {
-		return ctap.Credential{}, err
-	}
-
-	reply := make(chan int, 1)
-	s.mu.Lock()
-	s.waiting[id] = reply
-	s.mu.Unlock()
-	defer s.resolve(id, -1)
-
-	if s.notify == nil {
-		return ctap.Credential{}, errors.New("localkey: no notifier to ask")
-	}
-	s.notify.Requested(Request{
-		ID:           id,
-		RelyingParty: relyingParty,
-		Accounts:     accountsOf(options),
-	})
-
-	select {
-	case account, open := <-reply:
-		s.notify.Resolved(id)
-		if !open || account < 0 || account >= len(options) {
-			return ctap.Credential{}, errDenied
-		}
-		return options[account], nil
-	case <-time.After(approvalWindow):
-		s.notify.Resolved(id)
-		return ctap.Credential{}, errExpired
-	case <-ctx.Done():
-		s.notify.Resolved(id)
-		return ctap.Credential{}, ctx.Err()
-	}
-}
-
-func accountsOf(options []ctap.Credential) []Account {
-	out := make([]Account, 0, len(options))
-	for _, option := range options {
-		label := option.UserName
-		if label == "" {
-			label = option.DisplayName
-		}
-		out = append(out, Account{Label: label, Title: option.RelyingParty})
-	}
-	return out
-}
-
-func newID() (string, error) {
-	var buf [16]byte
-	if _, err := rand.Read(buf[:]); err != nil {
-		return "", fmt.Errorf("localkey: request id: %w", err)
-	}
-	return hex.EncodeToString(buf[:]), nil
 }

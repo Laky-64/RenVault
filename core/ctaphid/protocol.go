@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 	"time"
 
 	"github.com/Laky-64/renvault-core/ctap"
@@ -35,6 +36,7 @@ const (
 	errInvalidCommand byte = 0x01
 	errInvalidLength  byte = 0x03
 	errInvalidSeq     byte = 0x04
+	errChannelBusy    byte = 0x06
 	errInvalidChannel byte = 0x0b
 	errOther          byte = 0x7f
 )
@@ -42,6 +44,7 @@ const (
 const (
 	statusProcessing byte = 0x01
 	statusUpNeeded   byte = 0x02
+	statusCancelled  byte = 0x2d
 	keepaliveEvery        = 100 * time.Millisecond
 )
 
@@ -61,6 +64,14 @@ type Server struct {
 	device Device
 	ctap   *ctap.Authenticator
 	nextID uint32
+	write  sync.Mutex
+}
+
+type message struct {
+	channel uint32
+	command byte
+	payload []byte
+	err     error
 }
 
 func NewServer(device Device, authenticator *ctap.Authenticator) *Server {
@@ -68,21 +79,51 @@ func NewServer(device Device, authenticator *ctap.Authenticator) *Server {
 }
 
 func (s *Server) Serve(ctx context.Context) error {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
+	incoming := make(chan message)
+	go s.read(ctx, incoming)
 	for {
-		channel, command, payload, err := s.receive(ctx)
-		if err != nil {
-			if errors.Is(err, io.EOF) || errors.Is(err, context.Canceled) {
+		var next message
+		select {
+		case next = <-incoming:
+		case <-ctx.Done():
+			return nil
+		}
+		if next.err != nil {
+			if errors.Is(next.err, io.EOF) || errors.Is(next.err, context.Canceled) {
 				return nil
 			}
-			return err
+			return next.err
 		}
-		if err := s.dispatch(ctx, channel, command, payload); err != nil {
+		if err := s.dispatch(ctx, incoming, next); err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil
+			}
 			return err
 		}
 	}
 }
 
-func (s *Server) dispatch(ctx context.Context, channel uint32, command byte, payload []byte) error {
+func (s *Server) read(ctx context.Context, incoming chan<- message) {
+	for {
+		channel, command, payload, err := s.receive(ctx)
+		if err == nil && payload == nil {
+			continue
+		}
+		select {
+		case incoming <- message{channel: channel, command: command, payload: payload, err: err}:
+		case <-ctx.Done():
+			return
+		}
+		if err != nil {
+			return
+		}
+	}
+}
+
+func (s *Server) dispatch(ctx context.Context, incoming <-chan message, next message) error {
+	channel, command, payload := next.channel, next.command, next.payload
 	switch command {
 	case cmdInit:
 		return s.handleInit(ctx, channel, payload)
@@ -92,7 +133,7 @@ func (s *Server) dispatch(ctx context.Context, channel uint32, command byte, pay
 		if len(payload) == 0 {
 			return s.fail(ctx, channel, errInvalidLength)
 		}
-		return s.handleCBOR(ctx, channel, payload)
+		return s.handleCBOR(ctx, incoming, channel, payload)
 	case cmdCancel:
 		return nil
 	case cmdMsg:
@@ -104,24 +145,47 @@ func (s *Server) dispatch(ctx context.Context, channel uint32, command byte, pay
 	}
 }
 
-func (s *Server) handleCBOR(ctx context.Context, channel uint32, payload []byte) error {
+func (s *Server) handleCBOR(ctx context.Context, incoming <-chan message, channel uint32, payload []byte) error {
 	type outcome struct {
 		response []byte
 		err      error
 	}
+	work, cancel := context.WithCancel(ctx)
+	defer cancel()
+	cancelled := false
 	done := make(chan outcome, 1)
 	go func() {
-		response, err := s.ctap.Handle(ctx, payload)
+		response, err := s.ctap.Handle(work, payload)
 		done <- outcome{response: response, err: err}
 	}()
 
 	for {
 		select {
 		case got := <-done:
+			if cancelled {
+				return s.send(ctx, channel, cmdCBOR, []byte{statusCancelled})
+			}
 			if got.err != nil {
 				return s.fail(ctx, channel, errOther)
 			}
 			return s.send(ctx, channel, cmdCBOR, got.response)
+		case next := <-incoming:
+			if next.err != nil {
+				return next.err
+			}
+			switch {
+			case next.command == cmdCancel && next.channel == channel:
+				cancelled = true
+				cancel()
+			case next.command == cmdInit:
+				if err := s.handleInit(ctx, next.channel, next.payload); err != nil {
+					return err
+				}
+			case next.channel != channel:
+				if err := s.fail(ctx, next.channel, errChannelBusy); err != nil {
+					return err
+				}
+			}
 		case <-time.After(keepaliveEvery):
 			if err := s.send(ctx, channel, cmdKeepalive, []byte{statusUpNeeded}); err != nil {
 				return err
@@ -202,6 +266,8 @@ func (s *Server) receive(ctx context.Context) (uint32, byte, []byte, error) {
 }
 
 func (s *Server) send(ctx context.Context, channel uint32, command byte, payload []byte) error {
+	s.write.Lock()
+	defer s.write.Unlock()
 	if len(payload) > maxMessage {
 		return fmt.Errorf("ctaphid: response of %d bytes is too long", len(payload))
 	}

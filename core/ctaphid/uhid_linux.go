@@ -135,6 +135,11 @@ func (d *UHID) Close() error {
 	return d.file.Close()
 }
 
+func Present() bool {
+	_, err := os.Stat("/dev/uhid")
+	return err == nil
+}
+
 func Available() bool {
 	file, err := os.OpenFile("/dev/uhid", os.O_RDWR, 0)
 	if err != nil {

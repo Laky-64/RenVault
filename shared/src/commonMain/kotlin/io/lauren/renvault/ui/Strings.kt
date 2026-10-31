@@ -208,6 +208,16 @@ import io.lauren.renvault.resources.deleted_recover
 import io.lauren.renvault.resources.edit_delete
 import io.lauren.renvault.resources.edit_delete_passkey
 import io.lauren.renvault.resources.passkey_computer
+import io.lauren.renvault.resources.local_key_section
+import io.lauren.renvault.resources.local_key_title
+import io.lauren.renvault.resources.local_key_desc
+import io.lauren.renvault.resources.local_key_get
+import io.lauren.renvault.resources.local_key_create
+import io.lauren.renvault.resources.local_key_get_hint
+import io.lauren.renvault.resources.local_key_create_hint
+import io.lauren.renvault.resources.local_key_save
+import io.lauren.renvault.resources.local_key_permission
+import io.lauren.renvault.resources.local_key_grant
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
 import io.lauren.renvault.resources.edit_no_website
@@ -495,6 +505,16 @@ private val TextResources = listOf(
     Res.string.edit_delete,
     Res.string.edit_delete_passkey,
     Res.string.passkey_computer,
+    Res.string.local_key_section,
+    Res.string.local_key_title,
+    Res.string.local_key_desc,
+    Res.string.local_key_get,
+    Res.string.local_key_create,
+    Res.string.local_key_get_hint,
+    Res.string.local_key_create_hint,
+    Res.string.local_key_save,
+    Res.string.local_key_permission,
+    Res.string.local_key_grant,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
     Res.string.edit_no_website,
@@ -768,6 +788,16 @@ private class ResourceStrings(
     override val editDelete: String get() = text(Res.string.edit_delete)
     override val editDeletePasskey: String get() = text(Res.string.edit_delete_passkey)
     override val passkeyComputer: String get() = text(Res.string.passkey_computer)
+    override val localKeySection: String get() = text(Res.string.local_key_section)
+    override val localKeyTitle: String get() = text(Res.string.local_key_title)
+    override val localKeyDesc: String get() = text(Res.string.local_key_desc)
+    override fun localKeyGet(site: String): String = text(Res.string.local_key_get, site)
+    override fun localKeyCreate(site: String): String = text(Res.string.local_key_create, site)
+    override val localKeyGetHint: String get() = text(Res.string.local_key_get_hint)
+    override val localKeyCreateHint: String get() = text(Res.string.local_key_create_hint)
+    override val localKeySave: String get() = text(Res.string.local_key_save)
+    override val localKeyPermission: String get() = text(Res.string.local_key_permission)
+    override val localKeyGrant: String get() = text(Res.string.local_key_grant)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)
     override val editorNewPassword: String get() = text(Res.string.editor_new_password)

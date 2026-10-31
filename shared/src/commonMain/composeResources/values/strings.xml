@@ -406,4 +406,14 @@
     <string name="settings_autofill_totp_desc">After autofill, the 2FA code is copied to the clipboard</string>
     <string name="quick_credential">Unlock with screen lock too</string>
     <string name="quick_credential_desc">Use your PIN, pattern or password when biometrics don\'t work</string>
+    <string name="local_key_section">Passkeys</string>
+    <string name="local_key_title">Virtual security key</string>
+    <string name="local_key_desc">Use your RenVault passkeys in the browsers on this computer</string>
+    <string name="local_key_get">Sign in to %1$s?</string>
+    <string name="local_key_create">Save a passkey for %1$s?</string>
+    <string name="local_key_get_hint">Choose the passkey to use</string>
+    <string name="local_key_create_hint">The passkey will be saved in RenVault</string>
+    <string name="local_key_save">Save</string>
+    <string name="local_key_permission">Needs a one-time permission. RenVault will ask for the administrator password</string>
+    <string name="local_key_grant">Allow</string>
 </resources>
