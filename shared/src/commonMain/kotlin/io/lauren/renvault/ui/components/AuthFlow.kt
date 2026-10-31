@@ -1,5 +1,8 @@
 package io.lauren.renvault.ui.components
 
+import kotlinx.coroutines.flow.first
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
@@ -467,10 +470,13 @@ fun RvAuthFlow(
         }
     }
 
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(entry) {
         if (entry != AuthEntry.Master || quick == null) return@LaunchedEffect
         quickReady = runCatching { quick.ready() }.getOrDefault(false)
-        if (quickReady) submitQuick()
+        if (!quickReady) return@LaunchedEffect
+        lifecycle.currentStateFlow.first { it.isAtLeast(Lifecycle.State.RESUMED) }
+        submitQuick()
     }
 
     LaunchedEffect(Unit) {
