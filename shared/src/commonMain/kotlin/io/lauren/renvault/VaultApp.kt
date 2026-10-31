@@ -91,7 +91,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -245,6 +246,7 @@ fun RvVaultApp(
     var away by remember { mutableStateOf(false) }
     var authKey by remember { mutableIntStateOf(0) }
     var pending by remember { mutableStateOf<Job?>(null) }
+    val detached = remember(scope) { CoroutineScope(scope.coroutineContext + SupervisorJob()) }
     val lockIfImmediate: suspend () -> Unit = {
         if (runCatching { Vault.settings().autoLockMinutes < 0 }.getOrDefault(false)) {
             unlocked = false
@@ -254,7 +256,7 @@ fun RvVaultApp(
     }
     val scheduleLock: () -> Unit = {
         pending?.cancel()
-        pending = scope.launch(NonCancellable) {
+        pending = detached.launch {
             delay(LeaveDebounce)
             if (!away || RvLockGuard.expected()) return@launch
             lockIfImmediate()
@@ -268,7 +270,7 @@ fun RvVaultApp(
                 unlocked = false
                 lanOpen = false
             }
-            scope.launch(NonCancellable) { lockIfImmediate() }
+            detached.launch { lockIfImmediate() }
         }
     }
     val leave: () -> Unit = {
