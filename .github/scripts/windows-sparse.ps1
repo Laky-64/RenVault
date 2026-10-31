@@ -6,6 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if (-not $env:WINDOWS_CERT_PFX -or -not $env:WINDOWS_CERT_PASSWORD) {
+    if ($env:GITHUB_REF_TYPE -eq 'tag') { throw 'No signing certificate configured, releases need the Windows passkey package' }
     Write-Host 'No signing certificate configured, skipping the Windows passkey package'
     exit 0
 }

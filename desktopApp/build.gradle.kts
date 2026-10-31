@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 
 plugins {
     alias(libs.plugins.kotlinJvm)
@@ -51,4 +52,10 @@ compose.desktop {
             }
         }
     }
+}
+
+tasks.withType<AbstractJPackageTask>().matching { it.targetFormat == TargetFormat.Msi }.configureEach {
+    val distributable = tasks.named<AbstractJPackageTask>("createDistributable")
+    dependsOn(distributable)
+    appImage.set(distributable.flatMap { task -> task.destinationDir.zip(task.packageName) { dir, name -> dir.dir(name) } })
 }
