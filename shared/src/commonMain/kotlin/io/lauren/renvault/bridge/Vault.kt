@@ -46,6 +46,8 @@ object Vault {
 
     suspend fun lock() = send(Op.VAULT_LOCK)
 
+    suspend fun changeMasterPassword(current: String, next: String) = send(Op.VAULT_CHANGE_PASSWORD, ChangePasswordRequest(current, next))
+
     suspend fun localKeyStatus(): LocalKeyStatus = receive(Op.LOCAL_KEY_STATUS)
 
     suspend fun localKeyStart() = send(Op.LOCAL_KEY_START)

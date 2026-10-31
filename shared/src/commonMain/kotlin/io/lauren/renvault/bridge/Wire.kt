@@ -538,3 +538,9 @@ data class WinPasskeyStatus(
 data class WinPasskeyEnable(
     @SerialName("restart") val restart: Boolean = false,
 )
+
+@Serializable
+internal data class ChangePasswordRequest(
+    @SerialName("current") val current: String,
+    @SerialName("next") val next: String,
+)

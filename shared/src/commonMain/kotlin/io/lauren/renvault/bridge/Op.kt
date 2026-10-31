@@ -27,6 +27,7 @@ internal object Op {
     const val QUICK_ENABLE = 0x1018
     const val QUICK_DISABLE = 0x1019
     const val QUICK_UNLOCK = 0x101A
+    const val VAULT_CHANGE_PASSWORD = 0x101B
 
     const val DEVICES = 0x1201
     const val DEVICE_REMOVE = 0x1202

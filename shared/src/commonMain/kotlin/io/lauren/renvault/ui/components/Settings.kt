@@ -141,6 +141,7 @@ fun RvSettingsScreen(
     onClose: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
+    onChangeMaster: suspend (String, String) -> Unit,
     onCheckPwned: suspend () -> Int,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
@@ -215,6 +216,7 @@ fun RvSettingsScreen(
                 onAbout = { page = SettingsPage.About },
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
+                onChangeMaster = onChangeMaster,
                 onCheckPwned = onCheckPwned,
                 onSignOut = onSignOut,
                 onAnisette = onAnisette,
@@ -262,6 +264,7 @@ private fun RootPage(
     onAbout: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
+    onChangeMaster: suspend (String, String) -> Unit,
     onCheckPwned: suspend () -> Int,
     onSignOut: () -> Unit,
     onAnisette: suspend (String) -> Boolean,
@@ -283,6 +286,7 @@ private fun RootPage(
     val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
 
     var lockOpen by remember { mutableStateOf(false) }
+    var masterOpen by remember { mutableStateOf(false) }
     var signOutOpen by remember { mutableStateOf(false) }
     var anisetteOpen by remember { mutableStateOf(false) }
     var profileOpen by remember { mutableStateOf(false) }
@@ -517,7 +521,7 @@ private fun RootPage(
                     if (state.quickLabel.isNotEmpty()) {
                         RvSegment(
                             index = 0,
-                            count = 3 + quick,
+                            count = 4 + quick,
                             onClick = {
                                 if (!quickBusy) {
                                     scope.launch {
@@ -544,7 +548,7 @@ private fun RootPage(
                     if (credential == 1) {
                         RvSegment(
                             index = 1,
-                            count = 3 + quick,
+                            count = 4 + quick,
                             onClick = {
                                 if (!quickBusy) {
                                     scope.launch {
@@ -570,7 +574,7 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = quick,
-                        count = 3 + quick,
+                        count = 4 + quick,
                         onClick = { lockOpen = true },
                         leading = { SettingBadge(RvTimerIcon, accents.teal) },
                         supporting = { Text(lockLabel(state.autoLockMinutes, strings)) },
@@ -579,15 +583,23 @@ private fun RootPage(
                     }
                     RvSegment(
                         index = 1 + quick,
-                        count = 3 + quick,
+                        count = 4 + quick,
+                        onClick = { masterOpen = true },
+                        leading = { SettingBadge(RvKeyIcon, accents.red) },
+                    ) {
+                        Text(strings.masterChangeTitle)
+                    }
+                    RvSegment(
+                        index = 2 + quick,
+                        count = 4 + quick,
                         onClick = onLockNow,
                         leading = { SettingBadge(RvLockIcon, accents.yellow) },
                     ) {
                         Text(strings.settingsLockNow)
                     }
                     RvSegment(
-                        index = 2 + quick,
-                        count = 3 + quick,
+                        index = 3 + quick,
+                        count = 4 + quick,
                         onClick = checkPwned,
                         leading = {
                             if (checking) {
@@ -857,6 +869,18 @@ private fun RootPage(
         strings = strings,
         onSave = onAnisette,
     )
+
+    if (masterOpen) {
+        RvMasterPasswordDialog(
+            strings = strings,
+            onDismiss = { masterOpen = false },
+            onChange = onChangeMaster,
+            onChanged = {
+                masterOpen = false
+                scope.launch { snackbar.showSnackbar(strings.masterChanged) }
+            },
+        )
+    }
 
     RvConfirmDialog(
         open = RvWinPasskeys.restartNeeded,

@@ -39,6 +39,13 @@ interface RvStrings {
     val winPasskeysRestart: String
     val winPasskeysFailed: String
     val winPasskeysMissing: String
+    val masterChangeTitle: String
+    val masterChangeDesc: String
+    val masterCurrent: String
+    val masterNew: String
+    val masterRepeat: String
+    val masterChange: String
+    val masterChanged: String
     val editorUsernameHint: String
     val editorNotes: String
     val editorNewPassword: String

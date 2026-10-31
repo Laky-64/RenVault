@@ -430,6 +430,65 @@ func (v *Vault) saveLocked() error {
 	return nil
 }
 
+func (v *Vault) ChangeMasterPassword(current, next string) error {
+	if strings.TrimSpace(next) == "" {
+		return errors.New("vault: the new master password is empty")
+	}
+	cur := []byte(current)
+	defer zero(cur)
+	nxt := []byte(next)
+	defer zero(nxt)
+
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.vf == nil || v.k == nil || v.p == nil {
+		return errLocked
+	}
+	blob, ok := v.vf.passwordWrap()
+	if !ok {
+		return errors.New("vault: no password wrap in header")
+	}
+	kek := deriveKEK(cur, v.vf.Header.Salt, v.vf.Header.Argon)
+	_ = lockMemory(kek)
+	check, err := unwrapKey(kek, blob)
+	zero(kek)
+	if err != nil {
+		return err
+	}
+	zero(check)
+
+	salt, err := newSalt()
+	if err != nil {
+		return err
+	}
+	argon := defaultArgon()
+	nkek := deriveKEK(nxt, salt, argon)
+	defer zero(nkek)
+	_ = lockMemory(nkek)
+	wrapped, err := wrapKey(nkek, v.k)
+	if err != nil {
+		return err
+	}
+
+	prev := v.vf.Header
+	updated := prev
+	updated.Salt = salt
+	updated.Argon = argon
+	updated.Wraps = make([]wrappedKey, 0, len(prev.Wraps))
+	for _, w := range prev.Wraps {
+		if w.Method == methodPassword {
+			w.Blob = wrapped
+		}
+		updated.Wraps = append(updated.Wraps, w)
+	}
+	v.vf.Header = updated
+	if err := v.saveLocked(); err != nil {
+		v.vf.Header = prev
+		return err
+	}
+	return nil
+}
+
 func (v *Vault) StartLogin(appleID, password string) (bool, error) {
 	creds := appleservices.Credentials{AppleID: appleID, Password: password}
 	v.mu.Lock()

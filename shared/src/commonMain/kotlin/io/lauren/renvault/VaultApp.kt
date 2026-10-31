@@ -623,6 +623,7 @@ fun RvVaultApp(
                                     unlocked = false
                                 }
                             },
+                            onChangeMaster = { current, next -> Vault.changeMasterPassword(current, next) },
                             onCheckPwned = {
                                 val report = Vault.checkPwned()
                                 pwnedAt = report.checkedAt

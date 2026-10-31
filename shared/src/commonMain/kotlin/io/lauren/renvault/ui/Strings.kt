@@ -226,6 +226,13 @@ import io.lauren.renvault.resources.win_passkeys_restart_desc
 import io.lauren.renvault.resources.win_passkeys_restart
 import io.lauren.renvault.resources.win_passkeys_failed
 import io.lauren.renvault.resources.win_passkeys_missing
+import io.lauren.renvault.resources.master_change_title
+import io.lauren.renvault.resources.master_change_desc
+import io.lauren.renvault.resources.master_current
+import io.lauren.renvault.resources.master_new
+import io.lauren.renvault.resources.master_repeat
+import io.lauren.renvault.resources.master_change
+import io.lauren.renvault.resources.master_changed
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
 import io.lauren.renvault.resources.edit_no_website
@@ -531,6 +538,13 @@ private val TextResources = listOf(
     Res.string.win_passkeys_restart,
     Res.string.win_passkeys_failed,
     Res.string.win_passkeys_missing,
+    Res.string.master_change_title,
+    Res.string.master_change_desc,
+    Res.string.master_current,
+    Res.string.master_new,
+    Res.string.master_repeat,
+    Res.string.master_change,
+    Res.string.master_changed,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
     Res.string.edit_no_website,
@@ -822,6 +836,13 @@ private class ResourceStrings(
     override val winPasskeysRestart: String get() = text(Res.string.win_passkeys_restart)
     override val winPasskeysFailed: String get() = text(Res.string.win_passkeys_failed)
     override val winPasskeysMissing: String get() = text(Res.string.win_passkeys_missing)
+    override val masterChangeTitle: String get() = text(Res.string.master_change_title)
+    override val masterChangeDesc: String get() = text(Res.string.master_change_desc)
+    override val masterCurrent: String get() = text(Res.string.master_current)
+    override val masterNew: String get() = text(Res.string.master_new)
+    override val masterRepeat: String get() = text(Res.string.master_repeat)
+    override val masterChange: String get() = text(Res.string.master_change)
+    override val masterChanged: String get() = text(Res.string.master_changed)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)
     override val editorNewPassword: String get() = text(Res.string.editor_new_password)

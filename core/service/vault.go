@@ -29,6 +29,14 @@ func installVault() {
 		return active.UnlockWithPassword(request.Secret)
 	})
 
+	command(bridge.OpVaultChangePassword, func(_ context.Context, request changePasswordRequest) error {
+		active, err := unlocked()
+		if err != nil {
+			return err
+		}
+		return active.ChangeMasterPassword(request.Current, request.Next)
+	})
+
 	trigger(bridge.OpVaultLock, func(context.Context) error {
 		active, err := opened()
 		if err != nil {
@@ -174,4 +182,9 @@ func pwnedResponseOf(report vault.PwnedReport) pwnedResponse {
 		Pwned:     report.Pwned,
 		CheckedAt: millis(report.CheckedAt),
 	}
+}
+
+type changePasswordRequest struct {
+	Current string `cbor:"current"`
+	Next    string `cbor:"next"`
 }

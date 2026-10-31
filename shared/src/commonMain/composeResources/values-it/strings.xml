@@ -419,4 +419,11 @@
     <string name="win_passkeys_restart">Riavvia</string>
     <string name="win_passkeys_failed">Non è stato possibile attivare le passkey in Windows</string>
     <string name="win_passkeys_missing">Questa versione di RenVault non include il componente per le passkey di Windows</string>
+    <string name="master_change_title">Cambia master password</string>
+    <string name="master_change_desc">La password che usi per sbloccare RenVault su questo dispositivo. Lo sblocco con impronta e PIN continua a funzionare.</string>
+    <string name="master_current">Password attuale</string>
+    <string name="master_new">Nuova password</string>
+    <string name="master_repeat">Ripeti la nuova password</string>
+    <string name="master_change">Cambia</string>
+    <string name="master_changed">Master password cambiata</string>
 </resources>

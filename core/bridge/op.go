@@ -27,6 +27,7 @@ const (
 	OpQuickEnable          uint32 = 0x1018
 	OpQuickDisable         uint32 = 0x1019
 	OpQuickUnlock          uint32 = 0x101A
+	OpVaultChangePassword  uint32 = 0x101B
 )
 
 const (

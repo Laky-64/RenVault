@@ -424,4 +424,11 @@
     <string name="win_passkeys_restart">Restart</string>
     <string name="win_passkeys_failed">Couldn\'t turn on passkeys in Windows</string>
     <string name="win_passkeys_missing">This version of RenVault doesn\'t include the Windows passkey component</string>
+    <string name="master_change_title">Change master password</string>
+    <string name="master_change_desc">The password you use to unlock RenVault on this device. Fingerprint and PIN unlock keep working.</string>
+    <string name="master_current">Current password</string>
+    <string name="master_new">New password</string>
+    <string name="master_repeat">Repeat the new password</string>
+    <string name="master_change">Change</string>
+    <string name="master_changed">Master password changed</string>
 </resources>
