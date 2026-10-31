@@ -1,4 +1,4 @@
-//go:build !windows && !(darwin && !ios)
+//go:build !windows && !(darwin && !ios && cgo)
 
 package screen
 

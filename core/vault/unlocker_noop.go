@@ -1,4 +1,4 @@
-//go:build (!darwin && !windows) || ios
+//go:build (!darwin && !windows) || ios || (darwin && !cgo)
 
 package vault
 
