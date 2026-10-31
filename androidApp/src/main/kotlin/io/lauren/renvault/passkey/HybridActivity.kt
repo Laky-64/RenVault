@@ -171,6 +171,7 @@ class HybridActivity : FragmentActivity() {
                                 }
                                 "done" -> {
                                     stopAdvertising()
+                                    if (stage is Stage.Failed) return@let
                                     stage = Stage.Done
                                     delay(1800)
                                     sheetState.hide()
