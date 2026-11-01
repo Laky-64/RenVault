@@ -118,6 +118,14 @@ jobs:
             -Prenvault.version_code="${{ steps.version.outputs.code }}" \
             -Prenvault.package_version="${{ steps.version.outputs.package }}"
 
+      - name: Add the passkey cleanup to the Windows installer
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Get-ChildItem desktopApp/build/compose/binaries/main/msi -Filter *.msi | ForEach-Object {
+            .github/scripts/windows-msi-cleanup.ps1 -Msi $_.FullName
+          }
+
       - name: Collect the packages
         run: |
           name="RenVault-${{ steps.version.outputs.name }}"
