@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"net/url"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -35,22 +36,66 @@ type entry struct {
 type IconService struct {
 	mu       sync.Mutex
 	cache    map[string]*entry
-	disabled atomic.Bool
+	provider atomic.Value
+	dir      string
 }
 
 func New() *IconService {
 	return &IconService{cache: make(map[string]*entry)}
 }
 
-func (s *IconService) SetEnabled(on bool) {
-	s.disabled.Store(!on)
+const (
+	ProviderSite       = "site"
+	ProviderDuckDuckGo = "duckduckgo"
+	ProviderGoogle     = "google"
+	ProviderOff        = "off"
+)
+
+func (s *IconService) SetProvider(name string) {
+	s.provider.Store(name)
 }
 
 func (s *IconService) Tile(domain string) ([]byte, error) {
-	if s.disabled.Load() {
-		return nil, ErrDisabled
+	png, err := s.tileFor(domain)
+	if err == nil || errors.Is(err, ErrDisabled) {
+		return png, err
 	}
-	return s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain))
+	if !strings.HasPrefix(domain, "www.") {
+		if png, werr := s.tileFor("www." + domain); werr == nil {
+			return png, nil
+		}
+	}
+	if parent, ok := parentDomain(strings.TrimPrefix(domain, "www.")); ok {
+		if png, perr := s.tileFor(parent); perr == nil {
+			return png, nil
+		}
+	}
+	return nil, err
+}
+
+func parentDomain(domain string) (string, bool) {
+	labels := strings.Split(strings.TrimSuffix(domain, "."), ".")
+	if len(labels) < 3 {
+		return "", false
+	}
+	if len(labels) == 3 && len(labels[1]) <= 3 && len(labels[2]) == 2 {
+		return "", false
+	}
+	return strings.Join(labels[1:], "."), true
+}
+
+func (s *IconService) tileFor(domain string) ([]byte, error) {
+	name, _ := s.provider.Load().(string)
+	switch name {
+	case ProviderOff:
+		return nil, ErrDisabled
+	case ProviderGoogle:
+		return s.tile(googleURL(domain))
+	case ProviderSite:
+		return s.cached("site:"+domain, func() (image.Image, error) { return siteIcon(domain) })
+	default:
+		return s.tile(fmt.Sprintf("https://icons.duckduckgo.com/ip3/%s.ico", domain))
+	}
 }
 
 func (s *IconService) Image(src string) ([]byte, error) {
@@ -61,7 +106,15 @@ func (s *IconService) Image(src string) ([]byte, error) {
 	return s.tile(parsed.String())
 }
 
+func googleURL(domain string) string {
+	return "https://www.google.com/s2/favicons?sz=256&domain=" + url.QueryEscape(domain)
+}
+
 func (s *IconService) tile(src string) ([]byte, error) {
+	return s.cached(src, func() (image.Image, error) { return s.getFavicon(src) })
+}
+
+func (s *IconService) cached(src string, load func() (image.Image, error)) ([]byte, error) {
 	for {
 		s.mu.Lock()
 		if e, ok := s.cache[src]; ok {
@@ -83,7 +136,14 @@ func (s *IconService) tile(src string) ([]byte, error) {
 		s.evictLocked()
 		s.mu.Unlock()
 
-		png, err := s.fetch(src)
+		png, fromDisk := s.loadDisk(src)
+		var err error
+		if !fromDisk {
+			png, err = s.fetch(load)
+			if err == nil {
+				s.saveDisk(src, png)
+			}
+		}
 
 		s.mu.Lock()
 		ttl := hitTTL
@@ -120,8 +180,8 @@ func (s *IconService) evictLocked() {
 	}
 }
 
-func (s *IconService) fetch(src string) ([]byte, error) {
-	favicon, err := s.getFavicon(src)
+func (s *IconService) fetch(load func() (image.Image, error)) ([]byte, error) {
+	favicon, err := load()
 	if err != nil {
 		return nil, err
 	}

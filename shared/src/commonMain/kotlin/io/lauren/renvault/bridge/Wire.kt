@@ -546,4 +546,4 @@ internal data class ChangePasswordRequest(
 )
 
 @Serializable
-internal data class IconsRequest(@SerialName("enabled") val enabled: Boolean)
+internal data class IconsRequest(@SerialName("provider") val provider: String)

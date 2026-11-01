@@ -76,17 +76,17 @@ const (
 )
 
 const (
-	OpIconTile     uint32 = 0x3001
-	OpIconImage    uint32 = 0x3002
-	OpPickImage    uint32 = 0x3003
-	OpPickFile     uint32 = 0x3004
-	OpSaveFile     uint32 = 0x3005
-	OpSecure       uint32 = 0x3006
-	OpTitleBar     uint32 = 0x3007
-	OpTray         uint32 = 0x3008
-	OpTrayHide     uint32 = 0x3009
-	OpRaise        uint32 = 0x300A
-	OpIconsEnabled uint32 = 0x300B
+	OpIconTile      uint32 = 0x3001
+	OpIconImage     uint32 = 0x3002
+	OpPickImage     uint32 = 0x3003
+	OpPickFile      uint32 = 0x3004
+	OpSaveFile      uint32 = 0x3005
+	OpSecure        uint32 = 0x3006
+	OpTitleBar      uint32 = 0x3007
+	OpTray          uint32 = 0x3008
+	OpTrayHide      uint32 = 0x3009
+	OpRaise         uint32 = 0x300A
+	OpIconsProvider uint32 = 0x300B
 )
 
 const (

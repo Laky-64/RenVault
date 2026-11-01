@@ -48,7 +48,14 @@ interface RvStrings {
     val masterChanged: String
     val masterSame: String
     val settingsSiteIcons: String
-    val settingsSiteIconsDesc: String
+    val settingsSiteIconsOff: String
+    val iconsRecommended: String
+    val iconsUse: String
+    val iconsProvider: String
+    val iconsSiteDesc: String
+    val iconsGoogleDesc: String
+    val iconsDuckDesc: String
+    val iconsOffDesc: String
     val editorUsernameHint: String
     val editorNotes: String
     val editorNewPassword: String

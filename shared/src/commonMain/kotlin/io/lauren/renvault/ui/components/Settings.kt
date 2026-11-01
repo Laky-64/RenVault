@@ -69,6 +69,7 @@ import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
 import io.lauren.renvault.lib.RvFavicons
+import io.lauren.renvault.lib.RvIconProvider
 import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.screenshotBlockSupported
@@ -130,7 +131,7 @@ data class RvSettingsState(
     val devices: List<RvDevice> = emptyList(),
 )
 
-private enum class SettingsPage { Root, Language, Names, Devices, About }
+private enum class SettingsPage { Root, Language, Icons, Names, Devices, About }
 
 @Composable
 fun RvSettingsScreen(
@@ -173,6 +174,7 @@ fun RvSettingsScreen(
     ) { shown ->
         when (shown) {
             SettingsPage.Language -> LanguagePage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })
+            SettingsPage.Icons -> IconsPage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })
             SettingsPage.Names -> NamesPage(
                 names = state.names,
                 matches = state.nameMatches,
@@ -208,6 +210,7 @@ fun RvSettingsScreen(
                 dialog = dialog,
                 onClose = onClose,
                 onLanguage = { page = SettingsPage.Language },
+                onIcons = { page = SettingsPage.Icons },
                 onNames = { page = SettingsPage.Names },
                 onDevices = { page = SettingsPage.Devices },
                 devices = devices,
@@ -256,6 +259,7 @@ private fun RootPage(
     dialog: Boolean,
     onClose: () -> Unit,
     onLanguage: () -> Unit,
+    onIcons: () -> Unit,
     onNames: () -> Unit,
     onDevices: () -> Unit,
     devices: RvDeviceActions?,
@@ -708,10 +712,17 @@ private fun RootPage(
                     RvSegment(
                         index = 1,
                         count = 2 + shots,
-                        onClick = { RvFavicons.setEnabled(!RvFavicons.enabled) },
+                        onClick = onIcons,
                         leading = { SettingBadge(RvLanguageIcon, accents.teal) },
-                        supporting = { Text(strings.settingsSiteIconsDesc) },
-                        trailing = { Switch(checked = RvFavicons.enabled, onCheckedChange = null) },
+                        supporting = {
+                            Text(
+                                if (RvFavicons.enabled) {
+                                    RvFavicons.provider.label
+                                } else {
+                                    strings.settingsSiteIconsOff
+                                },
+                            )
+                        },
                     ) {
                         Text(strings.settingsSiteIcons)
                     }
@@ -1193,6 +1204,106 @@ private fun LanguagePage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit
             }
         }
     }
+}
+
+@Composable
+private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
+    val list = rememberLazyListState()
+    val scrolled by list.scrolledPast()
+    val background = if (dialog) MaterialTheme.colorScheme.surfaceContainerLow else MaterialTheme.colorScheme.surface
+    val choices = RvIconProvider.entries
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = background,
+        topBar = {
+            RvPageBar(
+                title = strings.settingsSiteIcons,
+                scrolled = scrolled,
+                background = background,
+                navigationIcon = {
+                    IconButton(onClick = onBack, shapes = IconButtonDefaults.shapes()) {
+                        Icon(RvBackIcon, contentDescription = strings.navBack)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            state = list,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = RvLayout.gutter,
+                end = RvLayout.gutter,
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 32.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            item { RvPageTitle(strings.settingsSiteIcons) }
+
+            item {
+                val on = RvFavicons.enabled
+                val colors = MaterialTheme.colorScheme
+                Surface(
+                    onClick = { RvFavicons.setEnabled(!on) },
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = if (on) colors.primaryContainer else colors.surfaceContainerHighest,
+                    contentColor = if (on) colors.onPrimaryContainer else colors.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = strings.iconsUse,
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Switch(checked = on, onCheckedChange = null)
+                    }
+                }
+            }
+
+            item {
+                val on = RvFavicons.enabled
+                RvSection(title = strings.iconsProvider, footer = if (on) null else strings.iconsOffDesc) {
+                    choices.forEachIndexed { index, choice ->
+                        val picked = choice == RvFavicons.provider
+                        RvSegment(
+                            index = index,
+                            count = choices.size,
+                            selected = picked,
+                            enabled = on,
+                            onClick = { RvFavicons.choose(choice) },
+                            leading = { RadioButton(selected = picked, onClick = null, enabled = on) },
+                            supporting = { Text(iconsComment(choice, strings)) },
+                            trailing = if (choice == RvIconProvider.Site) {
+                                {
+                                    Text(
+                                        text = strings.iconsRecommended,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                        ) {
+                            Text(choice.label)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun iconsComment(choice: RvIconProvider, strings: RvStrings): String = when (choice) {
+    RvIconProvider.Site -> strings.iconsSiteDesc
+    RvIconProvider.Google -> strings.iconsGoogleDesc
+    RvIconProvider.DuckDuckGo -> strings.iconsDuckDesc
 }
 
 private fun durationLabel(seconds: Int, strings: RvStrings): String = when {

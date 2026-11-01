@@ -235,7 +235,14 @@ import io.lauren.renvault.resources.master_change
 import io.lauren.renvault.resources.master_changed
 import io.lauren.renvault.resources.master_same
 import io.lauren.renvault.resources.settings_site_icons
-import io.lauren.renvault.resources.settings_site_icons_desc
+import io.lauren.renvault.resources.settings_site_icons_off
+import io.lauren.renvault.resources.icons_recommended
+import io.lauren.renvault.resources.icons_use
+import io.lauren.renvault.resources.icons_provider
+import io.lauren.renvault.resources.icons_site_desc
+import io.lauren.renvault.resources.icons_google_desc
+import io.lauren.renvault.resources.icons_duck_desc
+import io.lauren.renvault.resources.icons_off_desc
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
 import io.lauren.renvault.resources.edit_no_website
@@ -550,7 +557,14 @@ private val TextResources = listOf(
     Res.string.master_changed,
     Res.string.master_same,
     Res.string.settings_site_icons,
-    Res.string.settings_site_icons_desc,
+    Res.string.settings_site_icons_off,
+    Res.string.icons_recommended,
+    Res.string.icons_use,
+    Res.string.icons_provider,
+    Res.string.icons_site_desc,
+    Res.string.icons_google_desc,
+    Res.string.icons_duck_desc,
+    Res.string.icons_off_desc,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
     Res.string.edit_no_website,
@@ -851,7 +865,14 @@ private class ResourceStrings(
     override val masterChanged: String get() = text(Res.string.master_changed)
     override val masterSame: String get() = text(Res.string.master_same)
     override val settingsSiteIcons: String get() = text(Res.string.settings_site_icons)
-    override val settingsSiteIconsDesc: String get() = text(Res.string.settings_site_icons_desc)
+    override val settingsSiteIconsOff: String get() = text(Res.string.settings_site_icons_off)
+    override val iconsRecommended: String get() = text(Res.string.icons_recommended)
+    override val iconsUse: String get() = text(Res.string.icons_use)
+    override val iconsProvider: String get() = text(Res.string.icons_provider)
+    override val iconsSiteDesc: String get() = text(Res.string.icons_site_desc)
+    override val iconsGoogleDesc: String get() = text(Res.string.icons_google_desc)
+    override val iconsDuckDesc: String get() = text(Res.string.icons_duck_desc)
+    override val iconsOffDesc: String get() = text(Res.string.icons_off_desc)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)
     override val editorNewPassword: String get() = text(Res.string.editor_new_password)

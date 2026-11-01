@@ -431,7 +431,14 @@
     <string name="master_repeat">Repeat the new password</string>
     <string name="master_change">Change</string>
     <string name="master_changed">Master password changed</string>
-    <string name="master_same">The new password must be different from the current one</string>
     <string name="settings_site_icons">Site icons</string>
-    <string name="settings_site_icons_desc">Icons are downloaded from DuckDuckGo, which can see the sites you save. Turn them off to keep this private.</string>
+    <string name="settings_site_icons_off">Off</string>
+    <string name="master_same">The new password must be different from the current one</string>
+    <string name="icons_recommended">Recommended</string>
+    <string name="icons_site_desc">Icons downloaded straight from each site, with no other services</string>
+    <string name="icons_google_desc">Icons provided by Google, available for most sites</string>
+    <string name="icons_duck_desc">Icons provided by DuckDuckGo, the private search engine</string>
+    <string name="icons_off_desc">The site initial is shown instead of the icon</string>
+    <string name="icons_use">Use site icons</string>
+    <string name="icons_provider">Provider</string>
 </resources>

@@ -13,6 +13,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/jezek/xgb v1.3.1
 	golang.org/x/crypto v0.58.0
+	golang.org/x/image v0.47.0
 	golang.org/x/sys v0.49.0
 	rsc.io/qr v0.2.0
 )

@@ -135,6 +135,7 @@ func installVault() {
 		if err != nil {
 			return err
 		}
+		tiles.Clear()
 		return active.SignOut()
 	})
 

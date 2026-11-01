@@ -1,6 +1,7 @@
 package service
 
 import (
+	"path/filepath"
 	"sync"
 
 	"github.com/Laky-64/renvault-core/bridge"
@@ -27,6 +28,7 @@ func start(base string, secret []byte) {
 		return
 	}
 
+	tiles.SetDir(filepath.Join(base, "icons"))
 	opened := vault.New(base)
 	opened.SetOnLock(func() { bridge.Emit(bridge.EventLocked, none{}) })
 	opened.SetOnSync(func() {

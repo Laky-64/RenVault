@@ -1,5 +1,7 @@
 package io.lauren.renvault
 
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync.Semaphore
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -148,6 +150,8 @@ fun RvVaultApp(
 
     val icons = remember { mutableStateMapOf<String, Painter?>() }
     val wanted = remember { mutableStateListOf<String>() }
+    val loading = remember { mutableSetOf<String>() }
+    var iconRound by remember { mutableIntStateOf(0) }
 
     suspend fun loadItems() {
         val loadedWeb = runCatching { Vault.web() }.getOrDefault(emptyList())
@@ -318,26 +322,34 @@ fun RvVaultApp(
     }
 
     LaunchedEffect(Unit) {
+        val gate = Semaphore(IconParallelism)
         snapshotFlow { wanted.toList() }.collect { pending ->
             pending.forEach { domain ->
-                if (icons.containsKey(domain)) return@forEach
-                val bytes = runCatching { Vault.icon(domain) }.getOrNull()
-                icons[domain] = bytes?.let {
-                    withContext(Dispatchers.Default) {
-                        runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile)) }.getOrNull()
+                if (icons.containsKey(domain) || !loading.add(domain)) return@forEach
+                val round = iconRound
+                launch {
+                    val painter = gate.withPermit {
+                        val bytes = runCatching { Vault.icon(domain) }.getOrNull()
+                        bytes?.let {
+                            withContext(Dispatchers.Default) {
+                                runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile)) }.getOrNull()
+                            }
+                        }
                     }
+                    loading.remove(domain)
+                    if (round == iconRound) icons[domain] = painter
                 }
             }
         }
     }
 
-    LaunchedEffect(ready, RvFavicons.enabled) {
+    LaunchedEffect(ready, RvFavicons.key) {
         if (!ready) return@LaunchedEffect
-        runCatching { Vault.setIconsEnabled(RvFavicons.enabled) }
-        if (!RvFavicons.enabled) {
-            wanted.clear()
-            icons.clear()
-        }
+        runCatching { Vault.setIconsProvider(RvFavicons.key) }
+        iconRound++
+        loading.clear()
+        wanted.clear()
+        icons.clear()
     }
 
     val favicon: (String) -> Painter? = { domain ->
@@ -770,3 +782,5 @@ private suspend fun savePasskey(item: RvPasskeyItem, draft: RvDraft): String? = 
     }
     id
 }.getOrNull()
+
+private const val IconParallelism = 12

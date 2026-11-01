@@ -10,6 +10,8 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+
+	"golang.org/x/image/webp"
 )
 
 var (
@@ -28,6 +30,8 @@ func decode(data []byte) (image.Image, error) {
 		return gif.Decode(bytes.NewReader(data))
 	case bytes.HasPrefix(data, magicJPEG):
 		return jpeg.Decode(bytes.NewReader(data))
+	case len(data) >= 12 && bytes.Equal(data[0:4], []byte("RIFF")) && bytes.Equal(data[8:12], []byte("WEBP")):
+		return webp.Decode(bytes.NewReader(data))
 	case isICO(data):
 		return decodeICO(data)
 	default:

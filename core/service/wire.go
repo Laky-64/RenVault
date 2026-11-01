@@ -33,7 +33,7 @@ type domainRequest struct {
 }
 
 type iconsRequest struct {
-	Enabled bool `cbor:"enabled"`
+	Provider string `cbor:"provider"`
 }
 
 type sortRequest struct {

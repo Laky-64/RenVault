@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/Laky-64/renvault-core/bridge"
+	"github.com/Laky-64/renvault-core/icons"
 	"github.com/Laky-64/renvault-core/portal"
 	"github.com/Laky-64/renvault-core/vault"
 )
@@ -33,8 +34,11 @@ func installIcons() {
 		return bytesResponse{Data: png}, err
 	})
 
-	command(bridge.OpIconsEnabled, func(_ context.Context, request iconsRequest) error {
-		tiles.SetEnabled(request.Enabled)
+	command(bridge.OpIconsProvider, func(_ context.Context, request iconsRequest) error {
+		tiles.SetProvider(request.Provider)
+		if request.Provider == icons.ProviderOff {
+			tiles.Clear()
+		}
 		return nil
 	})
 
