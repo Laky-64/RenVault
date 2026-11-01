@@ -233,6 +233,7 @@ import io.lauren.renvault.resources.master_new
 import io.lauren.renvault.resources.master_repeat
 import io.lauren.renvault.resources.master_change
 import io.lauren.renvault.resources.master_changed
+import io.lauren.renvault.resources.master_same
 import io.lauren.renvault.resources.settings_site_icons
 import io.lauren.renvault.resources.settings_site_icons_desc
 import io.lauren.renvault.resources.edit_delete_code
@@ -547,6 +548,7 @@ private val TextResources = listOf(
     Res.string.master_repeat,
     Res.string.master_change,
     Res.string.master_changed,
+    Res.string.master_same,
     Res.string.settings_site_icons,
     Res.string.settings_site_icons_desc,
     Res.string.edit_delete_code,
@@ -847,6 +849,7 @@ private class ResourceStrings(
     override val masterRepeat: String get() = text(Res.string.master_repeat)
     override val masterChange: String get() = text(Res.string.master_change)
     override val masterChanged: String get() = text(Res.string.master_changed)
+    override val masterSame: String get() = text(Res.string.master_same)
     override val settingsSiteIcons: String get() = text(Res.string.settings_site_icons)
     override val settingsSiteIconsDesc: String get() = text(Res.string.settings_site_icons_desc)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)

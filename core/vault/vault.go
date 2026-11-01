@@ -434,6 +434,9 @@ func (v *Vault) ChangeMasterPassword(current, next string) error {
 	if strings.TrimSpace(next) == "" {
 		return errors.New("vault: the new master password is empty")
 	}
+	if next == current {
+		return errors.New("vault: the new master password is the same as the current one")
+	}
 	cur := []byte(current)
 	defer zero(cur)
 	nxt := []byte(next)

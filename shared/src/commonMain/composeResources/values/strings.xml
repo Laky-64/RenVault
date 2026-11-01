@@ -431,6 +431,7 @@
     <string name="master_repeat">Repeat the new password</string>
     <string name="master_change">Change</string>
     <string name="master_changed">Master password changed</string>
+    <string name="master_same">The new password must be different from the current one</string>
     <string name="settings_site_icons">Site icons</string>
     <string name="settings_site_icons_desc">Icons are downloaded from DuckDuckGo, which can see the sites you save. Turn them off to keep this private.</string>
 </resources>

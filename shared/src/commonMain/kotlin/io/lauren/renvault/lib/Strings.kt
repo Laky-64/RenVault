@@ -46,6 +46,7 @@ interface RvStrings {
     val masterRepeat: String
     val masterChange: String
     val masterChanged: String
+    val masterSame: String
     val settingsSiteIcons: String
     val settingsSiteIconsDesc: String
     val editorUsernameHint: String

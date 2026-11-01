@@ -40,7 +40,8 @@ fun RvMasterPasswordDialog(
 
     val short = next.isNotEmpty() && next.length < MinPassword
     val mismatch = again.isNotEmpty() && again != next
-    val ready = current.isNotEmpty() && next.length >= MinPassword && again == next && !busy
+    val same = next.isNotEmpty() && next == current
+    val ready = current.isNotEmpty() && next.length >= MinPassword && again == next && !same && !busy
 
     val submit: () -> Unit = {
         if (ready) {
@@ -84,7 +85,11 @@ fun RvMasterPasswordDialog(
                     shown = shown,
                     onShownChange = { shown = it },
                     leading = RvKeyIcon,
-                    error = if (short) strings.authMasterTooShort(MinPassword) else null,
+                    error = when {
+                        short -> strings.authMasterTooShort(MinPassword)
+                        same -> strings.masterSame
+                        else -> null
+                    },
                     imeAction = ImeAction.Next,
                 )
                 RvTextField(
