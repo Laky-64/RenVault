@@ -83,7 +83,7 @@ fun domainOf(value: String): String {
     host = host.split(PathBreak, limit = 2).first()
         .replace(Port, "")
         .replace(OuterDots, "")
-    return hostOf(host)
+    return normalized(host)
 }
 
 private fun hostsOf(item: RvWebItem): List<String> =
