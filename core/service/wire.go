@@ -32,6 +32,12 @@ type domainRequest struct {
 	Domain string `cbor:"domain"`
 }
 
+type clipboardRequest struct {
+	Text       string `cbor:"text"`
+	Secret     bool   `cbor:"secret"`
+	ClearAfter int    `cbor:"clear_after"`
+}
+
 type iconsRequest struct {
 	Provider string `cbor:"provider"`
 }

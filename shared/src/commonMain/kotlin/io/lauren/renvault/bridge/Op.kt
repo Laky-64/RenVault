@@ -92,6 +92,7 @@ internal object Op {
     const val TRAY_HIDE = 0x3009
     const val RAISE = 0x300A
     const val ICONS_PROVIDER = 0x300B
+    const val CLIPBOARD_SET = 0x300C
 }
 
 internal object FailureKind {

@@ -547,3 +547,10 @@ internal data class ChangePasswordRequest(
 
 @Serializable
 internal data class IconsRequest(@SerialName("provider") val provider: String)
+
+@Serializable
+internal data class ClipboardRequest(
+    @SerialName("text") val text: String,
+    @SerialName("secret") val secret: Boolean,
+    @SerialName("clear_after") val clearAfter: Int,
+)

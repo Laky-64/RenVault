@@ -87,6 +87,7 @@ const (
 	OpTrayHide      uint32 = 0x3009
 	OpRaise         uint32 = 0x300A
 	OpIconsProvider uint32 = 0x300B
+	OpClipboardSet  uint32 = 0x300C
 )
 
 const (

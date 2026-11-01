@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/Laky-64/renvault-core/bridge"
+	"github.com/Laky-64/renvault-core/clipboard"
 	"github.com/Laky-64/renvault-core/icons"
 	"github.com/Laky-64/renvault-core/portal"
 	"github.com/Laky-64/renvault-core/vault"
@@ -32,6 +34,14 @@ func installIcons() {
 	handle(bridge.OpIconTile, func(_ context.Context, request domainRequest) (bytesResponse, error) {
 		png, err := tiles.Tile(request.Domain)
 		return bytesResponse{Data: png}, err
+	})
+
+	command(bridge.OpClipboardSet, func(_ context.Context, request clipboardRequest) error {
+		err := clipboard.Set(request.Text, request.Secret, time.Duration(request.ClearAfter)*time.Second)
+		if errors.Is(err, clipboard.ErrUnsupported) {
+			return bridge.Fail(bridge.KindBadOp, err.Error())
+		}
+		return err
 	})
 
 	command(bridge.OpIconsProvider, func(_ context.Context, request iconsRequest) error {

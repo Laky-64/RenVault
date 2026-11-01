@@ -48,6 +48,8 @@ object Vault {
 
     suspend fun setIconsProvider(provider: String) = send(Op.ICONS_PROVIDER, IconsRequest(provider))
 
+    suspend fun setClipboard(text: String, secret: Boolean, clearAfter: Int) = send(Op.CLIPBOARD_SET, ClipboardRequest(text, secret, clearAfter))
+
     suspend fun changeMasterPassword(current: String, next: String) = send(Op.VAULT_CHANGE_PASSWORD, ChangePasswordRequest(current, next))
 
     suspend fun localKeyStatus(): LocalKeyStatus = receive(Op.LOCAL_KEY_STATUS)
