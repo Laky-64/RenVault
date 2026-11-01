@@ -4,6 +4,8 @@ package winplugin
 
 import (
 	"context"
+	"crypto/sha1"
+	"crypto/x509"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -173,12 +175,16 @@ func (s *Service) Register() error {
 	if pkg == "" {
 		return fmt.Errorf("winplugin: %s is missing from %s", packageFile, dir)
 	}
-	err = addPackage(pkg, dir)
-	if err == nil || cert == "" || !untrusted(err) {
-		return err
-	}
-	if err := trust(cert); err != nil {
-		return err
+	if cert != "" {
+		trusted, err := isTrusted(cert)
+		if err != nil {
+			return err
+		}
+		if !trusted {
+			if err := trust(cert); err != nil {
+				return err
+			}
+		}
 	}
 	return addPackage(pkg, dir)
 }
@@ -225,9 +231,23 @@ func addPackage(pkg, dir string) error {
 	return powershell(fmt.Sprintf("$ErrorActionPreference='Stop'; Add-AppxPackage -Path %s -ExternalLocation %s -ForceUpdateFromAnyVersion", quote(pkg), quote(dir)))
 }
 
-func untrusted(err error) bool {
-	text := strings.ToLower(err.Error())
-	return strings.Contains(text, "0x800b0109") || strings.Contains(text, "0x800b010a") || strings.Contains(text, "certificat")
+func isTrusted(cert string) (bool, error) {
+	der, err := os.ReadFile(cert)
+	if err != nil {
+		return false, err
+	}
+	parsed, err := x509.ParseCertificate(der)
+	if err != nil {
+		return false, err
+	}
+	sum := sha1.Sum(parsed.Raw)
+	thumbprint := strings.ToUpper(hex.EncodeToString(sum[:]))
+	err = powershell(fmt.Sprintf("if (-not (Test-Path %s)) { exit 3 }", quote(`Cert:\LocalMachine\TrustedPeople\`+thumbprint)))
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && exit.ExitCode() == 3 {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 func trust(cert string) error {
