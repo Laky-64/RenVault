@@ -144,6 +144,8 @@ func (a *Authenticator) getAssertion(ctx context.Context, params []byte) ([]byte
 	return succeed(raw), nil
 }
 
+const touchProbe = ".dummy"
+
 func (a *Authenticator) makeCredential(ctx context.Context, params []byte) ([]byte, error) {
 	if a.approve == nil {
 		return fail(statusOperationDenied), nil
@@ -151,6 +153,10 @@ func (a *Authenticator) makeCredential(ctx context.Context, params []byte) ([]by
 	var request makeCredentialRequest
 	if err := cbor.Unmarshal(params, &request); err != nil {
 		return fail(statusInvalidCBOR), nil
+	}
+	if request.RP.ID == touchProbe {
+		<-ctx.Done()
+		return fail(statusOperationDenied), nil
 	}
 	if request.RP.ID == "" || len(request.ClientDataHash) == 0 || len(request.User.ID) == 0 {
 		return fail(statusInvalidParameter), nil
