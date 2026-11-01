@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,9 @@ fun RvSiteIcon(
 ) {
     val accents = RenVault.accents
     val tone = remember(fallback, accents) { accents.forIndex(fallback.seed()) }
+    val effects = MaterialTheme.motionScheme.defaultEffectsSpec<Color>()
+    val container by animateColorAsState(tone.container, effects, label = "iconContainer")
+    val ink by animateColorAsState(tone.content, effects, label = "iconInk")
 
     val face = favicon as? RvFavicon
     val colors = MaterialTheme.colorScheme
@@ -62,7 +66,7 @@ fun RvSiteIcon(
         modifier = modifier
             .size(size)
             .clip(shape)
-            .drawBehind { drawRect(lerp(tone.container, settled, shown)) },
+            .drawBehind { drawRect(lerp(container, settled, shown)) },
         contentAlignment = Alignment.Center,
     ) {
         if (shown < 1f) {
@@ -74,7 +78,7 @@ fun RvSiteIcon(
                     Icon(
                         imageVector = glyph,
                         contentDescription = null,
-                        tint = tone.content,
+                        tint = ink,
                         modifier = Modifier.size(size * 0.55f),
                     )
                 } else {
@@ -84,7 +88,7 @@ fun RvSiteIcon(
                             fontSize = (size.value * 0.45f).sp,
                             fontWeight = FontWeight.SemiBold,
                         ),
-                        color = tone.content,
+                        color = ink,
                     )
                 }
             }

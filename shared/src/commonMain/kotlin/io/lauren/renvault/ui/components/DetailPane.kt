@@ -191,7 +191,7 @@ fun RvDetailPane(
                     subtitle = if (editing) null else (item as? RvWebItem)?.let(::siteOf)?.takeIf { it.isNotEmpty() }?.let(shownNames::mask),
                     glyph = glyph,
                     favicon = icon,
-                    fallback = view.title,
+                    fallback = if (editing) titleOf(draft).ifEmpty { view.title } else view.title,
                 )
 
                 val motion = MaterialTheme.motionScheme
