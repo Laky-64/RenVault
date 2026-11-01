@@ -34,6 +34,8 @@ const (
 	operationTimeout = 3 * time.Minute
 	unlockPoll       = 250 * time.Millisecond
 
+	restartWait = 30
+
 	packageFile     = "RenVault.msix"
 	certificateFile = "RenVault.cer"
 )
@@ -194,7 +196,7 @@ func (s *Service) Restart() error {
 	if err != nil {
 		return err
 	}
-	script := fmt.Sprintf("Start-Sleep -Seconds 2; Start-Process -FilePath %s", quote(exe))
+	script := fmt.Sprintf("Wait-Process -Id %d -Timeout %d -ErrorAction SilentlyContinue; Start-Process -FilePath %s", os.Getpid(), restartWait, quote(exe))
 	cmd := exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.DETACHED_PROCESS}
 	return cmd.Start()
