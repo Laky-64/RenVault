@@ -1,5 +1,7 @@
 package io.lauren.renvault.ui.components
 
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -344,6 +346,15 @@ fun RvNewPasswordSheet(
 
     val domain = domainOf(draft.website)
     val websiteOk = if (draft.website.isNotBlank()) isDomain(domain) else draft.title.isNotBlank()
+    var iconDomain by remember { mutableStateOf("") }
+    LaunchedEffect(domain) {
+        if (!isDomain(domain)) {
+            iconDomain = ""
+            return@LaunchedEffect
+        }
+        delay(IconSettleMs.milliseconds)
+        iconDomain = domain
+    }
     val canSave = websiteOk && (draft.password.isNotEmpty() || draft.username.isNotBlank())
 
     val close: () -> Unit = {
@@ -394,7 +405,7 @@ fun RvNewPasswordSheet(
             ) {
                 RvSiteIcon(
                     fallback = draft.title.ifEmpty { domain.ifEmpty { "?" } },
-                    favicon = favicon(domain),
+                    favicon = if (iconDomain.isNotEmpty()) favicon(iconDomain) else null,
                     size = 72.dp,
                     shape = MaterialShapes.Cookie9Sided.toShape(),
                 )
@@ -451,3 +462,5 @@ fun RvNewPasswordSheet(
         }
     }
 }
+
+private const val IconSettleMs = 500L
