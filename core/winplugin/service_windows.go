@@ -231,7 +231,8 @@ func untrusted(err error) bool {
 }
 
 func trust(cert string) error {
-	return powershell(fmt.Sprintf("$p = Start-Process -FilePath certutil.exe -ArgumentList '-addstore','TrustedPeople',%s -Verb RunAs -Wait -PassThru -WindowStyle Hidden; if ($p.ExitCode -ne 0) { exit $p.ExitCode }", quote(cert)))
+	args := fmt.Sprintf(`-addstore TrustedPeople "%s"`, cert)
+	return powershell(fmt.Sprintf("$p = Start-Process -FilePath certutil.exe -ArgumentList %s -Verb RunAs -Wait -PassThru -WindowStyle Hidden; if ($p.ExitCode -ne 0) { exit $p.ExitCode }", quote(args)))
 }
 
 func operate(command byte, request, response uintptr) uintptr {
