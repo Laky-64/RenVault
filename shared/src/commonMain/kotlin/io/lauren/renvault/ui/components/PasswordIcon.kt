@@ -102,7 +102,7 @@ fun RvSiteIcon(
                     )
                     .graphicsLayer {
                         val pop = 0.6f + 0.4f * arrival.value
-                        val scale = if (bleed) 1.14f * pop else pop
+                        val scale = if (bleed && face.margin) 1.14f * pop else pop
                         scaleX = scale
                         scaleY = scale
                         alpha = shown

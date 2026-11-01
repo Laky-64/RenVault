@@ -30,6 +30,12 @@ func process(src image.Image) ([]byte, error) {
 		h = max(1, int(math.Round(float64(h)*scale)))
 		logo = resample(logo, w, h)
 		side = maxSide
+	} else if side < maxSide {
+		scale := float64(maxSide) / float64(side)
+		w = max(1, int(math.Round(float64(w)*scale)))
+		h = max(1, int(math.Round(float64(h)*scale)))
+		logo = upscale(logo, w, h)
+		side = maxSide
 	}
 
 	tile := image.NewNRGBA(image.Rect(0, 0, side, side))
@@ -153,4 +159,88 @@ func resample(src *image.NRGBA, dstW, dstH int) *image.NRGBA {
 
 func clamp8(v float64) uint8 {
 	return uint8(math.Max(0, math.Min(255, math.Round(v))))
+}
+
+const lanczosLobes = 3
+
+func lanczos(x float64) float64 {
+	if x == 0 {
+		return 1
+	}
+	if x <= -lanczosLobes || x >= lanczosLobes {
+		return 0
+	}
+	px := math.Pi * x
+	return lanczosLobes * math.Sin(px) * math.Sin(px/lanczosLobes) / (px * px)
+}
+
+type tap struct {
+	index  int
+	weight float64
+}
+
+func taps(src, dst int) [][]tap {
+	out := make([][]tap, dst)
+	ratio := float64(src) / float64(dst)
+	for i := range dst {
+		center := (float64(i)+0.5)*ratio - 0.5
+		first := int(math.Floor(center)) - lanczosLobes + 1
+		var row []tap
+		var total float64
+		for k := first; k < first+2*lanczosLobes; k++ {
+			weight := lanczos(center - float64(k))
+			if weight == 0 {
+				continue
+			}
+			row = append(row, tap{index: min(max(k, 0), src-1), weight: weight})
+			total += weight
+		}
+		for j := range row {
+			row[j].weight /= total
+		}
+		out[i] = row
+	}
+	return out
+}
+
+func upscale(src *image.NRGBA, dstW, dstH int) *image.NRGBA {
+	srcW, srcH := src.Bounds().Dx(), src.Bounds().Dy()
+	columns := taps(srcW, dstW)
+	rows := taps(srcH, dstH)
+
+	mid := make([][4]float64, dstW*srcH)
+	for y := range srcH {
+		for x, row := range columns {
+			var acc [4]float64
+			for _, t := range row {
+				c := src.NRGBAAt(t.index, y)
+				a := float64(c.A) / 0xFF
+				acc[0] += float64(c.R) * a * t.weight
+				acc[1] += float64(c.G) * a * t.weight
+				acc[2] += float64(c.B) * a * t.weight
+				acc[3] += float64(c.A) * t.weight
+			}
+			mid[y*dstW+x] = acc
+		}
+	}
+
+	dst := image.NewNRGBA(image.Rect(0, 0, dstW, dstH))
+	for y, row := range rows {
+		for x := range dstW {
+			var acc [4]float64
+			for _, t := range row {
+				m := mid[t.index*dstW+x]
+				for c := range acc {
+					acc[c] += m[c] * t.weight
+				}
+			}
+			alpha := math.Max(0, math.Min(255, acc[3]))
+			if alpha < 1 {
+				continue
+			}
+			k := 255 / alpha
+			dst.SetNRGBA(x, y, color.NRGBA{R: clamp8(acc[0] * k), G: clamp8(acc[1] * k), B: clamp8(acc[2] * k), A: clamp8(alpha)})
+		}
+	}
+	return dst
 }

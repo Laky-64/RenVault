@@ -1,6 +1,7 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -10,9 +11,10 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class RvFavicon(image: ImageBitmap) : Painter() {
-    private val painter = BitmapPainter(image)
+    private val painter = BitmapPainter(image, filterQuality = FilterQuality.High)
 
     val bleed: Boolean
+    val margin: Boolean
     val tint: Color?
 
     val ink: Float
@@ -23,7 +25,9 @@ class RvFavicon(image: ImageBitmap) : Painter() {
         val pixels = IntArray(width * height)
         image.readPixels(pixels)
 
-        bleed = edgesOpaque(pixels, width, height)
+        val edges = edgesOpaque(pixels, width, height)
+        margin = edges && plainBand(pixels, width, height)
+        bleed = edges && (margin || squareCorners(pixels, width, height))
         tint = strongest(pixels)
         ink = luminance(pixels)
     }
@@ -56,6 +60,46 @@ private fun edgesOpaque(pixels: IntArray, width: Int, height: Int): Boolean {
     }
 
     return total > 0 && opaque >= total * 0.95
+}
+
+private const val BandShare = 0.07f
+private const val BandTolerance = 48
+
+private fun plainBand(pixels: IntArray, width: Int, height: Int): Boolean {
+    val band = max(1, (min(width, height) * BandShare).toInt())
+    val plate = pixels[(height / 2) * width + band / 2]
+    val pr = (plate shr 16) and 0xFF
+    val pg = (plate shr 8) and 0xFF
+    val pb = plate and 0xFF
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            if (x >= band && x < width - band && y >= band && y < height - band) continue
+            val pixel = pixels[y * width + x]
+            if ((pixel ushr 24) < 128) continue
+            val far = kotlin.math.abs(((pixel shr 16) and 0xFF) - pr) +
+                kotlin.math.abs(((pixel shr 8) and 0xFF) - pg) +
+                kotlin.math.abs((pixel and 0xFF) - pb)
+            if (far > BandTolerance) return false
+        }
+    }
+    return true
+}
+
+private fun squareCorners(pixels: IntArray, width: Int, height: Int): Boolean {
+    val inset = max(1, min(width, height) / 24)
+    val corners = listOf(
+        pixels[inset * width + inset],
+        pixels[inset * width + width - 1 - inset],
+        pixels[(height - 1 - inset) * width + inset],
+        pixels[(height - 1 - inset) * width + width - 1 - inset],
+    )
+    if (corners.any { (it ushr 24) <= 230 }) return false
+    val first = corners.first()
+    return corners.all { pixel ->
+        kotlin.math.abs(((pixel shr 16) and 0xFF) - ((first shr 16) and 0xFF)) +
+            kotlin.math.abs(((pixel shr 8) and 0xFF) - ((first shr 8) and 0xFF)) +
+            kotlin.math.abs((pixel and 0xFF) - (first and 0xFF)) <= BandTolerance
+    }
 }
 
 private fun strongest(pixels: IntArray): Color? {
