@@ -348,7 +348,7 @@ fun RvVaultApp(
                         }
                         bytes?.let {
                             withContext(Dispatchers.Default) {
-                                runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile)) }.getOrNull()
+                                runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile), RvFavicons.enhance) }.getOrNull()
                             }
                         }
                     }
@@ -373,7 +373,7 @@ fun RvVaultApp(
                     }
                     val painter = bytes?.let {
                         withContext(Dispatchers.Default) {
-                            runCatching { RvFavicon(it.decodeToImageBitmap()) }.getOrNull()
+                            runCatching { RvFavicon(it.decodeToImageBitmap(), RvFavicons.enhance) }.getOrNull()
                         }
                     }
                     if (round != iconRound) return@launch
@@ -388,9 +388,9 @@ fun RvVaultApp(
         }
     }
 
-    LaunchedEffect(ready, RvFavicons.key) {
+    LaunchedEffect(ready, RvFavicons.key, RvFavicons.enhance) {
         if (!ready) return@LaunchedEffect
-        runCatching { Vault.setIconsProvider(RvFavicons.key) }
+        runCatching { Vault.setIconsProvider(RvFavicons.key, RvFavicons.enhance) }
         iconRound++
         loading.clear()
         wanted.clear()

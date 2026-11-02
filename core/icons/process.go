@@ -21,14 +21,16 @@ const (
 	edgeGain   = 2.2
 )
 
-func process(src image.Image) ([]byte, error) {
+func process(src image.Image, enhance bool) ([]byte, error) {
 	img := toNRGBA(src)
 	box, ok := contentBounds(img)
 	if !ok {
 		return nil, fmt.Errorf("%w: no opaque pixels", ErrUnsupportedFormat)
 	}
 	logo := crop(img, box)
-	flattenPlate(logo)
+	if enhance {
+		flattenPlate(logo)
+	}
 
 	w, h := logo.Bounds().Dx(), logo.Bounds().Dy()
 	side := max(w, h)
@@ -43,7 +45,7 @@ func process(src image.Image) ([]byte, error) {
 		w = max(1, int(math.Round(float64(w)*scale)))
 		h = max(1, int(math.Round(float64(h)*scale)))
 		logo = upscale(logo, w, h)
-		if scale >= crispScale {
+		if enhance && scale >= crispScale {
 			logo = crisp(logo)
 			if ground, ok := dominant(logo); ok {
 				sharpenInk(logo, ground, int(math.Ceil(scale)))

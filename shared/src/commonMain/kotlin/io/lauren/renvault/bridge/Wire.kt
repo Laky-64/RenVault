@@ -562,7 +562,10 @@ internal data class ChangePasswordRequest(
 )
 
 @Serializable
-internal data class IconsRequest(@SerialName("provider") val provider: String)
+internal data class IconsRequest(
+    @SerialName("provider") val provider: String,
+    @SerialName("plain") val plain: Boolean = false,
+)
 
 @Serializable
 internal data class ClipboardRequest(

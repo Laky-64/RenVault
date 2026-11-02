@@ -40,6 +40,7 @@ type clipboardRequest struct {
 
 type iconsRequest struct {
 	Provider string `cbor:"provider"`
+	Plain    bool   `cbor:"plain"`
 }
 
 type sortRequest struct {

@@ -396,9 +396,9 @@ private fun rememberFavicon(domain: String): Painter? {
         if (!RvFavicons.enabled) return@LaunchedEffect
         favicon = withContext(Dispatchers.Default) {
             runCatching {
-                Vault.setIconsProvider(RvFavicons.key)
+                Vault.setIconsProvider(RvFavicons.key, RvFavicons.enhance)
                 val bytes = Vault.icon(domain)
-                RvFavicon(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap().fitted(tile))
+                RvFavicon(BitmapFactory.decodeByteArray(bytes, 0, bytes.size).asImageBitmap().fitted(tile), RvFavicons.enhance)
             }.getOrNull()
         }
     }

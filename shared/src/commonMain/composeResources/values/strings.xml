@@ -214,6 +214,8 @@
         <item quantity="other">%1$d years ago</item>
     </plurals>
     <string name="list_select">Select</string>
+    <string name="icons_enhance">Enhance icons</string>
+    <string name="icons_enhance_desc">Sharpens small icons and fits them to the shape</string>
     <string name="item_edit">Edit</string>
     <string name="list_delete">Delete</string>
     <string name="list_order">Order</string>

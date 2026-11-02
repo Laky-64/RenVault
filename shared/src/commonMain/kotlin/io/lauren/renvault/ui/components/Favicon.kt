@@ -10,7 +10,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-class RvFavicon(image: ImageBitmap) : Painter() {
+class RvFavicon(image: ImageBitmap, fit: Boolean = true) : Painter() {
     private val painter = BitmapPainter(image, filterQuality = FilterQuality.High)
 
     val bleed: Boolean
@@ -26,7 +26,7 @@ class RvFavicon(image: ImageBitmap) : Painter() {
         val pixels = IntArray(width * height)
         image.readPixels(pixels)
 
-        val ground = plateOf(pixels, width, height)
+        val ground = if (fit) plateOf(pixels, width, height) else null
         plate = ground?.let { Color(it.color) }
         bleed = ground != null || edgesOpaque(pixels, width, height) && squareCorners(pixels, width, height)
         zoom = when {

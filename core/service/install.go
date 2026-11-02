@@ -46,6 +46,7 @@ func installIcons() {
 
 	command(bridge.OpIconsProvider, func(_ context.Context, request iconsRequest) error {
 		tiles.SetProvider(request.Provider)
+		tiles.SetEnhance(!request.Plain)
 		if request.Provider == icons.ProviderOff {
 			tiles.Clear()
 		}

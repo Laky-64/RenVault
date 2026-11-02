@@ -37,6 +37,7 @@ type IconService struct {
 	mu       sync.Mutex
 	cache    map[string]*entry
 	provider atomic.Value
+	plain    atomic.Bool
 	dir      string
 }
 
@@ -54,6 +55,10 @@ const (
 
 func (s *IconService) SetProvider(name string) {
 	s.provider.Store(name)
+}
+
+func (s *IconService) SetEnhance(on bool) {
+	s.plain.Store(!on)
 }
 
 func (s *IconService) Tile(domain string) ([]byte, error) {
@@ -147,6 +152,10 @@ func (s *IconService) tile(src string) ([]byte, error) {
 }
 
 func (s *IconService) cached(src string, load func() (image.Image, error)) ([]byte, error) {
+	enhance := !s.plain.Load()
+	if !enhance {
+		src = "plain:" + src
+	}
 	for {
 		s.mu.Lock()
 		if e, ok := s.cache[src]; ok {
@@ -171,7 +180,7 @@ func (s *IconService) cached(src string, load func() (image.Image, error)) ([]by
 		png, fromDisk := s.loadDisk(src)
 		var err error
 		if !fromDisk {
-			png, err = s.fetch(load)
+			png, err = s.fetch(load, enhance)
 			if err == nil {
 				s.saveDisk(src, png)
 			}
@@ -212,12 +221,12 @@ func (s *IconService) evictLocked() {
 	}
 }
 
-func (s *IconService) fetch(load func() (image.Image, error)) ([]byte, error) {
+func (s *IconService) fetch(load func() (image.Image, error), enhance bool) ([]byte, error) {
 	favicon, err := load()
 	if err != nil {
 		return nil, err
 	}
-	return process(favicon)
+	return process(favicon, enhance)
 }
 
 func (s *IconService) getFavicon(url string) (image.Image, error) {

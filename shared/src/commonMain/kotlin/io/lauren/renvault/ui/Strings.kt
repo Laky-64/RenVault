@@ -373,6 +373,8 @@ import io.lauren.renvault.resources.relative_months
 import io.lauren.renvault.resources.relative_years
 import io.lauren.renvault.resources.list_deselect_all
 import io.lauren.renvault.resources.list_select
+import io.lauren.renvault.resources.icons_enhance
+import io.lauren.renvault.resources.icons_enhance_desc
 import io.lauren.renvault.resources.list_select_all
 import io.lauren.renvault.resources.item_edit
 import io.lauren.renvault.resources.list_delete
@@ -595,6 +597,8 @@ private val TextResources = listOf(
     Res.string.item_wifi_network,
     Res.string.nav_back,
     Res.string.list_select,
+    Res.string.icons_enhance,
+    Res.string.icons_enhance_desc,
     Res.string.list_select_all,
     Res.string.list_deselect_all,
     Res.string.item_edit,
@@ -899,6 +903,8 @@ private class ResourceStrings(
 
     override val navBack: String get() = text(Res.string.nav_back)
     override val listSelect: String get() = text(Res.string.list_select)
+    override val iconsEnhance: String get() = text(Res.string.icons_enhance)
+    override val iconsEnhanceDesc: String get() = text(Res.string.icons_enhance_desc)
     override val listSelectAll: String get() = text(Res.string.list_select_all)
     override val listDeselectAll: String get() = text(Res.string.list_deselect_all)
     override val itemEdit: String get() = text(Res.string.item_edit)

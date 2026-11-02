@@ -46,7 +46,7 @@ object Vault {
 
     suspend fun lock() = send(Op.VAULT_LOCK)
 
-    suspend fun setIconsProvider(provider: String) = send(Op.ICONS_PROVIDER, IconsRequest(provider))
+    suspend fun setIconsProvider(provider: String, enhance: Boolean) = send(Op.ICONS_PROVIDER, IconsRequest(provider, !enhance))
 
     suspend fun setClipboard(text: String, secret: Boolean, clearAfter: Int) = send(Op.CLIPBOARD_SET, ClipboardRequest(text, secret, clearAfter))
 

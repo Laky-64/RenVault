@@ -1305,6 +1305,26 @@ private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
 
             item {
                 AnimatedVisibility(
+                    visible = RvFavicons.enabled,
+                    enter = expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
+                    exit = shrinkVertically(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),
+                ) {
+                    RvSection {
+                        RvSegment(
+                            index = 0,
+                            count = 1,
+                            onClick = { RvFavicons.setEnhance(!RvFavicons.enhance) },
+                            supporting = { Text(strings.iconsEnhanceDesc) },
+                            trailing = { Switch(checked = RvFavicons.enhance, onCheckedChange = null) },
+                        ) {
+                            Text(strings.iconsEnhance)
+                        }
+                    }
+                }
+            }
+
+            item {
+                AnimatedVisibility(
                     visible = !RvFavicons.enabled,
                     enter = expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
                     exit = shrinkVertically(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),

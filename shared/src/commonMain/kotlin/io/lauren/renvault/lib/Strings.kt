@@ -78,6 +78,8 @@ interface RvStrings {
 
     val navBack: String
     val listSelect: String
+    val iconsEnhance: String
+    val iconsEnhanceDesc: String
     val listSelectAll: String
     val listDeselectAll: String
     val itemEdit: String
