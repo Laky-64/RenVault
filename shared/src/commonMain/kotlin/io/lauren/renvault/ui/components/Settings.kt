@@ -1290,7 +1290,11 @@ private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
                                     Text(
                                         text = strings.iconsRecommended,
                                         style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary,
+                                        color = if (on) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = DisabledAlpha)
+                                        },
                                     )
                                 }
                             } else {
@@ -1372,3 +1376,5 @@ private fun lockLabel(value: Int, strings: RvStrings): String = when {
     value == 60 -> strings.settingsAutoLockHour
     else -> strings.settingsAutoLockMinutes(value)
 }
+
+private const val DisabledAlpha = 0.38f
