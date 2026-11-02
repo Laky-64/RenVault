@@ -77,7 +77,7 @@ func (s *Service) Start() error {
 		}
 		return s.approve(ctx, c)
 	}
-	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, choose, approve, ctap.TransportsUSB))
+	server := ctaphid.NewServer(device, ctap.NewAuthenticator(store{v: s.vault}, choose, approve, ctap.TransportsUSB).HoldWithoutCredentials())
 	go func() {
 		_ = server.Serve(ctx)
 		s.mu.Lock()

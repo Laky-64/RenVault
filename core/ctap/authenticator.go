@@ -51,10 +51,16 @@ type Authenticator struct {
 	choose     Chooser
 	approve    Approver
 	transports []string
+	holdEmpty  bool
 }
 
 func NewAuthenticator(store Store, choose Chooser, approve Approver, transports []string) *Authenticator {
 	return &Authenticator{store: store, choose: choose, approve: approve, transports: transports}
+}
+
+func (a *Authenticator) HoldWithoutCredentials() *Authenticator {
+	a.holdEmpty = true
+	return a
 }
 
 func (a *Authenticator) Handle(ctx context.Context, message []byte) ([]byte, error) {
@@ -105,7 +111,11 @@ func (a *Authenticator) getAssertion(ctx context.Context, params []byte) ([]byte
 		}
 	}
 	if len(options) == 0 {
-		return fail(statusNoCredentials), nil
+		if up, ok := request.Options["up"]; !a.holdEmpty || (ok && !up) {
+			return fail(statusNoCredentials), nil
+		}
+		<-ctx.Done()
+		return fail(statusOperationDenied), nil
 	}
 
 	chosen := options[0]
