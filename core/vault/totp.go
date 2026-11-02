@@ -12,11 +12,15 @@ func normalizeTOTP(input, domain, username string) (string, error) {
 	if input == "" {
 		return "", nil
 	}
-	if u, err := url.Parse(input); err == nil && u.Scheme == "otpauth" {
-		if _, err := setupKey(u.Query().Get("secret")); err != nil {
+	if u, ok := parseOTPAuth(input); ok {
+		q := u.Query()
+		secret, err := setupKey(q.Get("secret"))
+		if err != nil {
 			return "", err
 		}
-		return input, nil
+		q.Set("secret", secret)
+		u.RawQuery = q.Encode()
+		return u.String(), nil
 	}
 	secret, err := setupKey(input)
 	if err != nil {
@@ -36,6 +40,24 @@ func normalizeTOTP(input, domain, username string) (string, error) {
 	}
 	u := url.URL{Scheme: "otpauth", Host: "totp", Path: "/" + label, RawQuery: q.Encode()}
 	return u.String(), nil
+}
+
+func parseOTPAuth(input string) (*url.URL, bool) {
+	const scheme = "otpauth://"
+	if len(input) < len(scheme) || !strings.EqualFold(input[:len(scheme)], scheme) {
+		return nil, false
+	}
+	if u, err := url.Parse(input); err == nil {
+		u.Scheme = "otpauth"
+		return u, true
+	}
+	head, query, _ := strings.Cut(input[len(scheme):], "?")
+	kind, label, _ := strings.Cut(head, "/")
+	q, _ := url.ParseQuery(query)
+	if plain, err := url.PathUnescape(label); err == nil {
+		label = plain
+	}
+	return &url.URL{Scheme: "otpauth", Host: kind, Path: "/" + label, RawQuery: q.Encode()}, true
 }
 
 func setupKey(raw string) (string, error) {
