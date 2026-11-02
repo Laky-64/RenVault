@@ -38,6 +38,7 @@ const (
 var (
 	errNoSiteIcon = errors.New("icons: the site declares no usable icon")
 	linkTag       = regexp.MustCompile(`(?is)<link\b[^>]*>`)
+	metaTag       = regexp.MustCompile(`(?is)<meta\b[^>]*itemprop\s*=\s*["']?image[^>]*>`)
 	headEnd       = regexp.MustCompile(`(?i)</head>`)
 	iconRel       = regexp.MustCompile(`(?i)rel\s*=\s*["']?[^"'>]*icon`)
 	attribute     = regexp.MustCompile(`(?is)([a-z-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>]+))`)
@@ -45,8 +46,9 @@ var (
 )
 
 type candidate struct {
-	url  string
-	size int
+	url    string
+	size   int
+	square bool
 }
 
 func siteIcon(domain string) (image.Image, error) {
@@ -68,9 +70,11 @@ func siteIcon(domain string) (image.Image, error) {
 
 	var queue []string
 	seen := map[string]bool{}
+	square := map[string]bool{}
 	for _, c := range icons {
 		if !seen[c.url] {
 			seen[c.url] = true
+			square[c.url] = c.square
 			queue = append(queue, c.url)
 		}
 	}
@@ -91,7 +95,7 @@ func siteIcon(domain string) (image.Image, error) {
 				if err != nil {
 					return
 				}
-				if img, err := decode(data); err == nil {
+				if img, err := decode(data); err == nil && (!square[address] || squarish(img)) {
 					results[i] = img
 				}
 			}()
@@ -104,6 +108,11 @@ func siteIcon(domain string) (image.Image, error) {
 		}
 	}
 	return pick(found)
+}
+
+func squarish(img image.Image) bool {
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	return w > 0 && h > 0 && max(w, h)*10 <= min(w, h)*11
 }
 
 func pick(found []image.Image) (image.Image, error) {
@@ -148,11 +157,7 @@ func parseLinks(page []byte, base *url.URL) ([]candidate, string) {
 	var icons []candidate
 	manifest := ""
 	for _, tag := range linkTag.FindAll(page, -1) {
-		attrs := map[string]string{}
-		for _, m := range attribute.FindAllSubmatch(tag, -1) {
-			value := string(m[3]) + string(m[4]) + string(m[5])
-			attrs[strings.ToLower(string(m[1]))] = strings.TrimSpace(value)
-		}
+		attrs := attributesOf(tag)
 		href := attrs["href"]
 		if href == "" || strings.HasPrefix(href, "data:") {
 			continue
@@ -174,7 +179,28 @@ func parseLinks(page []byte, base *url.URL) ([]candidate, string) {
 			icons = append(icons, candidate{url: target.String(), size: sizeOf(attrs["sizes"], unknownSize)})
 		}
 	}
+	for _, tag := range metaTag.FindAll(page, -1) {
+		attrs := attributesOf(tag)
+		content := attrs["content"]
+		if content == "" || strings.HasPrefix(content, "data:") || strings.HasSuffix(strings.ToLower(content), ".svg") {
+			continue
+		}
+		target, err := base.Parse(content)
+		if err != nil || (target.Scheme != "https" && target.Scheme != "http") {
+			continue
+		}
+		icons = append(icons, candidate{url: target.String(), size: goodEnough, square: true})
+	}
 	return icons, manifest
+}
+
+func attributesOf(tag []byte) map[string]string {
+	attrs := map[string]string{}
+	for _, m := range attribute.FindAllSubmatch(tag, -1) {
+		value := string(m[3]) + string(m[4]) + string(m[5])
+		attrs[strings.ToLower(string(m[1]))] = strings.TrimSpace(value)
+	}
+	return attrs
 }
 
 func sizeOf(sizes string, fallback int) int {
