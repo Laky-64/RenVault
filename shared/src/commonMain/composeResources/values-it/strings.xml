@@ -435,7 +435,7 @@
     <string name="icons_google_desc">Icone fornite da Google, disponibili per la maggior parte dei siti</string>
     <string name="icons_bitwarden_desc">Icone fornite da Bitwarden, il gestore di password open source</string>
     <string name="icons_duck_desc">Icone fornite da DuckDuckGo, il motore di ricerca privato</string>
-    <string name="icons_off_desc">Al posto delle icone compare l\'iniziale del sito</string>
+    <string name="icons_off_desc">Con le icone disattivate, ogni password mostra l\'iniziale del nome e RenVault non contatta nessun sito</string>
     <string name="icons_use">Usa le icone dei siti</string>
     <string name="icons_provider">Fornitore</string>
 </resources>

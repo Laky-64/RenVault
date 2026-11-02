@@ -1,5 +1,10 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.TooltipAnchorPosition
@@ -1269,7 +1274,7 @@ private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
 
             item {
                 val on = RvFavicons.enabled
-                RvSection(title = strings.iconsProvider, footer = if (on) null else strings.iconsOffDesc) {
+                RvSection(title = strings.iconsProvider) {
                     choices.forEachIndexed { index, choice ->
                         val picked = choice == RvFavicons.provider
                         RvSegment(
@@ -1294,6 +1299,31 @@ private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
                         ) {
                             Text(choice.label)
                         }
+                    }
+                }
+            }
+
+            item {
+                AnimatedVisibility(
+                    visible = !RvFavicons.enabled,
+                    enter = expandVertically(MaterialTheme.motionScheme.defaultSpatialSpec()) + fadeIn(),
+                    exit = shrinkVertically(MaterialTheme.motionScheme.fastSpatialSpec()) + fadeOut(),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Icon(
+                            RvInfoIcon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp),
+                        )
+                        Text(
+                            text = strings.iconsOffDesc,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

@@ -440,7 +440,7 @@
     <string name="icons_google_desc">Icons provided by Google, available for most sites</string>
     <string name="icons_bitwarden_desc">Icons provided by Bitwarden, the open source password manager</string>
     <string name="icons_duck_desc">Icons provided by DuckDuckGo, the private search engine</string>
-    <string name="icons_off_desc">The site initial is shown instead of the icon</string>
+    <string name="icons_off_desc">With icons turned off, each password shows the first letter of its name and RenVault doesn\'t contact any website</string>
     <string name="icons_use">Use site icons</string>
     <string name="icons_provider">Provider</string>
 </resources>
