@@ -180,15 +180,18 @@ func (s *Service) Register() error {
 	if cert != "" {
 		trusted, err := isTrusted(cert)
 		if err != nil {
-			return err
+			return fmt.Errorf("check certificate: %w", err)
 		}
 		if !trusted {
 			if err := trust(cert); err != nil {
-				return err
+				return fmt.Errorf("trust certificate: %w", err)
 			}
 		}
 	}
-	return addPackage(pkg, dir)
+	if err := addPackage(pkg, dir); err != nil {
+		return fmt.Errorf("add package: %w", err)
+	}
+	return nil
 }
 
 func (s *Service) Restart() error {
@@ -423,6 +426,21 @@ func verify(ctx context.Context, username string) error {
 }
 
 func diagnose(command byte, encoded []byte) {
+	head := encoded
+	if len(head) > 4 {
+		head = head[:4]
+	}
+	writeLog(fmt.Sprintf("command=0x%02x size=%d head=%x", command, len(encoded), head))
+}
+
+func Note(step string, err error) {
+	if err == nil {
+		return
+	}
+	writeLog(fmt.Sprintf("%s failed: %v available=%v packaged=%v", step, err, available(), packaged()))
+}
+
+func writeLog(line string) {
 	dir, err := os.UserCacheDir()
 	if err != nil {
 		return
@@ -436,9 +454,5 @@ func diagnose(command byte, encoded []byte) {
 		return
 	}
 	defer f.Close()
-	head := encoded
-	if len(head) > 4 {
-		head = head[:4]
-	}
-	fmt.Fprintf(f, "%s command=0x%02x size=%d head=%x\n", time.Now().Format(time.RFC3339), command, len(encoded), head)
+	fmt.Fprintf(f, "%s %s\n", time.Now().Format(time.RFC3339), line)
 }

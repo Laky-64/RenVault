@@ -77,14 +77,18 @@ func installWinPasskeys() {
 		}
 		if !s.Status().Packaged {
 			if err := s.Register(); err != nil {
+				winplugin.Note("register", err)
 				return winPasskeyEnable{}, err
 			}
 			return winPasskeyEnable{Restart: true}, nil
 		}
 		if err := s.Install(); err != nil {
+			winplugin.Note("install", err)
 			return winPasskeyEnable{}, err
 		}
-		return winPasskeyEnable{}, winplugin.OpenSettings()
+		err := winplugin.OpenSettings()
+		winplugin.Note("open settings", err)
+		return winPasskeyEnable{}, err
 	})
 
 	command(bridge.OpWinPasskeySync, func(context.Context, none) error {
