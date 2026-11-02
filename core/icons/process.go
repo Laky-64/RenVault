@@ -12,6 +12,13 @@ import (
 const (
 	maxSide    = 256
 	alphaFloor = 16
+	crispScale = 2
+	plateSlack = 48
+	plateAlpha = 230
+	plateShare = 0.3
+	inkFloor   = 40
+	inkReach   = 8
+	edgeGain   = 2.2
 )
 
 func process(src image.Image) ([]byte, error) {
@@ -21,6 +28,7 @@ func process(src image.Image) ([]byte, error) {
 		return nil, fmt.Errorf("%w: no opaque pixels", ErrUnsupportedFormat)
 	}
 	logo := crop(img, box)
+	flattenPlate(logo)
 
 	w, h := logo.Bounds().Dx(), logo.Bounds().Dy()
 	side := max(w, h)
@@ -35,6 +43,12 @@ func process(src image.Image) ([]byte, error) {
 		w = max(1, int(math.Round(float64(w)*scale)))
 		h = max(1, int(math.Round(float64(h)*scale)))
 		logo = upscale(logo, w, h)
+		if scale >= crispScale {
+			logo = crisp(logo)
+			if ground, ok := dominant(logo); ok {
+				sharpenInk(logo, ground, int(math.Ceil(scale)))
+			}
+		}
 		side = maxSide
 	}
 
@@ -161,17 +175,18 @@ func clamp8(v float64) uint8 {
 	return uint8(math.Max(0, math.Min(255, math.Round(v))))
 }
 
-const lanczosLobes = 3
+const kernelReach = 2
 
-func lanczos(x float64) float64 {
-	if x == 0 {
-		return 1
+func mitchell(x float64) float64 {
+	const b, c = 1.0 / 3, 1.0 / 3
+	x = math.Abs(x)
+	switch {
+	case x < 1:
+		return ((12-9*b-6*c)*x*x*x + (-18+12*b+6*c)*x*x + (6 - 2*b)) / 6
+	case x < 2:
+		return ((-b-6*c)*x*x*x + (6*b+30*c)*x*x + (-12*b-48*c)*x + (8*b + 24*c)) / 6
 	}
-	if x <= -lanczosLobes || x >= lanczosLobes {
-		return 0
-	}
-	px := math.Pi * x
-	return lanczosLobes * math.Sin(px) * math.Sin(px/lanczosLobes) / (px * px)
+	return 0
 }
 
 type tap struct {
@@ -184,11 +199,11 @@ func taps(src, dst int) [][]tap {
 	ratio := float64(src) / float64(dst)
 	for i := range dst {
 		center := (float64(i)+0.5)*ratio - 0.5
-		first := int(math.Floor(center)) - lanczosLobes + 1
+		first := int(math.Floor(center)) - kernelReach + 1
 		var row []tap
 		var total float64
-		for k := first; k < first+2*lanczosLobes; k++ {
-			weight := lanczos(center - float64(k))
+		for k := first; k < first+2*kernelReach; k++ {
+			weight := mitchell(center - float64(k))
 			if weight == 0 {
 				continue
 			}
@@ -243,4 +258,183 @@ func upscale(src *image.NRGBA, dstW, dstH int) *image.NRGBA {
 		}
 	}
 	return dst
+}
+
+func crisp(src *image.NRGBA) *image.NRGBA {
+	w, h := src.Bounds().Dx(), src.Bounds().Dy()
+	dst := image.NewNRGBA(image.Rect(0, 0, w, h))
+	for y := range h {
+		for x := range w {
+			c := src.NRGBAAt(x, y)
+			if c.A == 0 {
+				continue
+			}
+			if c.A < 255 {
+				c.A = clamp8((float64(c.A)-128)*edgeGain + 128)
+			}
+			dst.SetNRGBA(x, y, c)
+		}
+	}
+	return dst
+}
+
+func plateOf(img *image.NRGBA, slack int) (color.NRGBA, bool) {
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	if w < 8 || h < 8 {
+		return color.NRGBA{}, false
+	}
+	inset := max(1, min(w, h)/24)
+	sides := []color.NRGBA{
+		img.NRGBAAt(w/2, inset),
+		img.NRGBAAt(w/2, h-1-inset),
+		img.NRGBAAt(inset, h/2),
+		img.NRGBAAt(w-1-inset, h/2),
+	}
+	var sum [3]int
+	for _, c := range sides {
+		if c.A <= plateAlpha {
+			return color.NRGBA{}, false
+		}
+		sum[0] += int(c.R)
+		sum[1] += int(c.G)
+		sum[2] += int(c.B)
+	}
+	n := len(sides)
+	plate := color.NRGBA{R: uint8(sum[0] / n), G: uint8(sum[1] / n), B: uint8(sum[2] / n), A: 0xFF}
+	for _, c := range sides {
+		if distance(c, plate) > slack {
+			return color.NRGBA{}, false
+		}
+	}
+	return plate, true
+}
+
+func distance(a, b color.NRGBA) int {
+	d := func(x, y uint8) int {
+		if x > y {
+			return int(x - y)
+		}
+		return int(y - x)
+	}
+	return d(a.R, b.R) + d(a.G, b.G) + d(a.B, b.B)
+}
+
+func flattenPlate(img *image.NRGBA) {
+	plate, ok := plateOf(img, plateSlack/2)
+	if !ok {
+		return
+	}
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	for y := range h {
+		for x := range w {
+			c := img.NRGBAAt(x, y)
+			if c.A > plateAlpha && distance(c, plate) <= plateSlack/2 {
+				img.SetNRGBA(x, y, plate)
+			}
+		}
+	}
+}
+
+func dominant(img *image.NRGBA) (color.NRGBA, bool) {
+	type bucket struct {
+		count   int
+		r, g, b int
+	}
+	buckets := map[uint32]*bucket{}
+	opaque := 0
+	var best *bucket
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	for y := range h {
+		for x := range w {
+			c := img.NRGBAAt(x, y)
+			if c.A <= plateAlpha {
+				continue
+			}
+			opaque++
+			key := uint32(c.R>>3)<<10 | uint32(c.G>>3)<<5 | uint32(c.B>>3)
+			b := buckets[key]
+			if b == nil {
+				b = &bucket{}
+				buckets[key] = b
+			}
+			b.count++
+			b.r += int(c.R)
+			b.g += int(c.G)
+			b.b += int(c.B)
+			if best == nil || b.count > best.count {
+				best = b
+			}
+		}
+	}
+	if best == nil || float64(best.count) < float64(opaque)*plateShare {
+		return color.NRGBA{}, false
+	}
+	ground := color.NRGBA{R: uint8(best.r / best.count), G: uint8(best.g / best.count), B: uint8(best.b / best.count), A: 0xFF}
+	inset := max(1, min(w, h)/24)
+	touching := 0
+	for _, c := range []color.NRGBA{
+		img.NRGBAAt(w/2, inset),
+		img.NRGBAAt(w/2, h-1-inset),
+		img.NRGBAAt(inset, h/2),
+		img.NRGBAAt(w-1-inset, h/2),
+	} {
+		if c.A > 0x80 && distance(c, ground) <= plateSlack {
+			touching++
+		}
+	}
+	return ground, touching >= 2
+}
+
+func sharpenInk(img *image.NRGBA, plate color.NRGBA, reach int) {
+	reach = min(max(reach, 1), inkReach)
+	w, h := img.Bounds().Dx(), img.Bounds().Dy()
+	size := make([]float64, w*h)
+	for y := range h {
+		for x := range w {
+			c := img.NRGBAAt(x, y)
+			if c.A == 0 {
+				continue
+			}
+			dr, dg, db := float64(c.R)-float64(plate.R), float64(c.G)-float64(plate.G), float64(c.B)-float64(plate.B)
+			size[y*w+x] = math.Sqrt(dr*dr + dg*dg + db*db)
+		}
+	}
+	rows := make([]float64, w*h)
+	for y := range h {
+		for x := range w {
+			top := 0.0
+			for dx := -reach; dx <= reach; dx++ {
+				if nx := x + dx; nx >= 0 && nx < w {
+					top = math.Max(top, size[y*w+nx])
+				}
+			}
+			rows[y*w+x] = top
+		}
+	}
+	for y := range h {
+		for x := range w {
+			c := img.NRGBAAt(x, y)
+			own := size[y*w+x]
+			if c.A == 0 || own == 0 {
+				continue
+			}
+			top := 0.0
+			for dy := -reach; dy <= reach; dy++ {
+				if ny := y + dy; ny >= 0 && ny < h {
+					top = math.Max(top, rows[ny*w+x])
+				}
+			}
+			if top < inkFloor {
+				continue
+			}
+			t := own / top
+			k := math.Max(0, math.Min(1, (t-0.5)*edgeGain+0.5)) / t
+			img.SetNRGBA(x, y, color.NRGBA{
+				R: clamp8(float64(plate.R) + (float64(c.R)-float64(plate.R))*k),
+				G: clamp8(float64(plate.G) + (float64(c.G)-float64(plate.G))*k),
+				B: clamp8(float64(plate.B) + (float64(c.B)-float64(plate.B))*k),
+				A: c.A,
+			})
+		}
+	}
 }
