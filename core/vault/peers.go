@@ -33,9 +33,10 @@ const (
 )
 
 type hello struct {
-	Node  string   `cbor:"node"`
-	Name  string   `cbor:"name"`
-	Addrs []string `cbor:"addrs,omitempty"`
+	Node    string   `cbor:"node"`
+	Name    string   `cbor:"name"`
+	Addrs   []string `cbor:"addrs,omitempty"`
+	Revoked bool     `cbor:"revoked,omitempty"`
 }
 
 type pairing struct {
@@ -268,6 +269,12 @@ func (v *Vault) serve(conn net.Conn) {
 			return
 		}
 		if _, ok := v.trustedPeer(l.peer); !ok {
+			if v.removedPeer(l.peer) {
+				var peer hello
+				if l.read(&peer) == nil {
+					_ = l.write(hello{Node: self.Node, Revoked: true})
+				}
+			}
 			return
 		}
 		if err := v.respond(l, self, remoteIP(conn)); err != nil {
@@ -482,6 +489,9 @@ func (v *Vault) syncPeers() error {
 			if err == nil {
 				break
 			}
+			if errors.Is(err, errRevoked) {
+				return nil
+			}
 			if !errors.Is(err, errDial) {
 				log.Printf("vault: sync with %s: %v", addr, err)
 			}
@@ -490,7 +500,49 @@ func (v *Vault) syncPeers() error {
 	return nil
 }
 
-var errDial = errors.New("vault: peer unreachable")
+var (
+	errDial    = errors.New("vault: peer unreachable")
+	errRevoked = errors.New("vault: this device was removed by another device")
+)
+
+func (v *Vault) removedPeer(key []byte) bool {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.sh == nil {
+		return false
+	}
+	for _, d := range v.sh.Devices {
+		if d.Removed && d.ID != v.sh.Node && slices.Equal(d.Key, key) {
+			return true
+		}
+	}
+	return false
+}
+
+func (v *Vault) detach() {
+	v.mu.Lock()
+	sh := v.sh
+	if sh == nil {
+		v.mu.Unlock()
+		return
+	}
+	key := v.sharedKeyLocked()
+	for _, d := range slices.Clone(sh.Devices) {
+		if d.ID == sh.Node || d.Removed {
+			continue
+		}
+		name := sh.deviceName(key, d)
+		d.Removed = true
+		_ = sh.putDevice(key, d, name)
+	}
+	sh.Peers = nil
+	_ = saveShare(v.base, sh)
+	onPeers := v.onPeers
+	v.mu.Unlock()
+	if onPeers != nil {
+		onPeers()
+	}
+}
 
 func (v *Vault) syncWith(t peerTarget, addr string) error {
 	self, key, err := v.selfHello()
@@ -518,6 +570,10 @@ func (v *Vault) syncWith(t peerTarget, addr string) error {
 	}
 	if peer.Node != t.node {
 		return errUntrusted
+	}
+	if peer.Revoked {
+		v.detach()
+		return errRevoked
 	}
 	if err := v.learn(peer, l.peer, remoteIP(conn), false); err != nil {
 		return err
