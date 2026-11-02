@@ -25,7 +25,7 @@ function Get-Values($database, [string]$query, [int]$field) {
         $values += $record.GetType().InvokeMember('StringData', 'GetProperty', $null, $record, @($field))
     }
     Invoke-Member $view 'Close' @() | Out-Null
-    return , $values
+    return $values
 }
 
 function Invoke-Sql($database, [string]$query) {
@@ -41,11 +41,28 @@ if ((Get-Values $database "SELECT ``Action`` FROM ``CustomAction`` WHERE ``Actio
     exit 0
 }
 
-$directories = Get-Values $database 'SELECT `Directory` FROM `Directory`' 1
+if (@(Get-Values $database "SELECT ``Action`` FROM ``CustomAction`` WHERE ``Action`` = '$action'" 1).Count -gt 0) {
+    Write-Host 'The passkey cleanup action is already present'
+    exit 0
+}
+
+$directories = @(Get-Values $database 'SELECT `Directory` FROM `Directory`' 1)
 $source = if ($directories -contains 'INSTALLDIR') { 'INSTALLDIR' } else { 'TARGETDIR' }
 
-$used = Get-Values $database 'SELECT `Sequence` FROM `InstallExecuteSequence`' 1 | ForEach-Object { [int]$_ }
-$removeFiles = [int](Get-Values $database "SELECT ``Sequence`` FROM ``InstallExecuteSequence`` WHERE ``Action`` = 'RemoveFiles'" 1)[0]
+$used = @(
+    Get-Values $database 'SELECT `Sequence` FROM `InstallExecuteSequence`' 1 |
+        ForEach-Object { [int]$_ }
+)
+
+$removeFilesValues = @(
+    Get-Values $database "SELECT ``Sequence`` FROM ``InstallExecuteSequence`` WHERE ``Action`` = 'RemoveFiles'" 1
+)
+
+if ($removeFilesValues.Count -ne 1) {
+    throw "Expected exactly one RemoveFiles action, found $($removeFilesValues.Count)"
+}
+
+$removeFiles = [int]$removeFilesValues[0]
 $sequence = $removeFiles - 1
 while ($used -contains $sequence) { $sequence-- }
 
