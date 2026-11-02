@@ -14,7 +14,8 @@ class RvFavicon(image: ImageBitmap) : Painter() {
     private val painter = BitmapPainter(image, filterQuality = FilterQuality.High)
 
     val bleed: Boolean
-    val margin: Boolean
+    val plate: Color?
+    val zoom: Float
     val tint: Color?
 
     val ink: Float
@@ -25,9 +26,14 @@ class RvFavicon(image: ImageBitmap) : Painter() {
         val pixels = IntArray(width * height)
         image.readPixels(pixels)
 
-        val edges = edgesOpaque(pixels, width, height)
-        margin = edges && plainBand(pixels, width, height)
-        bleed = edges && (margin || squareCorners(pixels, width, height))
+        val ground = plateOf(pixels, width, height)
+        plate = ground?.let { Color(it.color) }
+        bleed = ground != null || edgesOpaque(pixels, width, height) && squareCorners(pixels, width, height)
+        zoom = when {
+            ground == null -> 1f
+            ground.even -> plateZoom(pixels, width, height, ground.color)
+            else -> max(1f, plateZoom(pixels, width, height, ground.color))
+        }
         tint = strongest(pixels)
         ink = luminance(pixels)
     }
@@ -62,27 +68,61 @@ private fun edgesOpaque(pixels: IntArray, width: Int, height: Int): Boolean {
     return total > 0 && opaque >= total * 0.95
 }
 
-private const val BandShare = 0.07f
 private const val BandTolerance = 48
+private const val MaxZoom = 1.14f
+private const val MinZoom = 0.6f
+private const val SafeReach = 0.74f
+private const val FrameReach = 0.95f
+private const val HoleReach = 0.92f
+private const val InkAlpha = 250
 
-private fun plainBand(pixels: IntArray, width: Int, height: Int): Boolean {
-    val band = max(1, (min(width, height) * BandShare).toInt())
-    val plate = pixels[(height / 2) * width + band / 2]
-    val pr = (plate shr 16) and 0xFF
-    val pg = (plate shr 8) and 0xFF
-    val pb = plate and 0xFF
+private fun near(a: Int, b: Int, slack: Int = BandTolerance): Boolean =
+    kotlin.math.abs(((a shr 16) and 0xFF) - ((b shr 16) and 0xFF)) +
+        kotlin.math.abs(((a shr 8) and 0xFF) - ((b shr 8) and 0xFF)) +
+        kotlin.math.abs((a and 0xFF) - (b and 0xFF)) <= slack
+
+private fun reachOf(x: Int, y: Int, width: Int, height: Int): Float {
+    val dx = (x + 0.5f - width / 2f) / (width / 2f)
+    val dy = (y + 0.5f - height / 2f) / (height / 2f)
+    return kotlin.math.sqrt(dx * dx + dy * dy)
+}
+
+private class Ground(val color: Int, val even: Boolean)
+
+private fun plateOf(pixels: IntArray, width: Int, height: Int): Ground? {
+    if (width < 8 || height < 8) return null
+    val inset = max(1, min(width, height) / 24)
+    val sides = listOf(
+        pixels[inset * width + width / 2],
+        pixels[(height - 1 - inset) * width + width / 2],
+        pixels[(height / 2) * width + inset],
+        pixels[(height / 2) * width + width - 1 - inset],
+    )
+    if (sides.any { (it ushr 24) <= 230 }) return null
+    val mean = (sides.sumOf { (it shr 16) and 0xFF } / sides.size shl 16) or
+        (sides.sumOf { (it shr 8) and 0xFF } / sides.size shl 8) or
+        (sides.sumOf { it and 0xFF } / sides.size)
+    if (!sides.all { near(it, mean) }) return null
     for (y in 0 until height) {
         for (x in 0 until width) {
-            if (x >= band && x < width - band && y >= band && y < height - band) continue
-            val pixel = pixels[y * width + x]
-            if ((pixel ushr 24) < 128) continue
-            val far = kotlin.math.abs(((pixel shr 16) and 0xFF) - pr) +
-                kotlin.math.abs(((pixel shr 8) and 0xFF) - pg) +
-                kotlin.math.abs((pixel and 0xFF) - pb)
-            if (far > BandTolerance) return false
+            if ((pixels[y * width + x] ushr 24) < 128 && reachOf(x, y, width, height) < HoleReach) return null
         }
     }
-    return true
+    return Ground(mean or (0xFF shl 24), sides.all { near(it, mean, BandTolerance / 2) })
+}
+
+private fun plateZoom(pixels: IntArray, width: Int, height: Int, plate: Int): Float {
+    var reach = 0f
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            val pixel = pixels[y * width + x]
+            if ((pixel ushr 24) < InkAlpha || near(pixel, plate)) continue
+            val r = reachOf(x, y, width, height)
+            if (r < FrameReach) reach = max(reach, r)
+        }
+    }
+    if (reach <= 0f) return MaxZoom
+    return (SafeReach / reach).coerceIn(MinZoom, MaxZoom)
 }
 
 private fun squareCorners(pixels: IntArray, width: Int, height: Int): Boolean {

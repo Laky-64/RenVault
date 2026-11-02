@@ -106,7 +106,7 @@ fun RvSiteIcon(
                     )
                     .graphicsLayer {
                         val pop = 0.6f + 0.4f * arrival.value
-                        val scale = if (bleed && face.margin) 1.14f * pop else pop
+                        val scale = if (bleed) face.zoom * pop else pop
                         scaleX = scale
                         scaleY = scale
                         alpha = shown
@@ -118,6 +118,7 @@ fun RvSiteIcon(
 }
 
 private fun groundFor(face: RvFavicon?, neutral: Color): Color {
+    face?.plate?.let { return it }
     if (face == null || face.bleed) return neutral
     val hue = face.tint ?: neutral
     val choices = listOf(
