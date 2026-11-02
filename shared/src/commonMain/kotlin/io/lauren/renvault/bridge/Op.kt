@@ -38,6 +38,7 @@ internal object Op {
     const val NET_ADDRESSES = 0x1207
     const val NET_PEER_SEEN = 0x1208
     const val PEERS_SYNC = 0x1209
+    const val DEVICE_ABOUT = 0x120A
 
     const val LIST_WEB = 0x1101
     const val LIST_WIFI = 0x1102

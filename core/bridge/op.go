@@ -40,6 +40,7 @@ const (
 	OpNetAddresses uint32 = 0x1207
 	OpNetPeerSeen  uint32 = 0x1208
 	OpPeersSync    uint32 = 0x1209
+	OpDeviceAbout  uint32 = 0x120A
 )
 
 const (

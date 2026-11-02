@@ -34,7 +34,18 @@ func installDevices() {
 		}
 		out := make([]deviceEntry, 0, len(devices))
 		for _, d := range devices {
-			out = append(out, deviceEntry{ID: d.ID, Name: d.Name, Self: d.Self, SyncedAt: millis(d.SyncedAt)})
+			out = append(out, deviceEntry{
+				ID:       d.ID,
+				Name:     d.Name,
+				Self:     d.Self,
+				SyncedAt: millis(d.SyncedAt),
+				Online:   d.Online,
+				Platform: d.Platform,
+				Model:    d.Model,
+				Version:  d.Version,
+				Joined:   millis(d.Joined),
+				Address:  d.Address,
+			})
 		}
 		return out, nil
 	})
@@ -101,6 +112,14 @@ func installDevices() {
 			return err
 		}
 		return active.SyncPeers()
+	})
+
+	command(bridge.OpDeviceAbout, func(_ context.Context, request deviceAboutRequest) error {
+		active, err := unlocked()
+		if err != nil {
+			return err
+		}
+		return active.SetAbout(request.Platform, request.Model, request.Version)
 	})
 
 	command(bridge.OpNetPeerSeen, func(_ context.Context, request peerSeenRequest) error {

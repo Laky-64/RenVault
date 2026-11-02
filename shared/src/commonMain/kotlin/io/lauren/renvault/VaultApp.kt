@@ -74,6 +74,8 @@ import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.appIcon
+import io.lauren.renvault.lib.deviceModel
+import io.lauren.renvault.lib.devicePlatform
 import io.lauren.renvault.lib.appPackageOf
 import io.lauren.renvault.lib.isAppLink
 import io.lauren.renvault.lib.RvSecretSource
@@ -182,9 +184,28 @@ fun RvVaultApp(
     }
 
     suspend fun loadDevices() {
+        if (profile.local) {
+            runCatching {
+                val (platform, model) = withContext(Dispatchers.Default) { devicePlatform() to deviceModel() }
+                Vault.setDeviceAbout(platform, model, fullVersion())
+            }
+        }
         devices = if (profile.local) {
             runCatching { Vault.devices() }.getOrDefault(emptyList())
-                .map { RvDevice(it.id, it.name, it.self, it.syncedAt) }
+                .map {
+                    RvDevice(
+                        id = it.id,
+                        name = it.name,
+                        self = it.self,
+                        syncedAt = it.syncedAt,
+                        online = it.online,
+                        platform = it.platform,
+                        model = it.model,
+                        version = it.version,
+                        joined = it.joined,
+                        address = it.address,
+                    )
+                }
         } else {
             emptyList()
         }
@@ -844,3 +865,10 @@ private suspend fun savePasskey(item: RvPasskeyItem, draft: RvDraft): String? = 
 }.getOrNull()
 
 private const val IconParallelism = 12
+
+private fun fullVersion(): String = listOf(
+    "v$RvAppVersion",
+    RvAppVersionCode.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+    RvAppChannel.takeIf { it.isNotEmpty() }?.let { "#$it" }.orEmpty(),
+    RvAppCommit.takeIf { it.isNotEmpty() }?.let { "($it)" }.orEmpty(),
+).filter { it.isNotEmpty() }.joinToString(" ")

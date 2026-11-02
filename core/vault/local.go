@@ -52,6 +52,7 @@ type sealedDevice struct {
 	Clock   hlc    `cbor:"clock"`
 	Removed bool   `cbor:"removed,omitempty"`
 	Box     []byte `cbor:"box,omitempty"`
+	About   []byte `cbor:"about,omitempty"`
 }
 
 type sealedBlob struct {
@@ -269,6 +270,11 @@ func (sh *share) reseal(from, to []byte) {
 				sh.Devices[i].Box = box
 			}
 		}
+		if len(d.About) > 0 {
+			if box, err := sealAbout(to, d.ID, openAbout(from, d)); err == nil {
+				sh.Devices[i].About = box
+			}
+		}
 	}
 	for _, blob := range []struct {
 		kind string
@@ -475,7 +481,9 @@ func (v *Vault) FinishLocalSetup(masterPassword, name, deviceName string, photo 
 	if err != nil {
 		return err
 	}
-	if err := sh.putDevice(shared, sealedDevice{ID: sh.Node, Key: identity.PublicKey().Bytes()}, deviceName); err != nil {
+	self := sealedDevice{ID: sh.Node, Key: identity.PublicKey().Bytes()}
+	self.About, _ = sealAbout(shared, self.ID, deviceAbout{Joined: time.Now().UTC()})
+	if err := sh.putDevice(shared, self, deviceName); err != nil {
 		return err
 	}
 	if name != "" || len(photo) > 0 {
@@ -532,6 +540,12 @@ type DeviceInfo struct {
 	Name     string
 	Self     bool
 	SyncedAt time.Time
+	Online   bool
+	Platform string
+	Model    string
+	Version  string
+	Joined   time.Time
+	Address  string
 }
 
 func (v *Vault) Devices() ([]DeviceInfo, error) {
@@ -549,11 +563,19 @@ func (v *Vault) Devices() ([]DeviceInfo, error) {
 		if d.Removed {
 			continue
 		}
+		about := openAbout(key, d)
+		synced := v.sh.Peers[d.ID].SyncedAt
 		out = append(out, DeviceInfo{
 			ID:       d.ID,
 			Name:     cmp.Or(v.sh.deviceName(key, d), "RenVault"),
 			Self:     d.ID == v.sh.Node,
-			SyncedAt: v.sh.Peers[d.ID].SyncedAt,
+			SyncedAt: synced,
+			Online:   d.ID != v.sh.Node && (time.Since(v.seen[d.ID].at) < onlineWindow || time.Since(synced) < onlineWindow),
+			Platform: about.Platform,
+			Model:    about.Model,
+			Version:  about.Version,
+			Joined:   about.Joined,
+			Address:  v.addressOfLocked(d.ID),
 		})
 	}
 	slices.SortStableFunc(out, func(a, b DeviceInfo) int {

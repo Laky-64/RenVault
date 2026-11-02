@@ -51,6 +51,13 @@ import io.lauren.renvault.resources.devices_title
 import io.lauren.renvault.resources.devices_count
 import io.lauren.renvault.resources.devices_intro
 import io.lauren.renvault.resources.devices_this
+import io.lauren.renvault.resources.devices_online
+import io.lauren.renvault.resources.devices_system
+import io.lauren.renvault.resources.devices_model
+import io.lauren.renvault.resources.devices_address
+import io.lauren.renvault.resources.devices_version
+import io.lauren.renvault.resources.devices_joined
+import io.lauren.renvault.resources.devices_last_sync
 import io.lauren.renvault.resources.devices_synced
 import io.lauren.renvault.resources.devices_never
 import io.lauren.renvault.resources.devices_add
@@ -738,6 +745,13 @@ private val TextResources = listOf(
     Res.string.devices_title,
     Res.string.devices_intro,
     Res.string.devices_this,
+    Res.string.devices_online,
+    Res.string.devices_system,
+    Res.string.devices_model,
+    Res.string.devices_address,
+    Res.string.devices_version,
+    Res.string.devices_joined,
+    Res.string.devices_last_sync,
     Res.string.devices_synced,
     Res.string.devices_never,
     Res.string.devices_add,
@@ -1135,6 +1149,13 @@ private class ResourceStrings(
     override val devicesTitle: String get() = text(Res.string.devices_title)
     override val devicesIntro: String get() = text(Res.string.devices_intro)
     override val devicesThis: String get() = text(Res.string.devices_this)
+    override val devicesOnline: String get() = text(Res.string.devices_online)
+    override val devicesSystem: String get() = text(Res.string.devices_system)
+    override val devicesModel: String get() = text(Res.string.devices_model)
+    override val devicesAddress: String get() = text(Res.string.devices_address)
+    override val devicesVersion: String get() = text(Res.string.devices_version)
+    override val devicesJoined: String get() = text(Res.string.devices_joined)
+    override val devicesLastSync: String get() = text(Res.string.devices_last_sync)
     override val devicesNever: String get() = text(Res.string.devices_never)
     override val devicesAdd: String get() = text(Res.string.devices_add)
     override val devicesJoin: String get() = text(Res.string.devices_join)

@@ -325,6 +325,13 @@
         <item quantity="other">%1$d dispositivi</item>
     </plurals>
     <string name="devices_intro">Questi dispositivi condividono il tuo archivio. Si sincronizzano tra loro sulla stessa rete quando RenVault è aperto, anche se bloccato. Su Android si sincronizza anche in background ogni 15 minuti circa.</string>
+    <string name="devices_online">Online</string>
+    <string name="devices_system">Sistema</string>
+    <string name="devices_model">Modello</string>
+    <string name="devices_address">Indirizzo IP</string>
+    <string name="devices_version">Versione di RenVault</string>
+    <string name="devices_joined">Collegato il</string>
+    <string name="devices_last_sync">Ultima sincronizzazione</string>
     <string name="devices_this">Questo dispositivo</string>
     <string name="devices_synced">Sincronizzato %1$s</string>
     <string name="devices_never">Non ancora sincronizzato</string>

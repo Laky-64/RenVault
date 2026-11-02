@@ -318,7 +318,9 @@ func (v *Vault) learn(peer hello, key []byte, ip string, pairing bool) error {
 		if shared == nil {
 			return errLocked
 		}
-		if err := sh.putDevice(shared, sealedDevice{ID: peer.Node, Key: key}, peer.Name); err != nil {
+		joined := sealedDevice{ID: peer.Node, Key: key}
+		joined.About, _ = sealAbout(shared, joined.ID, deviceAbout{Joined: time.Now().UTC()})
+		if err := sh.putDevice(shared, joined, peer.Name); err != nil {
 			return err
 		}
 	case i < 0 || sh.Devices[i].Removed || !slices.Equal(sh.Devices[i].Key, key):

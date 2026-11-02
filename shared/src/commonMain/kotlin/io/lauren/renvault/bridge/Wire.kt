@@ -219,6 +219,19 @@ data class Device(
     @SerialName("name") val name: String = "",
     @SerialName("self") val self: Boolean = false,
     @SerialName("synced_at") val syncedAt: Long = 0,
+    @SerialName("online") val online: Boolean = false,
+    @SerialName("platform") val platform: String = "",
+    @SerialName("model") val model: String = "",
+    @SerialName("version") val version: String = "",
+    @SerialName("joined") val joined: Long = 0,
+    @SerialName("address") val address: String = "",
+)
+
+@Serializable
+internal data class DeviceAboutRequest(
+    @SerialName("platform") val platform: String,
+    @SerialName("model") val model: String,
+    @SerialName("version") val version: String,
 )
 
 @OptIn(ExperimentalSerializationApi::class)

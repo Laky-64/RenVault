@@ -212,6 +212,18 @@ type deviceEntry struct {
 	Name     string `cbor:"name"`
 	Self     bool   `cbor:"self"`
 	SyncedAt int64  `cbor:"synced_at"`
+	Online   bool   `cbor:"online"`
+	Platform string `cbor:"platform"`
+	Model    string `cbor:"model"`
+	Version  string `cbor:"version"`
+	Joined   int64  `cbor:"joined"`
+	Address  string `cbor:"address"`
+}
+
+type deviceAboutRequest struct {
+	Platform string `cbor:"platform"`
+	Model    string `cbor:"model"`
+	Version  string `cbor:"version"`
 }
 
 type pairResponse struct {

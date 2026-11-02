@@ -112,6 +112,9 @@ object Vault {
 
     suspend fun devices(): List<Device> = receive(Op.DEVICES)
 
+    suspend fun setDeviceAbout(platform: String, model: String, version: String) =
+        send(Op.DEVICE_ABOUT, DeviceAboutRequest(platform, model, version))
+
     suspend fun removeDevice(id: String) = send(Op.DEVICE_REMOVE, IdentifierRequest(id))
 
     suspend fun startPairing(): Pairing = receive(Op.PAIR_START)

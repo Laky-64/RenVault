@@ -330,6 +330,13 @@
         <item quantity="other">%1$d devices</item>
     </plurals>
     <string name="devices_intro">These devices share your vault. They sync with each other on the same network whenever RenVault is open, even while locked. On Android it also syncs in the background every 15 minutes or so.</string>
+    <string name="devices_online">Online</string>
+    <string name="devices_system">System</string>
+    <string name="devices_model">Model</string>
+    <string name="devices_address">IP address</string>
+    <string name="devices_version">RenVault version</string>
+    <string name="devices_joined">Linked on</string>
+    <string name="devices_last_sync">Last sync</string>
     <string name="devices_this">This device</string>
     <string name="devices_synced">Synced %1$s</string>
     <string name="devices_never">Not synced yet</string>

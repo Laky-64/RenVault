@@ -1,5 +1,23 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import io.lauren.renvault.lib.RvDateStyle
+import io.lauren.renvault.lib.localizedDate
+import io.lauren.renvault.ui.theme.RvTone
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +84,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 
-data class RvDevice(val id: String, val name: String, val self: Boolean, val syncedAt: Long)
+data class RvDevice(
+    val id: String,
+    val name: String,
+    val self: Boolean,
+    val syncedAt: Long,
+    val online: Boolean = false,
+    val platform: String = "",
+    val model: String = "",
+    val version: String = "",
+    val joined: Long = 0,
+    val address: String = "",
+)
 
 class RvPairCode(val code: String, val size: Int, val modules: ByteArray)
 
@@ -81,6 +110,8 @@ interface RvDeviceActions {
 }
 
 private val ClockTick = 30.seconds
+private val OnlineDot = 14.dp
+private val OnlineGap = 2.5.dp
 
 @OptIn(ExperimentalTime::class)
 @Composable
@@ -102,6 +133,7 @@ internal fun DevicesPage(
     var joining by remember { mutableStateOf(false) }
     var syncing by remember { mutableStateOf(false) }
     var removing by remember { mutableStateOf<RvDevice?>(null) }
+    var shown by remember { mutableStateOf<RvDevice?>(null) }
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
@@ -175,26 +207,15 @@ internal fun DevicesPage(
                         RvSegment(
                             index = index,
                             count = devices.size,
-                            leading = { SettingBadge(if (device.self) RvPhoneIcon else RvDevicesIcon, accents.forIndex(index)) },
+                            onClick = { shown = device },
+                            leading = { DeviceBadge(device, accents.forIndex(index)) },
                             supporting = {
-                                Text(
-                                    when {
-                                        device.self -> strings.devicesThis
-                                        else -> relativeOf(device.syncedAt, now)
-                                            ?.let { strings.devicesSynced(strings.relativeTime(it)) }
-                                            ?: strings.devicesNever
-                                    },
-                                )
-                            },
-                            trailing = if (device.self) {
-                                null
-                            } else {
-                                {
-                                    IconButton(onClick = { removing = device }, shapes = IconButtonDefaults.shapes()) {
-                                        Icon(RvDeleteIcon, contentDescription = strings.devicesRemove)
-                                    }
+                                Column {
+                                    machineOf(device)?.let { Text(it, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                                    DeviceStatus(device, statusOf(device, now, strings), MaterialTheme.typography.bodySmall)
                                 }
                             },
+                            trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                         ) {
                             Text(device.name)
                         }
@@ -245,6 +266,20 @@ internal fun DevicesPage(
 
     if (joining) {
         PairJoinDialog(actions = actions, strings = strings, onDismiss = { joining = false })
+    }
+
+    shown?.let { device ->
+        DeviceSheet(
+            device = device,
+            tone = accents.forIndex(devices.indexOfFirst { it.id == device.id }.coerceAtLeast(0)),
+            status = statusOf(device, now, strings),
+            strings = strings,
+            onRemove = {
+                shown = null
+                removing = device
+            },
+            onDismiss = { shown = null },
+        )
     }
 
     val target = removing
@@ -561,4 +596,138 @@ internal fun ProfileDialog(
             TextButton(onClick = onDismiss, shapes = ButtonDefaults.shapes()) { Text(strings.cancel) }
         },
     )
+}
+
+private fun machineOf(device: RvDevice): String? =
+    listOf(device.platform, device.model).filter { it.isNotBlank() }.joinToString(" · ").ifEmpty { null }
+
+private fun handheld(device: RvDevice): Boolean =
+    device.platform.startsWith("Android") || device.platform.startsWith("iOS") || device.platform.startsWith("iPadOS")
+
+private fun statusOf(device: RvDevice, now: Long, strings: RvStrings): String = when {
+    device.self -> strings.devicesThis
+    device.online -> strings.devicesOnline
+    else -> relativeOf(device.syncedAt, now)
+        ?.let { strings.devicesSynced(strings.relativeTime(it)) }
+        ?: strings.devicesNever
+}
+
+@Composable
+private fun DeviceBadge(device: RvDevice, tone: RvTone, size: Dp = 40.dp, marked: Boolean = true) {
+    val dot = RenVault.accents.green.content
+    val online = marked && device.online
+    Box(
+        modifier = Modifier
+            .size(size)
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+            .drawWithContent {
+                drawContent()
+                if (online) {
+                    val radius = minOf(this.size.minDimension * 0.14f, OnlineDot.toPx() / 2)
+                    val reach = this.size.minDimension / 2 * 0.7071f
+                    val center = Offset(this.size.width / 2 + reach, this.size.height / 2 + reach)
+                    drawCircle(Color.Black, radius = radius + OnlineGap.toPx(), center = center, blendMode = BlendMode.Clear)
+                    drawCircle(dot, radius = radius, center = center)
+                }
+            },
+    ) {
+        RvShapeBadge(
+            icon = when {
+                handheld(device) -> RvPhoneIcon
+                device.platform.isNotEmpty() -> RvComputerIcon
+                else -> RvDevicesIcon
+            },
+            tone = tone,
+            polygon = MaterialShapes.Circle,
+            size = size,
+            iconSize = size * 0.55f,
+        )
+    }
+}
+
+@Composable
+private fun DeviceStatus(device: RvDevice, text: String, style: TextStyle) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        if (device.online) {
+            Box(Modifier.size(8.dp).background(RenVault.accents.green.content, CircleShape))
+        }
+        Text(text, style = style, color = if (device.online) RenVault.accents.green.content else MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun DeviceSheet(
+    device: RvDevice,
+    tone: RvTone,
+    status: String,
+    strings: RvStrings,
+    onRemove: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val rows = buildList {
+        if (device.platform.isNotBlank()) add(strings.devicesSystem to device.platform)
+        if (device.model.isNotBlank()) add(strings.devicesModel to device.model)
+        if (device.address.isNotBlank()) add(strings.devicesAddress to device.address)
+        if (device.version.isNotBlank()) add(strings.devicesVersion to device.version)
+        if (device.joined > 0) add(strings.devicesJoined to localizedDate(device.joined, RvDateStyle.Long))
+        if (!device.self && device.syncedAt > 0) add(strings.devicesLastSync to localizedDate(device.syncedAt, RvDateStyle.Medium))
+    }
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            DeviceBadge(device, tone, size = 88.dp, marked = false)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = device.name,
+                    style = MaterialTheme.typography.headlineSmallEmphasized,
+                    textAlign = TextAlign.Center,
+                )
+                DeviceStatus(device, status, MaterialTheme.typography.bodyMedium)
+            }
+            if (rows.isNotEmpty()) {
+                RvSection(modifier = Modifier.fillMaxWidth()) {
+                    rows.forEachIndexed { index, (label, value) ->
+                        RvSegment(
+                            index = index,
+                            count = rows.size,
+                            supporting = { Text(value) },
+                        ) {
+                            Text(label)
+                        }
+                    }
+                }
+            }
+            if (!device.self) {
+                FilledTonalButton(
+                    onClick = onRemove,
+                    shapes = ButtonDefaults.shapes(),
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    ),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = ButtonDefaults.MediumContainerHeight),
+                ) {
+                    Icon(RvDeleteIcon, contentDescription = null, modifier = Modifier.size(ButtonDefaults.IconSize))
+                    Text(strings.devicesRemove, modifier = Modifier.padding(start = ButtonDefaults.IconSpacing))
+                }
+            }
+        }
+    }
 }

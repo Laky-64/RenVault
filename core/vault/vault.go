@@ -52,6 +52,7 @@ type Vault struct {
 	onPeers   func()
 	ips       []string
 	seen      map[string]seenHost
+	about     deviceAbout
 	pairing   *pairing
 	sh        *share
 	net       *peerNet

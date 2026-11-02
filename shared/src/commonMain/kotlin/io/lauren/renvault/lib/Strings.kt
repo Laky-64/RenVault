@@ -300,6 +300,13 @@ interface RvStrings {
     val devicesTitle: String
     val devicesIntro: String
     val devicesThis: String
+    val devicesOnline: String
+    val devicesSystem: String
+    val devicesModel: String
+    val devicesAddress: String
+    val devicesVersion: String
+    val devicesJoined: String
+    val devicesLastSync: String
     val devicesNever: String
     val devicesAdd: String
     val devicesJoin: String
