@@ -1,9 +1,12 @@
 package ctap
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"slices"
+	"sync"
+	"time"
 
 	"github.com/fxamacker/cbor/v2"
 )
@@ -52,6 +55,27 @@ type Authenticator struct {
 	approve    Approver
 	transports []string
 	holdEmpty  bool
+	mu         sync.Mutex
+	refused    []byte
+	refusedAt  time.Time
+}
+
+const refusalMemory = 2 * time.Second
+
+func (a *Authenticator) refusedBefore(hash []byte) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return bytes.Equal(a.refused, hash) && time.Since(a.refusedAt) < refusalMemory
+}
+
+func (a *Authenticator) refuse(ctx context.Context, hash []byte) []byte {
+	if ctx.Err() == nil {
+		a.mu.Lock()
+		a.refused = bytes.Clone(hash)
+		a.refusedAt = time.Now()
+		a.mu.Unlock()
+	}
+	return fail(statusOperationDenied)
 }
 
 func NewAuthenticator(store Store, choose Chooser, approve Approver, transports []string) *Authenticator {
@@ -122,9 +146,12 @@ func (a *Authenticator) getAssertion(ctx context.Context, params []byte) ([]byte
 
 	chosen := options[0]
 	if a.choose != nil && !silent {
+		if a.refusedBefore(request.ClientDataHash) {
+			return fail(statusUserActionTimeout), nil
+		}
 		chosen, err = a.choose(ctx, request.RPID, options)
 		if err != nil {
-			return fail(statusOperationDenied), nil
+			return a.refuse(ctx, request.ClientDataHash), nil
 		}
 	}
 
@@ -194,8 +221,11 @@ func (a *Authenticator) makeCredential(ctx context.Context, params []byte) ([]by
 		DisplayName:      request.User.DisplayName,
 		UserHandle:       request.User.ID,
 	}
+	if a.refusedBefore(request.ClientDataHash) {
+		return fail(statusUserActionTimeout), nil
+	}
 	if err := a.approve(ctx, c); err != nil {
-		return fail(statusOperationDenied), nil
+		return a.refuse(ctx, request.ClientDataHash), nil
 	}
 	reg, err := a.store.CreatePasskey(c)
 	if err != nil {

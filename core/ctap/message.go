@@ -23,6 +23,7 @@ const (
 	statusInvalidCBOR          byte = 0x12
 	statusOperationDenied      byte = 0x27
 	statusNoCredentials        byte = 0x2e
+	statusUserActionTimeout    byte = 0x2f
 	statusOther                byte = 0x7f
 )
 
