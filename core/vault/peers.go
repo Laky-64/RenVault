@@ -418,6 +418,12 @@ func (v *Vault) absorb(in delta, node string) error {
 	if res.changed && v.sharedKeyLocked() != nil {
 		v.rebuildShareLocked()
 	}
+	if key := v.sharedKeyLocked(); res.reclaim && key != nil {
+		if i := sh.device(sh.Node); i >= 0 {
+			own := sh.Devices[i]
+			_ = sh.putDevice(key, own, sh.deviceName(key, own))
+		}
+	}
 	err := saveShare(v.base, sh)
 	onSync, onProfile, onPeers := v.onSync, v.onProfile, v.onPeers
 	v.mu.Unlock()
@@ -432,6 +438,9 @@ func (v *Vault) absorb(in delta, node string) error {
 	}
 	if onPeers != nil {
 		onPeers()
+	}
+	if res.reclaim {
+		go v.kick()
 	}
 	return nil
 }

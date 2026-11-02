@@ -28,6 +28,7 @@ type delta struct {
 type mergeResult struct {
 	changed bool
 	profile bool
+	reclaim bool
 }
 
 func (sh *share) digest() digest {
@@ -117,6 +118,9 @@ func (sh *share) merge(in delta) mergeResult {
 		case i < 0:
 			sh.Devices = append(sh.Devices, d)
 		case d.ID == sh.Node && !d.Removed:
+			if d.Clock.compare(sh.Devices[i].Clock) > 0 {
+				res.reclaim = true
+			}
 			continue
 		case d.Clock.compare(sh.Devices[i].Clock) > 0:
 			sh.Devices[i] = d
