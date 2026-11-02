@@ -299,7 +299,14 @@ fun RvVaultApp(
     }
     LifecycleEventEffect(leaveEvent) { leave() }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { hidden() }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { comeBack() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        comeBack()
+        if (unlocked) {
+            scope.launch {
+                if (runCatching { Vault.state().unlocked }.getOrDefault(false)) loadItems()
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         RvLeaveSignal.events.collect { leave() }
     }
