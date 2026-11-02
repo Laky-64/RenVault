@@ -271,14 +271,19 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 			}
 			if i, ok := known[importKey(e)]; ok {
 				cur := p.Web[i]
-				if sameEntry(cur, e) || !e.Modified.After(cur.Modified) {
+				newer := e.Modified.After(cur.Modified)
+				if sameEntry(cur, e) || (!newer && (cur.TOTP != "" || e.TOTP == "")) {
 					res.Skipped++
 					continue
 				}
 				next := cur
-				next.Name, next.Password, next.Note, next.TOTP = e.Name, e.Password, e.Note, e.TOTP
-				if next.Website {
-					next.Domains = append([]string{next.Domain}, associatedSites(append(cur.Domains, e.Domains...), next.Domain)...)
+				if newer {
+					next.Name, next.Password, next.Note, next.TOTP = e.Name, e.Password, e.Note, e.TOTP
+					if next.Website {
+						next.Domains = append([]string{next.Domain}, associatedSites(append(cur.Domains, e.Domains...), next.Domain)...)
+					}
+				} else {
+					next.TOTP = e.TOTP
 				}
 				next.Modified = time.Now().UTC()
 				if local {
