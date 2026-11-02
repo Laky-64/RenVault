@@ -46,9 +46,11 @@ internal fun hostOf(value: String): String = normalized(value).removePrefix("www
 
 private val StrictScheme = Regex("^[a-z][a-z0-9+.\\-]*://")
 private val Credentials = Regex("^[^/@]*@")
-private val Port = Regex(":\\d+$")
+private val DefaultPort = Regex(":(80|443)$")
+private val WithPort = Regex("^(.+):(\\d{1,5})$")
 private val OuterDots = Regex("^\\.+|\\.+$")
 private val PathBreak = Regex("[/?#\\\\]")
+private const val LocalHost = "localhost"
 private val Ipv4 = Regex("^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$")
 
 private fun labelOk(label: String, tld: Boolean): Boolean {
@@ -60,6 +62,11 @@ private fun labelOk(label: String, tld: Boolean): Boolean {
 
 fun isDomain(value: String): Boolean {
     if (value.isEmpty() || value.length > 253) return false
+    WithPort.matchEntire(value)?.let { parts ->
+        val port = parts.groupValues[2].toIntOrNull() ?: return false
+        return port in 1..65535 && isDomain(parts.groupValues[1])
+    }
+    if (value == LocalHost) return true
 
     val quad = Ipv4.matchEntire(value)
     if (quad != null) {
@@ -81,7 +88,7 @@ fun domainOf(value: String): String {
         .replace(StrictScheme, "")
         .replace(Credentials, "")
     host = host.split(PathBreak, limit = 2).first()
-        .replace(Port, "")
+        .replace(DefaultPort, "")
         .replace(OuterDots, "")
     return normalized(host)
 }

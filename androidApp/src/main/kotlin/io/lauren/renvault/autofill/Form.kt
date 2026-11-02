@@ -118,8 +118,8 @@ internal fun matchEntries(entries: List<WebEntry>, form: Form): List<WebEntry> {
 }
 
 private fun sameSite(a: String, b: String): Boolean {
-    val x = a.lowercase().removePrefix("www.")
-    val y = b.lowercase().removePrefix("www.")
+    val x = a.lowercase().removePrefix("www.").substringBefore(':')
+    val y = b.lowercase().removePrefix("www.").substringBefore(':')
     return x == y || x.endsWith(".$y") || y.endsWith(".$x")
 }
 

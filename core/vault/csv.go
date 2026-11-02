@@ -170,6 +170,9 @@ func siteOf(raw string) string {
 		return ""
 	}
 	host := strings.ToLower(u.Hostname())
+	if port := u.Port(); port != "" && port != "80" && port != "443" {
+		host += ":" + port
+	}
 	if !keychain.IsWebsiteDomain(strings.TrimPrefix(host, "www.")) {
 		return ""
 	}
