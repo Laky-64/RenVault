@@ -723,6 +723,7 @@ private fun RootPage(
                                 },
                             )
                         },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.settingsSiteIcons)
                     }
