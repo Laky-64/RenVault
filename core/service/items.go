@@ -64,6 +64,15 @@ func installItems() {
 		)
 	})
 
+	handle(bridge.OpSaveLogin, func(_ context.Context, request saveLoginRequest) (saveLoginResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return saveLoginResponse{}, err
+		}
+		result, err := active.SaveLogin(request.Title, request.Website, request.App, request.Username, request.Password)
+		return saveLoginResponse{ID: result.ID, Added: result.Added, Updated: result.Updated}, err
+	})
+
 	handle(bridge.OpEditPassword, func(_ context.Context, request editPasswordRequest) (identifierResponse, error) {
 		active, err := unlocked()
 		if err != nil {

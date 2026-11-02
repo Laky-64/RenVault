@@ -41,6 +41,7 @@ import io.lauren.renvault.RvUnlockGate
 import io.lauren.renvault.bridge.PlatformStorage
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.bridge.WebEntry
+import io.lauren.renvault.lib.appLink
 import io.lauren.renvault.lib.autofillCopyTotp
 import io.lauren.renvault.ui.components.copyToClipboard
 import io.lauren.renvault.ui.components.RvSearchIcon
@@ -102,12 +103,21 @@ class AutofillActivity : FragmentActivity() {
         finishing = true
         lifecycleScope.launch {
             val dataset = datasetOf(this@AutofillActivity, form, entry, deferTotp = false)
+            linkApp(form, entry)
             if (entry.hasTotp && autofillCopyTotp()) {
                 runCatching { Vault.totp(entry.id) }.getOrNull()?.takeIf { it.isNotEmpty() }?.let {
                     copyToClipboard(this@AutofillActivity, it, sensitive = true)
                 }
             }
             finishWith(dataset)
+        }
+    }
+
+    private suspend fun linkApp(form: Form, entry: WebEntry) {
+        if (form.webDomain != null || form.packageName.isEmpty() || appLink(form.packageName) in entry.domains) return
+        runCatching {
+            val password = Vault.password(entry.id)
+            if (password.isNotEmpty()) Vault.saveLogin(entry.title, "", form.packageName, entry.username, password)
         }
     }
 

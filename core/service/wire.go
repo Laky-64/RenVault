@@ -94,6 +94,20 @@ type addPasswordRequest struct {
 	Note     string `cbor:"note"`
 }
 
+type saveLoginRequest struct {
+	Title    string `cbor:"title"`
+	Website  string `cbor:"website"`
+	App      string `cbor:"app"`
+	Username string `cbor:"username"`
+	Password string `cbor:"password"`
+}
+
+type saveLoginResponse struct {
+	ID      string `cbor:"id"`
+	Added   bool   `cbor:"added"`
+	Updated bool   `cbor:"updated"`
+}
+
 type editPasskeyRequest struct {
 	ID       string   `cbor:"id"`
 	Title    string   `cbor:"title"`

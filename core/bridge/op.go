@@ -60,6 +60,7 @@ const (
 	OpEditPasskey      uint32 = 0x110F
 	OpCreatePasskey    uint32 = 0x1110
 	OpSignPasskey      uint32 = 0x1111
+	OpSaveLogin        uint32 = 0x1112
 )
 
 const (

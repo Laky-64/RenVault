@@ -18,6 +18,8 @@ internal class Form(
     val webDomain: String?,
     val packageName: String,
     val inline: Parcelable? = null,
+    val texts: List<AutofillId> = emptyList(),
+    val focused: AutofillId? = null,
 ) {
     val ids: List<AutofillId> get() = listOfNotNull(username, password)
 }
@@ -30,12 +32,19 @@ internal fun parseForm(structure: AssistStructure): Form {
     var password: AutofillId? = null
     var lastText: AutofillId? = null
     var domain: String? = null
+    var focused: AutofillId? = null
+    val texts = mutableListOf<AutofillId>()
 
     fun visit(node: AssistStructure.ViewNode) {
         if (domain == null) node.webDomain?.takeIf { it.isNotBlank() }?.let { domain = it.lowercase() }
         val id = node.autofillId
         if (id != null && node.autofillType == View.AUTOFILL_TYPE_TEXT) {
-            when (kindOf(node)) {
+            val kind = kindOf(node)
+            if (kind == FieldKind.Username || kind == FieldKind.Text) {
+                texts += id
+                if (node.isFocused) focused = id
+            }
+            when (kind) {
                 FieldKind.Password -> if (password == null) {
                     password = id
                     if (username == null) username = lastText
@@ -49,7 +58,7 @@ internal fun parseForm(structure: AssistStructure): Form {
     }
 
     for (i in 0 until structure.windowNodeCount) visit(structure.getWindowNodeAt(i).rootViewNode)
-    return Form(username, password, domain, structure.activityComponent.packageName)
+    return Form(username, password, domain, structure.activityComponent.packageName, texts = texts, focused = focused)
 }
 
 private enum class FieldKind { Username, Password, Text, None }

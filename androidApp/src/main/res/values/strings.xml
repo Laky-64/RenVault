@@ -7,6 +7,9 @@
     <string name="autofill_search_hint">Search</string>
     <string name="autofill_empty">No passwords match</string>
     <string name="autofill_totp_copied">2FA code copied</string>
+    <string name="autofill_saved">Password saved in RenVault</string>
+    <string name="autofill_updated">Password updated in RenVault</string>
+    <string name="autofill_save_failed">Couldn\'t save the password in RenVault</string>
     <string name="hybrid_title">Sign in on a computer</string>
     <string name="hybrid_tile">Passkey for computer</string>
     <string name="hybrid_connecting">Keep your phone close to the computer</string>

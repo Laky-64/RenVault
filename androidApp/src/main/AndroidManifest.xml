@@ -53,6 +53,12 @@
             android:theme="@style/Theme.RenVault.Autofill"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".autofill.AutofillSaveActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@style/Theme.RenVault.Autofill"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".autofill.AutofillTotpActivity"
             android:excludeFromRecents="true"
             android:exported="false"
@@ -115,6 +121,7 @@
         <service
             android:name=".autofill.RvAutofillService"
             android:exported="true"
+            android:icon="@drawable/autofill_service_icon"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_AUTOFILL_SERVICE">
             <intent-filter>

@@ -200,6 +200,9 @@ object Vault {
         note: String,
     ) = send(Op.ADD_PASSWORD, AddPasswordRequest(title, website, username, password, note))
 
+    suspend fun saveLogin(title: String, website: String, app: String, username: String, password: String): SaveLoginResult =
+        exchange(Op.SAVE_LOGIN, SaveLoginRequest(title, website, app, username, password))
+
     suspend fun editPassword(request: EditPassword): String =
         exchange<EditPasswordRequest, IdentifierResponse>(
             Op.EDIT_PASSWORD,

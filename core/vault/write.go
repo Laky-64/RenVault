@@ -75,6 +75,10 @@ func repointPwned(p *payload, from, to string) {
 }
 
 func (v *Vault) AddPassword(title, website, username, password, note string) error {
+	return v.addPassword(title, website, username, password, note, nil, false)
+}
+
+func (v *Vault) addPassword(title, website, username, password, note string, links []string, named bool) error {
 	title = strings.TrimSpace(title)
 	website = strings.TrimSpace(website)
 	username = strings.TrimSpace(username)
@@ -88,6 +92,10 @@ func (v *Vault) AddPassword(title, website, username, password, note string) err
 		domain = newLocalID()
 		name = title
 	}
+	named = named && !manual && title != "" && title != website
+	if named {
+		name = title
+	}
 	now := time.Now().UTC()
 	entry := keychain.WebPassword{
 		Name:     name,
@@ -99,8 +107,11 @@ func (v *Vault) AddPassword(title, website, username, password, note string) err
 		Created:  now,
 		Modified: now,
 	}
+	extra := associatedSites(links, domain)
 	if !manual {
-		entry.Domains = []string{domain}
+		entry.Domains = append([]string{domain}, extra...)
+	} else if len(extra) > 0 {
+		entry.Domains = extra
 	}
 	return v.mutate(func(p *payload) error {
 		if v.sh != nil {
@@ -116,6 +127,20 @@ func (v *Vault) AddPassword(title, website, username, password, note string) err
 			Note:     note,
 			Manual:   manual,
 		})
+		if len(extra) > 0 || named {
+			pushOp(p, outboxOp{
+				Kind:        opEdit,
+				Domain:      domain,
+				Username:    username,
+				NewDomain:   domain,
+				NewUsername: username,
+				Password:    password,
+				Title:       title,
+				SetTitle:    named,
+				Domains:     extra,
+				SetDomains:  len(extra) > 0,
+			})
+		}
 		return nil
 	})
 }
@@ -145,7 +170,7 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			return errNotFound
 		}
 		w := p.Web[i]
-		unsite := w.Website && len(domains) == 0
+		unsite := w.Website && !slices.ContainsFunc(domains, func(d string) bool { return !isAppLink(d) })
 		if unsite && title == "" {
 			title = w.Name
 		}

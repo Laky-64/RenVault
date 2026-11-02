@@ -1,5 +1,7 @@
 package io.lauren.renvault.autofill
 
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Build
 import android.os.CancellationSignal
 import android.service.autofill.AutofillService
@@ -23,6 +25,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+private const val SaveRequestCode = 3
+
 @RequiresApi(Build.VERSION_CODES.O)
 class RvAutofillService : AutofillService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -42,7 +46,23 @@ class RvAutofillService : AutofillService() {
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
-        callback.onSuccess()
+        val login = parseSaved(request.fillContexts)
+        if (login == null || login.packageName == packageName) {
+            callback.onSuccess()
+            return
+        }
+        val intent = Intent(this, AutofillSaveActivity::class.java)
+            .putExtra(ExtraSaveUsername, login.username)
+            .putExtra(ExtraSavePassword, login.password)
+            .putExtra(ExtraDomain, login.webDomain)
+            .putExtra(ExtraPackage, login.packageName)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val flags = PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            callback.onSuccess(PendingIntent.getActivity(this, SaveRequestCode, intent, flags).intentSender)
+        } else {
+            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            callback.onSuccess()
+        }
     }
 
     override fun onDestroy() {
@@ -61,7 +81,7 @@ class RvAutofillService : AutofillService() {
             val ids = form.ids.toTypedArray()
             val sender = authSender(this, form, pick = false)
             val views = presentation(this, title)
-            val builder = FillResponse.Builder()
+            val builder = FillResponse.Builder().withSave(form)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 builder.setAuthentication(ids, sender, presentationsOf(views, chip))
             } else {

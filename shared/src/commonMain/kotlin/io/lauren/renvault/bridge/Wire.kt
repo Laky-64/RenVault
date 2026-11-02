@@ -90,6 +90,22 @@ internal data class AddPasswordRequest(
 )
 
 @Serializable
+internal data class SaveLoginRequest(
+    @SerialName("title") val title: String,
+    @SerialName("website") val website: String,
+    @SerialName("app") val app: String,
+    @SerialName("username") val username: String,
+    @SerialName("password") val password: String,
+)
+
+@Serializable
+data class SaveLoginResult(
+    @SerialName("id") val id: String = "",
+    @SerialName("added") val added: Boolean = false,
+    @SerialName("updated") val updated: Boolean = false,
+)
+
+@Serializable
 internal data class EditPasskeyRequest(
     @SerialName("id") val id: String,
     @SerialName("title") val title: String,

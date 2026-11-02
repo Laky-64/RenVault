@@ -8,6 +8,7 @@ import android.os.Build
 import android.service.autofill.Dataset
 import android.service.autofill.Field
 import android.service.autofill.FillResponse
+import android.service.autofill.SaveInfo
 import android.view.View
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
@@ -181,5 +182,25 @@ internal suspend fun unlockedResponse(context: Context, form: Form, entries: Lis
     form.ids.forEach { id -> search.setField(id, null, views, chip) }
     search.setAuthentication(authSender(context, form, pick = true))
     response.addDataset(search.build())
-    return response.build()
+    return response.withSave(form).build()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+internal fun FillResponse.Builder.withSave(form: Form): FillResponse.Builder {
+    val password = form.password
+    if (password == null) {
+        val fields = (listOfNotNull(form.username) + form.texts).distinct()
+        if (fields.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return this
+        return setSaveInfo(
+            SaveInfo.Builder(SaveInfo.SAVE_DATA_TYPE_USERNAME)
+                .setOptionalIds(fields.toTypedArray())
+                .setFlags(SaveInfo.FLAG_DELAY_SAVE)
+                .build(),
+        )
+    }
+    val info = SaveInfo.Builder(SaveInfo.SAVE_DATA_TYPE_PASSWORD or SaveInfo.SAVE_DATA_TYPE_USERNAME, arrayOf(password))
+        .apply { form.username?.let { setOptionalIds(arrayOf(it)) } }
+        .setFlags(SaveInfo.FLAG_SAVE_ON_ALL_VIEWS_INVISIBLE)
+        .build()
+    return setSaveInfo(info)
 }
