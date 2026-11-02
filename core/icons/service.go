@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"net"
 	"net/url"
 	"strings"
 	"sync"
@@ -18,12 +19,14 @@ const (
 	missTTL = 30 * time.Minute
 
 	fetchTimeout = 10 * time.Second
+	portWait     = 2 * time.Second
 	maxEntries   = 512
 )
 
 var (
 	ErrUnsupportedURL = errors.New("unsupported image url")
 	ErrDisabled       = errors.New("icons: site icons are turned off")
+	ErrLocal          = errors.New("icons: local addresses have no public icon")
 )
 
 type entry struct {
@@ -62,6 +65,40 @@ func (s *IconService) SetEnhance(on bool) {
 }
 
 func (s *IconService) Tile(domain string) ([]byte, error) {
+	if localHost(domain) {
+		if name, _ := s.provider.Load().(string); name != ProviderSite {
+			return nil, ErrLocal
+		}
+		return s.tileFor(domain)
+	}
+	if host, port := splitPort(domain); port != "" {
+		if name, _ := s.provider.Load().(string); name != ProviderSite {
+			return s.Tile(host)
+		}
+		type result struct {
+			png []byte
+			err error
+		}
+		own := make(chan result, 1)
+		go func() {
+			png, err := s.tileFor(domain)
+			own <- result{png, err}
+		}()
+		fallback := make(chan result, 1)
+		go func() {
+			png, err := s.Tile(host)
+			fallback <- result{png, err}
+		}()
+		select {
+		case r := <-own:
+			if r.err == nil || errors.Is(r.err, ErrDisabled) {
+				return r.png, r.err
+			}
+		case <-time.After(portWait):
+		}
+		r := <-fallback
+		return r.png, r.err
+	}
 	png, err := s.tileFor(domain)
 	if err == nil || errors.Is(err, ErrDisabled) {
 		return png, err
@@ -77,6 +114,36 @@ func (s *IconService) Tile(domain string) ([]byte, error) {
 		}
 	}
 	return nil, err
+}
+
+func splitPort(domain string) (string, string) {
+	host, port, err := net.SplitHostPort(domain)
+	if err != nil {
+		return domain, ""
+	}
+	return host, port
+}
+
+var localSuffixes = []string{".localhost", ".local", ".lan", ".internal", ".home.arpa"}
+
+func localHost(domain string) bool {
+	host := strings.ToLower(strings.TrimSuffix(domain, "."))
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
+	host = strings.Trim(host, "[]")
+	if ip := net.ParseIP(host); ip != nil {
+		return ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsUnspecified()
+	}
+	if host == "localhost" || !strings.Contains(host, ".") {
+		return true
+	}
+	for _, suffix := range localSuffixes {
+		if strings.HasSuffix(host, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func parentDomain(domain string) (string, bool) {

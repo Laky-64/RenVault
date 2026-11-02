@@ -52,9 +52,21 @@ type candidate struct {
 }
 
 func siteIcon(domain string) (image.Image, error) {
-	root := &url.URL{Scheme: "https", Host: domain, Path: "/"}
+	img, err := siteIconAt(domain, "https")
+	if _, port := splitPort(domain); err != nil && (port != "" || localHost(domain)) {
+		return siteIconAt(domain, "http")
+	}
+	return img, err
+}
+
+func siteIconAt(domain, scheme string) (image.Image, error) {
+	root := &url.URL{Scheme: scheme, Host: domain, Path: "/"}
 	var icons []candidate
-	if page, final, err := fetchLimited(root.String(), siteAcceptHTML, headLimit); err == nil {
+	page, final, err := fetchLimited(root.String(), siteAcceptHTML, headLimit)
+	if _, unreachable := errors.AsType[*url.Error](err); unreachable {
+		return nil, err
+	}
+	if err == nil {
 		root = final
 		found, manifest := parseLinks(page, final)
 		icons = found
