@@ -1,5 +1,18 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.DpOffset
+import io.lauren.renvault.lib.RvPasskeyItem
+import io.lauren.renvault.lib.RvWebItem
+import io.lauren.renvault.lib.RvWifiItem
+import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -221,6 +234,15 @@ fun RvListPane(
                                     onOpen(entry.id)
                                 }
                             },
+                            onOpen = { onOpen(entry.id) },
+                            onSelect = if (zone.kind != RvZoneKind.Networks) {
+                                {
+                                    if (!selecting) onSelecting(true)
+                                    if (entry.id !in picked) onPicked(picked + entry.id)
+                                }
+                            } else {
+                                null
+                            },
                         )
                     }
                 }
@@ -267,8 +289,26 @@ private fun ItemRow(
     checked: Boolean,
     open: Boolean,
     onClick: () -> Unit,
+    onOpen: () -> Unit,
+    onSelect: (() -> Unit)?,
 ) {
     val names = LocalNameMask.current
+    val copy = rememberClipboardCopy()
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+    var menu by remember { mutableStateOf(false) }
+    var anchor by remember { mutableStateOf(DpOffset.Zero) }
+    var height by remember { mutableIntStateOf(0) }
+    val username = when (entry) {
+        is RvWebItem -> entry.entry.username
+        is RvPasskeyItem -> entry.entry.username
+        is RvWifiItem -> ""
+    }
+    val hasPassword = when (entry) {
+        is RvWebItem -> entry.entry.hasPassword
+        is RvWifiItem -> true
+        is RvPasskeyItem -> false
+    }
     val view = remember(entry, strings, names) { viewOf(entry, strings).masked(names) }
     val icon = view.icon
     val compromised = zone == RvZoneKind.Security
@@ -280,60 +320,142 @@ private fun ItemRow(
 
     val motion = MaterialTheme.motionScheme
 
-    RvSegment(
-        index = index,
-        count = count,
-        onClick = onClick,
-        checked = if (selecting) checked else null,
-        selected = if (!selecting) open else null,
-        leading = {
-            val siteIcon: @Composable () -> Unit = {
-                RvSiteIcon(
-                    fallback = view.title,
-                    glyph = if (icon is RvItemIcon.WifiGlyph) RvWifiIcon else null,
-                    favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
+    Box(
+        modifier = Modifier
+            .onSizeChanged { height = it.height }
+            .pointerInput(entry.id, selecting) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed && !selecting) {
+                            val at = event.changes.first().position
+                            anchor = with(density) { DpOffset(at.x.toDp(), at.y.toDp() - height.toDp()) }
+                            menu = true
+                            event.changes.forEach { it.consume() }
+                        }
+                    }
+                }
+            },
+    ) {
+        RvSegment(
+            index = index,
+            count = count,
+            onClick = onClick,
+            onLongClick = onSelect,
+            checked = if (selecting) checked else null,
+            selected = if (!selecting) open else null,
+            leading = {
+                val siteIcon: @Composable () -> Unit = {
+                    RvSiteIcon(
+                        fallback = view.title,
+                        glyph = if (icon is RvItemIcon.WifiGlyph) RvWifiIcon else null,
+                        favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
+                    )
+                }
+                if (!selecting) {
+                    siteIcon()
+                    return@RvSegment
+                }
+                AnimatedContent(
+                    targetState = checked,
+                    transitionSpec = {
+                        (scaleIn(motion.fastSpatialSpec(), initialScale = 0.6f) + fadeIn()) togetherWith
+                            (scaleOut(motion.fastSpatialSpec(), targetScale = 0.6f) + fadeOut())
+                    },
+                    label = "rowPick",
+                ) { tick ->
+                    if (tick) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(RvCheckIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
+                        }
+                    } else {
+                        siteIcon()
+                    }
+                }
+            },
+            supporting = when {
+                compromised -> {
+                    { Text(strings.itemCompromised, color = MaterialTheme.colorScheme.error) }
+                }
+                view.subtitle.isNotEmpty() -> {
+                    { Text(view.subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                }
+                else -> null
+            },
+            trailing = code?.let { load ->
+                {
+                    RvTotpCopyButton(
+                        load = load,
+                        copied = strings.fieldCopied,
+                        onCopy = { copy(it, true) },
+                    )
+                }
+            },
+        ) {
+            Text(view.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+
+        DropdownMenu(
+            expanded = menu,
+            onDismissRequest = { menu = false },
+            offset = anchor,
+            shape = MaterialTheme.shapes.large,
+        ) {
+            DropdownMenuItem(
+                text = { Text(strings.listOpen) },
+                onClick = {
+                    menu = false
+                    onOpen()
+                },
+            )
+            if (username.isNotEmpty()) {
+                DropdownMenuItem(
+                    text = { Text(strings.listCopyUsername) },
+                    onClick = {
+                        menu = false
+                        copy(username, false)
+                    },
                 )
             }
-            if (!selecting) {
-                siteIcon()
-                return@RvSegment
+            if (hasPassword) {
+                DropdownMenuItem(
+                    text = { Text(strings.listCopyPassword) },
+                    onClick = {
+                        menu = false
+                        scope.launch {
+                            secrets.password(entry.id).takeIf { it.isNotEmpty() }?.let { copy(it, true) }
+                        }
+                    },
+                )
             }
-            AnimatedContent(
-                targetState = checked,
-                transitionSpec = {
-                    (scaleIn(motion.fastSpatialSpec(), initialScale = 0.6f) + fadeIn()) togetherWith
-                        (scaleOut(motion.fastSpatialSpec(), targetScale = 0.6f) + fadeOut())
-                },
-                label = "rowPick",
-            ) { tick ->
-                if (tick) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(RvCheckIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary)
-                    }
-                } else {
-                    siteIcon()
-                }
+            if (view.hasTotp) {
+                DropdownMenuItem(
+                    text = { Text(strings.listCopyCode) },
+                    onClick = {
+                        menu = false
+                        scope.launch {
+                            secrets.totp(entry.id).takeIf { it.isNotEmpty() }?.let { copy(it, true) }
+                        }
+                    },
+                )
             }
-        },
-        supporting = when {
-            compromised -> {
-                { Text(strings.itemCompromised, color = MaterialTheme.colorScheme.error) }
+            if (onSelect != null) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                DropdownMenuItem(
+                    text = { Text(strings.listSelect) },
+                    leadingIcon = { Icon(RvSelectIcon, contentDescription = null) },
+                    onClick = {
+                        menu = false
+                        onSelect()
+                    },
+                )
             }
-            view.subtitle.isNotEmpty() -> {
-                { Text(view.subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-            }
-            else -> null
-        },
-        trailing = code?.let { load ->
-            { RvTotpCode(load = load, style = MaterialTheme.typography.titleSmall) }
-        },
-    ) {
-        Text(view.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }
 

@@ -1,6 +1,15 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -193,3 +202,71 @@ fun RvTotpRing(
 private fun nowMillis(): Long = Clock.System.now().toEpochMilliseconds()
 
 private fun slotAt(millis: Long, period: Int): Long = floor(millis / 1000.0 / period).toLong()
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun RvTotpCopyButton(
+    load: suspend () -> String,
+    copied: String,
+    onCopy: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    period: Int = 30,
+) {
+    var code by remember(load) { mutableStateOf("") }
+    var done by remember { mutableStateOf(false) }
+    val slot = rememberTotpSlot(period)
+
+    LaunchedEffect(load, slot) {
+        code = runCatching { load() }.getOrDefault("")
+    }
+    LaunchedEffect(done) {
+        if (done) {
+            delay(CopiedHold)
+            done = false
+        }
+    }
+
+    val motion = MaterialTheme.motionScheme
+    FilledTonalButton(
+        onClick = {
+            if (code.isNotEmpty()) {
+                onCopy(code)
+                done = true
+            }
+        },
+        shapes = ButtonDefaults.shapes(),
+        contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.ExtraSmallContainerHeight),
+        modifier = modifier.heightIn(min = ButtonDefaults.ExtraSmallContainerHeight),
+    ) {
+        AnimatedContent(
+            targetState = done,
+            transitionSpec = {
+                (scaleIn(motion.fastSpatialSpec(), initialScale = 0.7f) + fadeIn(motion.fastEffectsSpec())) togetherWith
+                    (scaleOut(motion.fastSpatialSpec(), targetScale = 0.7f) + fadeOut(motion.fastEffectsSpec())) using
+                    SizeTransform(clip = false) { _, _ -> motion.fastSpatialSpec() }
+            },
+            label = "totpCopy",
+        ) { ok ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (ok) {
+                    Icon(RvCheckIcon, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text(copied, style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                } else {
+                    RvTotpRing(size = 16.dp, period = period)
+                    RvTotpDigits(
+                        code = code,
+                        source = load,
+                        gap = 4.dp,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = LocalContentColor.current,
+                    )
+                }
+            }
+        }
+    }
+}
+
+private val CopiedHold = 1400.milliseconds

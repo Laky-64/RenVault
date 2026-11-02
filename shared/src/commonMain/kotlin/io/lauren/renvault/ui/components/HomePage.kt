@@ -214,7 +214,8 @@ fun RvHomePage(
     val onlyPasskeys = pickedItems.isNotEmpty() && pickedItems.all { it is RvPasskeyItem }
     val draftOk = if (passkeyTarget != null) websitesOk(draft.websites) else canSave(draft)
 
-    LaunchedEffect(selecting, active.kind, zoneKind == null) { picked = emptySet() }
+    LaunchedEffect(active.kind, zoneKind == null) { picked = emptySet() }
+    LaunchedEffect(selecting) { if (!selecting) picked = emptySet() }
     LaunchedEffect(itemId) { editing = false }
     LaunchedEffect(current) {
         if (current == null) return@LaunchedEffect

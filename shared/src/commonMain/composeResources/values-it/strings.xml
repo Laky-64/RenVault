@@ -160,6 +160,10 @@
     <string name="list_select">Seleziona</string>
     <string name="icons_enhance">Migliora le icone</string>
     <string name="icons_enhance_desc">Rende più nitide le icone piccole e le adatta alla forma</string>
+    <string name="list_open">Apri</string>
+    <string name="list_copy_username">Copia nome utente</string>
+    <string name="list_copy_password">Copia password</string>
+    <string name="list_copy_code">Copia codice</string>
     <string name="item_edit">Modifica</string>
     <string name="list_delete">Elimina</string>
     <string name="list_order">Ordina</string>
