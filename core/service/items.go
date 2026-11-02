@@ -157,7 +157,7 @@ func installItems() {
 		if len(request.ClientDataHash) != 32 {
 			return signPasskeyResponse{}, errors.New("service: client data hash must be 32 bytes")
 		}
-		got, err := active.SignAssertion(request.ID, request.ClientDataHash, true, 0)
+		got, err := active.SignAssertion(request.ID, request.ClientDataHash, true, true, 0)
 		return signPasskeyResponse{AuthenticatorData: got.AuthenticatorData, Signature: got.Signature, UserHandle: got.UserHandle}, err
 	})
 

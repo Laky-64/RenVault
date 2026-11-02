@@ -370,7 +370,7 @@ type Assertion struct {
 	UserHandle        []byte `json:"userHandle"`
 }
 
-func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error) {
+func (v *Vault) SignAssertion(id string, clientDataHash []byte, userPresent, userVerified bool, signCount uint32) (Assertion, error) {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.p == nil {
@@ -385,9 +385,12 @@ func (v *Vault) SignAssertion(id string, clientDataHash []byte, userVerified boo
 	if err != nil {
 		return Assertion{}, err
 	}
-	flags := byte(keychain.FlagUserPresent) | flagBackupEligible | flagBackupState
-	if userVerified {
-		flags |= keychain.FlagUserVerified
+	flags := byte(flagBackupEligible | flagBackupState)
+	if userPresent {
+		flags |= byte(keychain.FlagUserPresent)
+		if userVerified {
+			flags |= keychain.FlagUserVerified
+		}
 	}
 	authData, sig, err := pk.Sign(clientDataHash, flags, signCount)
 	if err != nil {

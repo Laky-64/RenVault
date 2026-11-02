@@ -38,7 +38,7 @@ type NewCredential struct {
 
 type Store interface {
 	Passkeys(relyingParty string) ([]Credential, error)
-	SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (Assertion, error)
+	SignAssertion(id string, clientDataHash []byte, userPresent, userVerified bool, signCount uint32) (Assertion, error)
 	CreatePasskey(c NewCredential) (Registration, error)
 }
 
@@ -110,8 +110,10 @@ func (a *Authenticator) getAssertion(ctx context.Context, params []byte) ([]byte
 			options = append(options, entry)
 		}
 	}
+	up, ok := request.Options["up"]
+	silent := ok && !up
 	if len(options) == 0 {
-		if up, ok := request.Options["up"]; !a.holdEmpty || (ok && !up) {
+		if !a.holdEmpty || silent {
 			return fail(statusNoCredentials), nil
 		}
 		<-ctx.Done()
@@ -119,14 +121,14 @@ func (a *Authenticator) getAssertion(ctx context.Context, params []byte) ([]byte
 	}
 
 	chosen := options[0]
-	if a.choose != nil {
+	if a.choose != nil && !silent {
 		chosen, err = a.choose(ctx, request.RPID, options)
 		if err != nil {
 			return fail(statusOperationDenied), nil
 		}
 	}
 
-	assertion, err := a.store.SignAssertion(chosen.ID, request.ClientDataHash, true, 0)
+	assertion, err := a.store.SignAssertion(chosen.ID, request.ClientDataHash, !silent, !silent, 0)
 	if err != nil {
 		return fail(statusOther), nil
 	}

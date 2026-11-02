@@ -16,7 +16,7 @@ var errLocked = errors.New("localkey: the vault is locked")
 
 type Vault interface {
 	ListPasskey() []vault.PasskeyMeta
-	SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (vault.Assertion, error)
+	SignAssertion(id string, clientDataHash []byte, userPresent, userVerified bool, signCount uint32) (vault.Assertion, error)
 	CreatePasskey(rp, userName, displayName string, userHandle []byte, userVerified bool) (vault.Registration, error)
 	Unlocked() bool
 }

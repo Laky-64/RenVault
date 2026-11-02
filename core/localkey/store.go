@@ -37,8 +37,8 @@ func (s store) Passkeys(relyingParty string) ([]ctap.Credential, error) {
 	return out, nil
 }
 
-func (s store) SignAssertion(id string, clientDataHash []byte, userVerified bool, signCount uint32) (ctap.Assertion, error) {
-	got, err := s.v.SignAssertion(id, clientDataHash, userVerified, signCount)
+func (s store) SignAssertion(id string, clientDataHash []byte, userPresent, userVerified bool, signCount uint32) (ctap.Assertion, error) {
+	got, err := s.v.SignAssertion(id, clientDataHash, userPresent, userVerified, signCount)
 	if err != nil {
 		return ctap.Assertion{}, err
 	}
