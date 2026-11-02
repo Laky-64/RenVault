@@ -87,7 +87,7 @@ fun domainOf(value: String): String {
 }
 
 private fun hostsOf(item: RvWebItem): List<String> =
-    (listOf(item.entry.domain) + item.entry.domains).map(::hostOf).filter { it.isNotEmpty() }
+    (listOf(item.entry.domain) + item.entry.domains).filterNot(::isAppLink).map(::hostOf).filter { it.isNotEmpty() }
 
 private fun linkKey(host: String, username: String): String = "$host\n${normalized(username)}"
 
@@ -129,7 +129,13 @@ fun labelOf(item: RvWebItem): String {
     return entry.username
 }
 
-fun siteOf(item: RvWebItem): String = if (item.entry.website) item.entry.domain else ""
+fun siteOf(item: RvWebItem): String = when {
+    item.entry.website -> item.entry.domain
+    else -> item.entry.domains.firstOrNull(::isAppLink).orEmpty()
+}
+
+private fun appsOf(item: RvWebItem): List<String> =
+    item.entry.domains.filter(::isAppLink).map { appPackageOf(it) }.distinct()
 
 fun passkeyEditableOf(item: RvItem?): RvPasskeyItem? =
     (item as? RvPasskeyItem)?.takeIf { !it.entry.isDeleted && it.linked == null }
@@ -213,7 +219,7 @@ interface RvSecretSource {
 data class RvItemDetail(val title: String, val fields: List<RvDetailField>)
 
 private fun websiteLabel(item: RvWebItem, strings: RvStrings): String {
-    val others = item.entry.domains.filter { it.isNotEmpty() && it != item.entry.domain }
+    val others = item.entry.domains.filter { it.isNotEmpty() && it != item.entry.domain && !isAppLink(it) }
     if (others.isEmpty()) return item.entry.domain
     return strings.fieldWebsiteMore(item.entry.domain, others.size)
 }
@@ -278,6 +284,13 @@ fun detailOf(
             fields += RvDetailField(
                 label = strings.fieldWebsite,
                 value = RvFieldValue.Shown(websiteLabel(item, strings)),
+            )
+        }
+        val apps = appsOf(item)
+        if (apps.isNotEmpty()) {
+            fields += RvDetailField(
+                label = strings.fieldApp,
+                value = RvFieldValue.Shown(apps.joinToString(", ") { appLabel(it) ?: it }),
             )
         }
         if (item.entry.hasTotp) {

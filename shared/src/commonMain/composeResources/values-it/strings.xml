@@ -2,6 +2,7 @@
     <string name="field_username">Nome utente</string>
     <string name="field_password">Password</string>
     <string name="field_website">Sito web</string>
+    <string name="field_app">App</string>
     <string name="field_verification_code">Codice</string>
     <string name="field_notes">Note</string>
     <string name="field_modified">Modificata</string>

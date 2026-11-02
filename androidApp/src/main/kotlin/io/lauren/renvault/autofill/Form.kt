@@ -8,6 +8,8 @@ import android.view.View
 import android.view.autofill.AutofillId
 import androidx.annotation.RequiresApi
 import io.lauren.renvault.bridge.WebEntry
+import io.lauren.renvault.lib.appLink
+import io.lauren.renvault.lib.isAppLink
 
 @RequiresApi(Build.VERSION_CODES.O)
 internal class Form(
@@ -97,10 +99,13 @@ internal fun matchEntries(entries: List<WebEntry>, form: Form): List<WebEntry> {
     if (domain != null) {
         return live.filter { entry -> (entry.domains + entry.domain).any { sameSite(it, domain) } }
     }
+    val link = appLink(form.packageName)
+    val linked = entries.filter { !it.isDeleted && link in it.domains }
     val parts = form.packageName.lowercase().split('.').filter { it.length > 2 && it !in GenericParts }.toSet()
-    return live.filter { entry ->
-        (entry.domains + entry.domain).any { siteLabel(it) in parts }
+    val guessed = live.filter { entry ->
+        (entry.domains + entry.domain).filterNot(::isAppLink).any { siteLabel(it) in parts }
     }
+    return (linked + guessed).distinctBy { it.id }
 }
 
 private fun sameSite(a: String, b: String): Boolean {

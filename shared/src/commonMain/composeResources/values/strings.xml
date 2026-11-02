@@ -58,6 +58,7 @@
     <string name="field_username">User Name</string>
     <string name="field_password">Password</string>
     <string name="field_website">Website</string>
+    <string name="field_app">App</string>
     <string name="field_verification_code">Code</string>
     <string name="field_notes">Notes</string>
     <string name="field_modified">Modified</string>

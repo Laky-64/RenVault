@@ -73,6 +73,9 @@ import io.lauren.renvault.bridge.NameSwap
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.tidyWebsites
+import io.lauren.renvault.lib.appIcon
+import io.lauren.renvault.lib.appPackageOf
+import io.lauren.renvault.lib.isAppLink
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvSortField
 import io.lauren.renvault.lib.RvStrings
@@ -329,7 +332,11 @@ fun RvVaultApp(
                 val round = iconRound
                 launch {
                     val painter = gate.withPermit {
-                        val bytes = runCatching { Vault.icon(domain) }.getOrNull()
+                        val bytes = if (isAppLink(domain)) {
+                            withContext(Dispatchers.Default) { appIcon(appPackageOf(domain)) }
+                        } else {
+                            runCatching { Vault.icon(domain) }.getOrNull()
+                        }
                         bytes?.let {
                             withContext(Dispatchers.Default) {
                                 runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile)) }.getOrNull()
@@ -353,7 +360,7 @@ fun RvVaultApp(
     }
 
     val favicon: (String) -> Painter? = { domain ->
-        if (!RvFavicons.enabled) {
+        if (!RvFavicons.enabled && !isAppLink(domain)) {
             null
         } else {
             if (domain.isNotEmpty() && !icons.containsKey(domain) && domain !in wanted) wanted += domain
@@ -724,7 +731,7 @@ private suspend fun save(item: RvWebItem, draft: RvDraft): String? = runCatching
             password = draft.password,
             note = draft.note,
             totpUrl = draft.totpKey.orEmpty(),
-            domains = draft.websites,
+            domains = draft.websites + draft.apps,
             dropTotp = draft.totpRemoved,
         ),
     )

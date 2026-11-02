@@ -9,11 +9,12 @@ data class RvDraft(
     val note: String = "",
     val totpKey: String? = null,
     val totpRemoved: Boolean = false,
+    val apps: List<String> = emptyList(),
 )
 
 fun draftOf(item: RvWebItem): RvDraft {
     val hosts = if (item.entry.website) {
-        (listOf(item.entry.domain) + item.entry.domains).filter { it.isNotEmpty() }
+        (listOf(item.entry.domain) + item.entry.domains).filter { it.isNotEmpty() && !isAppLink(it) }
     } else {
         emptyList()
     }
@@ -27,6 +28,7 @@ fun draftOf(item: RvWebItem): RvDraft {
         note = item.entry.note,
         totpKey = null,
         totpRemoved = false,
+        apps = item.entry.domains.filter(::isAppLink).distinct(),
     )
 }
 

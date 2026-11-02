@@ -4,6 +4,7 @@ interface RvStrings {
     val fieldUsername: String
     val fieldPassword: String
     val fieldWebsite: String
+    val fieldApp: String
     val fieldVerificationCode: String
     val fieldNotes: String
     val fieldModified: String

@@ -265,6 +265,7 @@ import io.lauren.renvault.resources.field_password
 import io.lauren.renvault.resources.field_username
 import io.lauren.renvault.resources.field_verification_code
 import io.lauren.renvault.resources.field_website
+import io.lauren.renvault.resources.field_app
 import io.lauren.renvault.resources.field_website_more
 import io.lauren.renvault.resources.item_compromised
 import io.lauren.renvault.resources.item_wifi_network
@@ -587,6 +588,7 @@ private val TextResources = listOf(
     Res.string.field_username,
     Res.string.field_verification_code,
     Res.string.field_website,
+    Res.string.field_app,
     Res.string.item_compromised,
     Res.string.item_wifi_network,
     Res.string.nav_back,
@@ -821,6 +823,7 @@ private class ResourceStrings(
     override val fieldUsername: String get() = text(Res.string.field_username)
     override val fieldPassword: String get() = text(Res.string.field_password)
     override val fieldWebsite: String get() = text(Res.string.field_website)
+    override val fieldApp: String get() = text(Res.string.field_app)
     override val fieldVerificationCode: String get() = text(Res.string.field_verification_code)
     override val fieldNotes: String get() = text(Res.string.field_notes)
     override val fieldModified: String get() = text(Res.string.field_modified)
