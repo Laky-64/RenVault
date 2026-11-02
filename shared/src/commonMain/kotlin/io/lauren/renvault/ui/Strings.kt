@@ -242,6 +242,7 @@ import io.lauren.renvault.resources.icons_provider
 import io.lauren.renvault.resources.icons_site_desc
 import io.lauren.renvault.resources.icons_google_desc
 import io.lauren.renvault.resources.icons_duck_desc
+import io.lauren.renvault.resources.icons_bitwarden_desc
 import io.lauren.renvault.resources.icons_off_desc
 import io.lauren.renvault.resources.edit_delete_code
 import io.lauren.renvault.resources.edit_no_code
@@ -565,6 +566,7 @@ private val TextResources = listOf(
     Res.string.icons_site_desc,
     Res.string.icons_google_desc,
     Res.string.icons_duck_desc,
+    Res.string.icons_bitwarden_desc,
     Res.string.icons_off_desc,
     Res.string.edit_delete_code,
     Res.string.edit_no_code,
@@ -875,6 +877,7 @@ private class ResourceStrings(
     override val iconsSiteDesc: String get() = text(Res.string.icons_site_desc)
     override val iconsGoogleDesc: String get() = text(Res.string.icons_google_desc)
     override val iconsDuckDesc: String get() = text(Res.string.icons_duck_desc)
+    override val iconsBitwardenDesc: String get() = text(Res.string.icons_bitwarden_desc)
     override val iconsOffDesc: String get() = text(Res.string.icons_off_desc)
     override val editorUsernameHint: String get() = text(Res.string.editor_username_hint)
     override val editorNotes: String get() = text(Res.string.editor_notes)

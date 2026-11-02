@@ -48,6 +48,7 @@ const (
 	ProviderSite       = "site"
 	ProviderDuckDuckGo = "duckduckgo"
 	ProviderGoogle     = "google"
+	ProviderBitwarden  = "bitwarden"
 	ProviderOff        = "off"
 )
 
@@ -91,6 +92,8 @@ func (s *IconService) tileFor(domain string) ([]byte, error) {
 		return nil, ErrDisabled
 	case ProviderGoogle:
 		return s.tile(googleURL(domain))
+	case ProviderBitwarden:
+		return s.cached("bitwarden:"+domain, func() (image.Image, error) { return s.bitwardenIcon(domain) })
 	case ProviderSite:
 		return s.cached("site:"+domain, func() (image.Image, error) { return siteIcon(domain) })
 	default:
@@ -104,6 +107,35 @@ func (s *IconService) Image(src string) ([]byte, error) {
 		return nil, ErrUnsupportedURL
 	}
 	return s.tile(parsed.String())
+}
+
+const placeholderSide = 19
+
+func (s *IconService) bitwardenIcon(domain string) (image.Image, error) {
+	img, err := s.getFavicon("https://icons.bitwarden.net/" + url.PathEscape(domain) + "/icon.png")
+	if err != nil {
+		return nil, err
+	}
+	if placeholder(img) {
+		return nil, errNoSiteIcon
+	}
+	return img, nil
+}
+
+func placeholder(img image.Image) bool {
+	b := img.Bounds()
+	if b.Dx() != placeholderSide || b.Dy() != placeholderSide {
+		return false
+	}
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			r, g, bl, _ := img.At(x, y).RGBA()
+			if r != g || g != bl {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func googleURL(domain string) string {

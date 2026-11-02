@@ -56,6 +56,7 @@ interface RvStrings {
     val iconsSiteDesc: String
     val iconsGoogleDesc: String
     val iconsDuckDesc: String
+    val iconsBitwardenDesc: String
     val iconsOffDesc: String
     val editorUsernameHint: String
     val editorNotes: String

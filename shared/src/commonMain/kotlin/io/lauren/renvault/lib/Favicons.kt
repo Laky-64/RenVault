@@ -8,6 +8,7 @@ enum class RvIconProvider(val key: String, val label: String) {
     Site("site", "RenVault"),
     DuckDuckGo("duckduckgo", "DuckDuckGo"),
     Google("google", "Google"),
+    Bitwarden("bitwarden", "Bitwarden"),
 }
 
 object RvFavicons {

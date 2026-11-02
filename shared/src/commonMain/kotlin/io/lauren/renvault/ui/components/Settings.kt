@@ -1305,6 +1305,7 @@ private fun iconsComment(choice: RvIconProvider, strings: RvStrings): String = w
     RvIconProvider.Site -> strings.iconsSiteDesc
     RvIconProvider.Google -> strings.iconsGoogleDesc
     RvIconProvider.DuckDuckGo -> strings.iconsDuckDesc
+    RvIconProvider.Bitwarden -> strings.iconsBitwardenDesc
 }
 
 private fun durationLabel(seconds: Int, strings: RvStrings): String = when {
