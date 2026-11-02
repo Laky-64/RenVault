@@ -155,6 +155,8 @@ fun RvVaultApp(
     val wanted = remember { mutableStateListOf<String>() }
     val loading = remember { mutableSetOf<String>() }
     var iconRound by remember { mutableIntStateOf(0) }
+    val largeIcons = remember { mutableStateMapOf<String, Painter?>() }
+    val wantedLarge = remember { mutableStateListOf<String>() }
 
     suspend fun loadItems() {
         val loadedWeb = runCatching { Vault.web() }.getOrDefault(emptyList())
@@ -357,6 +359,35 @@ fun RvVaultApp(
         }
     }
 
+    LaunchedEffect(Unit) {
+        snapshotFlow { wantedLarge.toList() }.collect { pending ->
+            pending.forEach { domain ->
+                if (largeIcons.containsKey(domain)) return@forEach
+                val round = iconRound
+                largeIcons[domain] = null
+                launch {
+                    val bytes = if (isAppLink(domain)) {
+                        withContext(Dispatchers.Default) { appIcon(appPackageOf(domain)) }
+                    } else {
+                        runCatching { Vault.icon(domain) }.getOrNull()
+                    }
+                    val painter = bytes?.let {
+                        withContext(Dispatchers.Default) {
+                            runCatching { RvFavicon(it.decodeToImageBitmap()) }.getOrNull()
+                        }
+                    }
+                    if (round != iconRound) return@launch
+                    largeIcons[domain] = painter
+                    while (largeIcons.size > LargeIconSlots) {
+                        val oldest = wantedLarge.firstOrNull { it != domain && largeIcons.containsKey(it) } ?: break
+                        largeIcons.remove(oldest)
+                        wantedLarge.remove(oldest)
+                    }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(ready, RvFavicons.key) {
         if (!ready) return@LaunchedEffect
         runCatching { Vault.setIconsProvider(RvFavicons.key) }
@@ -364,6 +395,8 @@ fun RvVaultApp(
         loading.clear()
         wanted.clear()
         icons.clear()
+        wantedLarge.clear()
+        largeIcons.clear()
     }
 
     val favicon: (String) -> Painter? = { domain ->
@@ -372,6 +405,16 @@ fun RvVaultApp(
         } else {
             if (domain.isNotEmpty() && !icons.containsKey(domain) && domain !in wanted) wanted += domain
             icons[domain]
+        }
+    }
+
+    val faviconLarge: (String) -> Painter? = { domain ->
+        val small = favicon(domain)
+        if (small == null) {
+            null
+        } else {
+            if (domain !in wantedLarge) wantedLarge += domain
+            largeIcons[domain] ?: small
         }
     }
 
@@ -598,6 +641,7 @@ fun RvVaultApp(
                             title = title,
                             photo = photo,
                             favicon = favicon,
+                            faviconLarge = faviconLarge,
                             settings = RvSettingsState(
                                 appName = title,
                                 profileName = profile.name,
@@ -703,6 +747,8 @@ fun RvVaultApp(
 }
 
 private val TileSize = 56.dp
+
+private const val LargeIconSlots = 4
 
 private const val PrivacyUrl = "https://www.apple.com/legal/privacy/data/en/apple-id/"
 

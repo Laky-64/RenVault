@@ -130,6 +130,7 @@ fun RvHomePage(
     title: String = "",
     photo: ImageBitmap? = null,
     favicon: (domain: String) -> Painter? = { null },
+    faviconLarge: (domain: String) -> Painter? = favicon,
     settings: RvSettingsState = RvSettingsState(appName = stringResource(Res.string.app_name)),
     settingsBusy: Boolean = false,
     sortField: RvSortField = RvSortField.Title,
@@ -385,7 +386,7 @@ fun RvHomePage(
             item = if (compact) current ?: lastOpen else current,
             secrets = secrets,
             strings = strings,
-            favicon = favicon,
+            favicon = faviconLarge,
             modifier = paneModifier,
             compact = compact,
             editing = editing,
@@ -553,7 +554,7 @@ fun RvHomePage(
         open = creating,
         onOpenChange = { creating = it },
         strings = strings,
-        favicon = favicon,
+        favicon = faviconLarge,
         onSave = { entry -> scope.launch { onCreate(entry) } },
     )
 
