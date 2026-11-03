@@ -42,7 +42,7 @@ var (
 	headEnd       = regexp.MustCompile(`(?i)</head>`)
 	iconRel       = regexp.MustCompile(`(?i)rel\s*=\s*["']?[^"'>]*icon`)
 	attribute     = regexp.MustCompile(`(?is)([a-z-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>]+))`)
-	siteClient    = &nethttp.Client{Timeout: siteTimeout}
+	siteClient    = &nethttp.Client{Timeout: siteTimeout, Transport: siteTransport()}
 )
 
 type candidate struct {
