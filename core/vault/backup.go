@@ -127,6 +127,22 @@ func openBackup(raw []byte, password string) (backupData, error) {
 	return data, nil
 }
 
+func InspectBackup(raw []byte, password string) (ImportPreview, error) {
+	if password == "" {
+		var f backupFile
+		if err := cborDec.Unmarshal(raw, &f); err != nil || f.Magic != backupMagic {
+			return ImportPreview{}, errBackupFormat
+		}
+		return ImportPreview{Source: "renvault", Locked: true}, nil
+	}
+	data, err := openBackup(raw, password)
+	if err != nil {
+		return ImportPreview{}, err
+	}
+	defer zeroPasskeys(data.Passkey)
+	return previewOf(parsedImport{source: "renvault", entries: data.Web, passkeys: data.Passkey}), nil
+}
+
 func (v *Vault) ImportBackup(raw []byte, password string) (ImportResult, error) {
 	data, err := openBackup(raw, password)
 	if err != nil {
@@ -272,7 +288,9 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 			if i, ok := known[importKey(e)]; ok {
 				cur := p.Web[i]
 				newer := e.Modified.After(cur.Modified)
-				if sameEntry(cur, e) || (!newer && (cur.TOTP != "" || e.TOTP == "")) {
+				named := defaultName(cur) && !defaultName(e)
+				noted := cur.Note == "" && e.Note != ""
+				if sameEntry(cur, e) || (!newer && (cur.TOTP != "" || e.TOTP == "") && !named && !noted) {
 					res.Skipped++
 					continue
 				}
@@ -283,7 +301,15 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 						next.Domains = append([]string{next.Domain}, associatedSites(append(cur.Domains, e.Domains...), next.Domain)...)
 					}
 				} else {
-					next.TOTP = e.TOTP
+					if cur.TOTP == "" {
+						next.TOTP = e.TOTP
+					}
+					if named {
+						next.Name = e.Name
+					}
+					if noted {
+						next.Note = e.Note
+					}
 				}
 				next.Modified = time.Now().UTC()
 				if local {
@@ -369,6 +395,11 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 		return nil
 	})
 	return res, err
+}
+
+func defaultName(w keychain.WebPassword) bool {
+	name := strings.TrimSpace(w.Name)
+	return name == "" || strings.EqualFold(name, w.Domain)
 }
 
 func cleanImport(e keychain.WebPassword) keychain.WebPassword {
