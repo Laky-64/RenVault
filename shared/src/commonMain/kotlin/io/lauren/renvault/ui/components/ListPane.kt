@@ -393,6 +393,7 @@ private fun ItemRow(
                     RvTotpCopyButton(
                         code = current,
                         source = code,
+                        selected = if (selecting) checked else open,
                         copied = strings.fieldCopied,
                         onCopy = { copy(it, true) },
                     )
