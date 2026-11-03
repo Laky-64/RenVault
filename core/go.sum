@@ -6,8 +6,12 @@ github.com/Laky-64/appleservices v1.0.20 h1:TVjR7ic5SloxpMduPuDQtXaDOQlujc6gDVM5
 github.com/Laky-64/appleservices v1.0.20/go.mod h1:9IpTOHsPL8bQWR4IakKvMJte+94kLywazRbRDR2Q8Vg=
 github.com/Laky-64/http v1.0.8 h1:Z5K58TpUQmP5IHPHvRePjFdfQNA9g3AgQcNFYpIpzxA=
 github.com/Laky-64/http v1.0.8/go.mod h1:yGueTjBWWSpjqbXZ8xplPXFVlKcbCKGobrwIcshbedI=
+github.com/ProtonMail/go-crypto v1.5.2 h1:cucYnvqcY7UOXVD//mSyjeaPY0SSN3v5cDkYPxumINk=
+github.com/ProtonMail/go-crypto v1.5.2/go.mod h1:/RaSu30DaKO4RY+XdV/ACcCcZkGr7AhUIduq5sjzzCo=
 github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
 github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
+github.com/cloudflare/circl v1.6.3 h1:9GPOhQGF9MCYUeXyMYlqTR6a5gTrgR/fBLXvUgtVcg8=
+github.com/cloudflare/circl v1.6.3/go.mod h1:2eXP6Qfat4O/Yhh8BznvKnJ+uzEoTQ6jVKJRn81BiS4=
 github.com/coder/websocket v1.8.15 h1:6B2JPeOGlpff2Uz6vOEH1Vzpi0iUz20A+lPVhPHtNUA=
 github.com/coder/websocket v1.8.15/go.mod h1:NX3SzP+inril6yawo5CQXx8+fk145lPDC6pumgx0mVg=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

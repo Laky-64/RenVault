@@ -6,6 +6,7 @@ require (
 	filippo.io/cpace v0.0.0-20210101143347-24d601e2e469
 	github.com/Laky-64/appleservices v1.0.20
 	github.com/Laky-64/http v1.0.8
+	github.com/ProtonMail/go-crypto v1.5.2
 	github.com/adrg/xdg v0.5.3
 	github.com/coder/websocket v1.8.15
 	github.com/flynn/noise v1.1.0
@@ -20,6 +21,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gtank/ristretto255 v0.2.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
