@@ -59,3 +59,7 @@ tasks.withType<AbstractJPackageTask>().matching { it.targetFormat == TargetForma
     dependsOn(distributable)
     appImage.set(distributable.flatMap { task -> task.destinationDir.zip(task.packageName) { dir, name -> dir.dir(name) } })
 }
+
+tasks.withType<AbstractJPackageTask>().matching { it.targetFormat == TargetFormat.Dmg }.configureEach {
+    freeArgs.addAll("--icon", project.file("icons/renvault.icns").absolutePath)
+}
