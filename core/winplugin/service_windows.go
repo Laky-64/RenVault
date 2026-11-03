@@ -40,7 +40,7 @@ const (
 	certificateFile = "RenVault.cer"
 )
 
-var transportsInternal = []string{"internal", "hybrid"}
+var transportsInternal = []string{"internal"}
 
 type Service struct {
 	vault Vault

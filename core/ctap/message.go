@@ -130,8 +130,9 @@ func GetInfoResponse(transports []string) ([]byte, error) {
 		1: []string{"FIDO_2_0", "FIDO_2_1"},
 		2: []string{"prf"},
 		3: AAGUID[:],
-		4: map[string]bool{"rk": true, "uv": true},
+		4: map[string]bool{"rk": true, "up": true, "uv": true},
 		9: transports,
+		10: []map[string]any{{"alg": algES256, "type": "public-key"}},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("ctap: encode getInfo: %w", err)
