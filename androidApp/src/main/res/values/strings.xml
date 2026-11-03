@@ -6,6 +6,10 @@
     <string name="autofill_search">Search in RenVault</string>
     <string name="autofill_search_hint">Search</string>
     <string name="autofill_empty">No passwords match</string>
+    <string name="autofill_link_title">Add %1$s?</string>
+    <string name="autofill_link_text">RenVault will suggest “%1$s” on this site right away next time.</string>
+    <string name="autofill_link_add">Add</string>
+    <string name="autofill_link_skip">Not now</string>
     <string name="autofill_totp_copied">2FA code copied</string>
     <string name="autofill_saved">Password saved in RenVault</string>
     <string name="autofill_updated">Password updated in RenVault</string>

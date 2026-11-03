@@ -17,12 +17,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,11 +44,13 @@ import androidx.lifecycle.lifecycleScope
 import io.lauren.renvault.R
 import io.lauren.renvault.RvUnlockGate
 import io.lauren.renvault.bridge.PlatformStorage
+import io.lauren.renvault.bridge.EditPassword
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.bridge.WebEntry
 import io.lauren.renvault.lib.appLink
 import io.lauren.renvault.lib.autofillCopyTotp
 import io.lauren.renvault.ui.components.copyToClipboard
+import io.lauren.renvault.ui.components.RvGlobeIcon
 import io.lauren.renvault.ui.components.RvSearchIcon
 import io.lauren.renvault.ui.components.RvSegment
 import io.lauren.renvault.ui.components.RvTextField
@@ -71,6 +78,7 @@ class AutofillActivity : FragmentActivity() {
                 var ready by remember { mutableStateOf(false) }
                 var unlocked by remember { mutableStateOf(false) }
                 var entries by remember { mutableStateOf<List<WebEntry>?>(null) }
+                var asking by remember { mutableStateOf<WebEntry?>(null) }
 
                 LaunchedEffect(Unit) {
                     runCatching { Vault.init() }
@@ -90,7 +98,35 @@ class AutofillActivity : FragmentActivity() {
                 when {
                     !ready -> Box(Modifier.fillMaxSize())
                     !unlocked -> RvUnlockGate(onUnlocked = { unlocked = true })
-                    else -> Picker(entries, onPick = { entry -> pickEntry(form, entry) })
+                    else -> Picker(entries, onPick = { entry ->
+                        if (siteOf(form) != null && matchEntries(listOf(entry), form).isEmpty()) {
+                            asking = entry
+                        } else {
+                            pickEntry(form, entry, addSite = false)
+                        }
+                    })
+                }
+
+                asking?.let { entry ->
+                    val site = siteOf(form).orEmpty()
+                    AlertDialog(
+                        onDismissRequest = { asking = null },
+                        icon = { Icon(RvGlobeIcon, contentDescription = null) },
+                        title = { Text(stringResource(R.string.autofill_link_title, site)) },
+                        text = { Text(stringResource(R.string.autofill_link_text, entry.title.ifEmpty { entry.username })) },
+                        confirmButton = {
+                            Button(
+                                onClick = { pickEntry(form, entry, addSite = true) },
+                                shapes = ButtonDefaults.shapes(),
+                            ) { Text(stringResource(R.string.autofill_link_add)) }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { pickEntry(form, entry, addSite = false) },
+                                shapes = ButtonDefaults.shapes(),
+                            ) { Text(stringResource(R.string.autofill_link_skip)) }
+                        },
+                    )
                 }
             }
         }
@@ -98,12 +134,13 @@ class AutofillActivity : FragmentActivity() {
 
     private var finishing = false
 
-    private fun pickEntry(form: Form, entry: WebEntry) {
+    private fun pickEntry(form: Form, entry: WebEntry, addSite: Boolean) {
         if (finishing) return
         finishing = true
         lifecycleScope.launch {
             val dataset = datasetOf(this@AutofillActivity, form, entry, deferTotp = false)
             linkApp(form, entry)
+            if (addSite) linkSite(form, entry)
             if (entry.hasTotp && autofillCopyTotp()) {
                 runCatching { Vault.totp(entry.id) }.getOrNull()?.takeIf { it.isNotEmpty() }?.let {
                     copyToClipboard(this@AutofillActivity, it, sensitive = true)
@@ -120,6 +157,25 @@ class AutofillActivity : FragmentActivity() {
             if (password.isNotEmpty()) Vault.saveLogin(entry.title, "", form.packageName, entry.username, password)
         }
     }
+
+    private suspend fun linkSite(form: Form, entry: WebEntry) {
+        val site = siteOf(form) ?: return
+        runCatching {
+            val password = Vault.password(entry.id)
+            if (password.isEmpty()) return@runCatching
+            Vault.editPassword(
+                EditPassword(
+                    id = entry.id,
+                    password = password,
+                    note = entry.note,
+                    domains = (entry.domains + site).distinct(),
+                ),
+            )
+        }
+    }
+
+    private fun siteOf(form: Form): String? =
+        form.webDomain?.lowercase()?.removePrefix("www.")?.takeIf { it.isNotBlank() }
 
     private fun finishWith(result: Parcelable) {
         setResult(RESULT_OK, Intent().putExtra(AutofillManager.EXTRA_AUTHENTICATION_RESULT, result))
