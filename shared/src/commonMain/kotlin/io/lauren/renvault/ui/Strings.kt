@@ -157,6 +157,49 @@ import io.lauren.renvault.resources.backup_bad_file
 import io.lauren.renvault.resources.backup_result
 import io.lauren.renvault.resources.backup_nothing
 import io.lauren.renvault.resources.backup_file_type
+import io.lauren.renvault.resources.transfer_archive_hint
+import io.lauren.renvault.resources.transfer_archive_password
+import io.lauren.renvault.resources.transfer_archive_wrong_password
+import io.lauren.renvault.resources.transfer_backup_export_desc
+import io.lauren.renvault.resources.transfer_backup_import_desc
+import io.lauren.renvault.resources.transfer_backup_note
+import io.lauren.renvault.resources.transfer_check_title
+import io.lauren.renvault.resources.transfer_choose_file
+import io.lauren.renvault.resources.transfer_continue
+import io.lauren.renvault.resources.transfer_count_added
+import io.lauren.renvault.resources.transfer_count_codes
+import io.lauren.renvault.resources.transfer_count_passkeys
+import io.lauren.renvault.resources.transfer_count_entries
+import io.lauren.renvault.resources.transfer_count_skipped
+import io.lauren.renvault.resources.transfer_count_updated
+import io.lauren.renvault.resources.transfer_csv_confirm
+import io.lauren.renvault.resources.transfer_csv_export_desc
+import io.lauren.renvault.resources.transfer_csv_left_out
+import io.lauren.renvault.resources.transfer_csv_note
+import io.lauren.renvault.resources.transfer_csv_title
+import io.lauren.renvault.resources.transfer_csv_warning
+import io.lauren.renvault.resources.transfer_detected
+import io.lauren.renvault.resources.transfer_done
+import io.lauren.renvault.resources.transfer_export_action
+import io.lauren.renvault.resources.transfer_export_desc
+import io.lauren.renvault.resources.transfer_export_format_intro
+import io.lauren.renvault.resources.transfer_export_title
+import io.lauren.renvault.resources.transfer_format_title
+import io.lauren.renvault.resources.transfer_import_action
+import io.lauren.renvault.resources.transfer_import_desc
+import io.lauren.renvault.resources.transfer_import_format_intro
+import io.lauren.renvault.resources.transfer_import_title
+import io.lauren.renvault.resources.transfer_open
+import io.lauren.renvault.resources.transfer_protect_title
+import io.lauren.renvault.resources.transfer_result_title
+import io.lauren.renvault.resources.transfer_up_to_date
+import io.lauren.renvault.resources.transfer_saved_title
+import io.lauren.renvault.resources.transfer_source_unknown
+import io.lauren.renvault.resources.transfer_step
+import io.lauren.renvault.resources.transfer_unlock_archive_title
+import io.lauren.renvault.resources.transfer_unlock_backup_title
+import io.lauren.renvault.resources.transfer_zip
+import io.lauren.renvault.resources.transfer_zip_desc
 import io.lauren.renvault.resources.auth_restore
 import io.lauren.renvault.resources.auth_2fa_hint
 import io.lauren.renvault.resources.auth_2fa_resend_action
@@ -489,6 +532,49 @@ private val TextResources = listOf(
     Res.string.backup_result,
     Res.string.backup_nothing,
     Res.string.backup_file_type,
+    Res.string.transfer_step,
+    Res.string.transfer_export_title,
+    Res.string.transfer_import_title,
+    Res.string.transfer_export_desc,
+    Res.string.transfer_import_desc,
+    Res.string.transfer_format_title,
+    Res.string.transfer_export_format_intro,
+    Res.string.transfer_import_format_intro,
+    Res.string.transfer_backup_export_desc,
+    Res.string.transfer_backup_import_desc,
+    Res.string.transfer_csv_export_desc,
+    Res.string.transfer_zip,
+    Res.string.transfer_zip_desc,
+    Res.string.transfer_backup_note,
+    Res.string.transfer_csv_note,
+    Res.string.transfer_continue,
+    Res.string.transfer_choose_file,
+    Res.string.transfer_protect_title,
+    Res.string.transfer_csv_title,
+    Res.string.transfer_csv_warning,
+    Res.string.transfer_csv_confirm,
+    Res.string.transfer_csv_left_out,
+    Res.string.transfer_export_action,
+    Res.string.transfer_saved_title,
+    Res.string.transfer_done,
+    Res.string.transfer_check_title,
+    Res.string.transfer_detected,
+    Res.string.transfer_source_unknown,
+    Res.string.transfer_count_entries,
+    Res.string.transfer_count_codes,
+    Res.string.transfer_count_passkeys,
+    Res.string.transfer_count_skipped,
+    Res.string.transfer_import_action,
+    Res.string.transfer_unlock_backup_title,
+    Res.string.transfer_unlock_archive_title,
+    Res.string.transfer_archive_hint,
+    Res.string.transfer_archive_password,
+    Res.string.transfer_archive_wrong_password,
+    Res.string.transfer_open,
+    Res.string.transfer_result_title,
+    Res.string.transfer_up_to_date,
+    Res.string.transfer_count_added,
+    Res.string.transfer_count_updated,
     Res.string.auth_restore,
     Res.string.websites_desc,
     Res.string.websites_desc_passkey,
@@ -1060,6 +1146,49 @@ private class ResourceStrings(
     override fun backupResult(added: String, updated: String): String = text(Res.string.backup_result, added, updated)
     override val backupNothing: String get() = text(Res.string.backup_nothing)
     override val backupFileType: String get() = text(Res.string.backup_file_type)
+    override val transferExportTitle: String get() = text(Res.string.transfer_export_title)
+    override val transferImportTitle: String get() = text(Res.string.transfer_import_title)
+    override val transferExportDesc: String get() = text(Res.string.transfer_export_desc)
+    override val transferImportDesc: String get() = text(Res.string.transfer_import_desc)
+    override fun transferStep(step: String, total: String): String = text(Res.string.transfer_step, step, total)
+    override val transferFormatTitle: String get() = text(Res.string.transfer_format_title)
+    override val transferExportFormatIntro: String get() = text(Res.string.transfer_export_format_intro)
+    override val transferImportFormatIntro: String get() = text(Res.string.transfer_import_format_intro)
+    override val transferBackupExportDesc: String get() = text(Res.string.transfer_backup_export_desc)
+    override val transferBackupImportDesc: String get() = text(Res.string.transfer_backup_import_desc)
+    override val transferCsvExportDesc: String get() = text(Res.string.transfer_csv_export_desc)
+    override val transferZip: String get() = text(Res.string.transfer_zip)
+    override val transferZipDesc: String get() = text(Res.string.transfer_zip_desc)
+    override val transferBackupNote: String get() = text(Res.string.transfer_backup_note)
+    override val transferCsvNote: String get() = text(Res.string.transfer_csv_note)
+    override val transferContinue: String get() = text(Res.string.transfer_continue)
+    override val transferChooseFile: String get() = text(Res.string.transfer_choose_file)
+    override val transferProtectTitle: String get() = text(Res.string.transfer_protect_title)
+    override val transferCsvTitle: String get() = text(Res.string.transfer_csv_title)
+    override val transferCsvWarning: String get() = text(Res.string.transfer_csv_warning)
+    override val transferCsvConfirm: String get() = text(Res.string.transfer_csv_confirm)
+    override val transferCsvLeftOut: String get() = text(Res.string.transfer_csv_left_out)
+    override val transferExportAction: String get() = text(Res.string.transfer_export_action)
+    override val transferSavedTitle: String get() = text(Res.string.transfer_saved_title)
+    override val transferDone: String get() = text(Res.string.transfer_done)
+    override val transferCheckTitle: String get() = text(Res.string.transfer_check_title)
+    override val transferDetected: String get() = text(Res.string.transfer_detected)
+    override val transferSourceUnknown: String get() = text(Res.string.transfer_source_unknown)
+    override val transferCountEntries: String get() = text(Res.string.transfer_count_entries)
+    override val transferCountCodes: String get() = text(Res.string.transfer_count_codes)
+    override val transferCountPasskeys: String get() = text(Res.string.transfer_count_passkeys)
+    override val transferCountSkipped: String get() = text(Res.string.transfer_count_skipped)
+    override val transferImportAction: String get() = text(Res.string.transfer_import_action)
+    override val transferUnlockBackupTitle: String get() = text(Res.string.transfer_unlock_backup_title)
+    override val transferUnlockArchiveTitle: String get() = text(Res.string.transfer_unlock_archive_title)
+    override val transferArchiveHint: String get() = text(Res.string.transfer_archive_hint)
+    override val transferArchivePassword: String get() = text(Res.string.transfer_archive_password)
+    override val transferArchiveWrongPassword: String get() = text(Res.string.transfer_archive_wrong_password)
+    override val transferOpen: String get() = text(Res.string.transfer_open)
+    override val transferResultTitle: String get() = text(Res.string.transfer_result_title)
+    override val transferUpToDate: String get() = text(Res.string.transfer_up_to_date)
+    override val transferCountAdded: String get() = text(Res.string.transfer_count_added)
+    override val transferCountUpdated: String get() = text(Res.string.transfer_count_updated)
     override val authRestore: String get() = text(Res.string.auth_restore)
     override fun settingsBasedOn(core: String): String = text(Res.string.settings_based_on, core)
     override val settingsAdvancedTitle: String get() = text(Res.string.settings_advanced_title)

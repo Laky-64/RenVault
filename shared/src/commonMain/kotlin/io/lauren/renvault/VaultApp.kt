@@ -48,6 +48,8 @@ import io.lauren.renvault.ui.components.LocalAnisetteServers
 import io.lauren.renvault.ui.components.RvLocalKeyPrompt
 import io.lauren.renvault.ui.components.RvAnisetteChoice
 import io.lauren.renvault.ui.components.RvBackupActions
+import io.lauren.renvault.ui.components.RvImportPreview
+import io.lauren.renvault.bridge.ImportPreview
 import io.lauren.renvault.ui.components.RvDeviceActions
 import io.lauren.renvault.ui.components.RvImported
 import io.lauren.renvault.ui.components.RvPairCode
@@ -524,6 +526,19 @@ fun RvVaultApp(
             override suspend fun importCsv(data: ByteArray): RvImported =
                 Vault.importCsv(data).imported().also { revision++ }
 
+            override suspend fun exportCsv(): ByteArray = Vault.exportCsv()
+
+            override suspend fun inspectCsv(data: ByteArray): RvImportPreview = Vault.inspectCsv(data).preview()
+
+            override suspend fun inspectArchive(data: ByteArray, password: String): RvImportPreview =
+                Vault.inspectArchive(data, password).preview()
+
+            override suspend fun inspectBackup(data: ByteArray, password: String): RvImportPreview =
+                Vault.inspectBackup(data, password).preview()
+
+            override suspend fun importArchive(data: ByteArray, password: String): RvImported =
+                Vault.importArchive(data, password).imported().also { revision++ }
+
             override fun describe(failure: Throwable): String = strings.failureText(failure)
         }
     }
@@ -836,6 +851,8 @@ private suspend fun deviceArt(url: String): ImageBitmap? {
 }
 
 private fun ImportResult.imported(): RvImported = RvImported(added, updated)
+
+private fun ImportPreview.preview(): RvImportPreview = RvImportPreview(source, entries, codes, passkeys, skipped, locked)
 
 private fun String.isPasskeyId(): Boolean = startsWith("passkey:")
 

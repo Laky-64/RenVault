@@ -19,6 +19,7 @@ fun RvStrings.failureText(cause: Throwable): String {
         FailureReason.NoNetwork -> failureNoNetwork
         FailureReason.BadPhoto -> failureBadPhoto
         FailureReason.BackupPassword -> backupWrongPassword
+        FailureReason.ArchivePassword -> transferArchiveWrongPassword
         FailureReason.BackupFormat -> backupBadFile
         FailureReason.QuickExpired -> quickExpired
         else -> failureGeneric

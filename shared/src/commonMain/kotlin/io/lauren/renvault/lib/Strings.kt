@@ -213,6 +213,49 @@ interface RvStrings {
     fun backupResult(added: String, updated: String): String
     val backupNothing: String
     val backupFileType: String
+    val transferExportTitle: String
+    val transferImportTitle: String
+    val transferExportDesc: String
+    val transferImportDesc: String
+    fun transferStep(step: String, total: String): String
+    val transferFormatTitle: String
+    val transferExportFormatIntro: String
+    val transferImportFormatIntro: String
+    val transferBackupExportDesc: String
+    val transferBackupImportDesc: String
+    val transferCsvExportDesc: String
+    val transferZip: String
+    val transferZipDesc: String
+    val transferBackupNote: String
+    val transferCsvNote: String
+    val transferContinue: String
+    val transferChooseFile: String
+    val transferProtectTitle: String
+    val transferCsvTitle: String
+    val transferCsvWarning: String
+    val transferCsvConfirm: String
+    val transferCsvLeftOut: String
+    val transferExportAction: String
+    val transferSavedTitle: String
+    val transferDone: String
+    val transferCheckTitle: String
+    val transferDetected: String
+    val transferSourceUnknown: String
+    val transferCountEntries: String
+    val transferCountCodes: String
+    val transferCountPasskeys: String
+    val transferCountSkipped: String
+    val transferImportAction: String
+    val transferUnlockBackupTitle: String
+    val transferUnlockArchiveTitle: String
+    val transferArchiveHint: String
+    val transferArchivePassword: String
+    val transferArchiveWrongPassword: String
+    val transferOpen: String
+    val transferResultTitle: String
+    val transferUpToDate: String
+    val transferCountAdded: String
+    val transferCountUpdated: String
     val authRestore: String
     fun settingsBasedOn(core: String): String
     val settingsAdvancedTitle: String

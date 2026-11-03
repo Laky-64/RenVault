@@ -136,7 +136,7 @@ data class RvSettingsState(
     val devices: List<RvDevice> = emptyList(),
 )
 
-private enum class SettingsPage { Root, Language, Icons, Names, Devices, About }
+private enum class SettingsPage { Root, Language, Icons, Names, Devices, About, Export, Import }
 
 @Composable
 fun RvSettingsScreen(
@@ -200,6 +200,15 @@ fun RvSettingsScreen(
                     onBack = { page = SettingsPage.Root },
                 )
             }
+            SettingsPage.Export, SettingsPage.Import -> backup?.let { actions ->
+                TransferPage(
+                    mode = if (shown == SettingsPage.Export) TransferMode.Export else TransferMode.Import,
+                    actions = actions,
+                    strings = strings,
+                    dialog = dialog,
+                    onBack = { page = SettingsPage.Root },
+                )
+            }
             SettingsPage.About -> AboutPage(
                 state = state,
                 strings = strings,
@@ -218,6 +227,8 @@ fun RvSettingsScreen(
                 onIcons = { page = SettingsPage.Icons },
                 onNames = { page = SettingsPage.Names },
                 onDevices = { page = SettingsPage.Devices },
+                onExport = { page = SettingsPage.Export },
+                onImport = { page = SettingsPage.Import },
                 devices = devices,
                 backup = backup,
                 onQuick = onQuick,
@@ -267,6 +278,8 @@ private fun RootPage(
     onIcons: () -> Unit,
     onNames: () -> Unit,
     onDevices: () -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
     devices: RvDeviceActions?,
     backup: RvBackupActions?,
     onQuick: suspend (Boolean) -> Unit,
@@ -303,14 +316,6 @@ private fun RootPage(
     val editable = state.local && devices != null
     val copy = rememberClipboardCopy()
     val autofill = rememberAutofillSetup()
-    val backupFlow = backup?.let {
-        rememberBackupFlow(it, strings, onMessage = { text ->
-            scope.launch {
-                snackbar.currentSnackbarData?.dismiss()
-                snackbar.showSnackbar(text)
-            }
-        })
-    }
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
@@ -747,30 +752,27 @@ private fun RootPage(
                 }
             }
 
-            if (backupFlow != null) item {
+            if (backup != null) item {
                 RvSection(title = strings.settingsBackupTitle, footer = strings.settingsBackupNote) {
-                    val rows = listOfNotNull(
-                        backupFlow.export?.let {
-                            BackupRow(it, RvDownloadIcon, accents.blue, strings.backupExport, strings.backupExportDesc)
-                        },
-                        backupFlow.restore?.let {
-                            BackupRow(it, RvRestoreIcon, accents.green, strings.backupRestore, strings.backupRestoreDesc)
-                        },
-                        backupFlow.importCsv?.let {
-                            BackupRow(it, RvUploadFileIcon, accents.orange, strings.backupImportCsv, strings.backupImportCsvDesc)
-                        },
-                    )
-                    rows.forEachIndexed { index, row ->
-                        RvSegment(
-                            index = index,
-                            count = rows.size,
-                            onClick = row.onClick,
-                            enabled = !backupFlow.busy,
-                            leading = { SettingBadge(row.icon, row.tone) },
-                            supporting = { Text(row.detail) },
-                        ) {
-                            Text(row.title)
-                        }
+                    RvSegment(
+                        index = 0,
+                        count = 2,
+                        onClick = onExport,
+                        leading = { SettingBadge(RvDownloadIcon, accents.blue) },
+                        supporting = { Text(strings.transferExportDesc) },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.transferExportTitle)
+                    }
+                    RvSegment(
+                        index = 1,
+                        count = 2,
+                        onClick = onImport,
+                        leading = { SettingBadge(RvUploadFileIcon, accents.green) },
+                        supporting = { Text(strings.transferImportDesc) },
+                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
+                    ) {
+                        Text(strings.transferImportTitle)
                     }
                 }
             }
@@ -943,14 +945,6 @@ private fun RootPage(
         )
     }
 }
-
-private class BackupRow(
-    val onClick: () -> Unit,
-    val icon: ImageVector,
-    val tone: RvTone,
-    val title: String,
-    val detail: String,
-)
 
 private fun channelLabel(channel: String, strings: RvStrings): String =
     if (channel == "stable") strings.settingsChannelStable else channel.replaceFirstChar { it.uppercase() }
