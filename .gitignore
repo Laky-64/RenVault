@@ -1,6 +1,7 @@
 *.iml
 .kotlin
 .gradle
+graphify-out
 **/build/
 xcuserdata
 !src/**/build/
