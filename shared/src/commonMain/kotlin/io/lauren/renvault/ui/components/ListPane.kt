@@ -317,6 +317,7 @@ private fun ItemRow(
     } else {
         null
     }
+    val live = code?.let { rememberTotpCode(it) }
 
     val motion = MaterialTheme.motionScheme
 
@@ -387,10 +388,11 @@ private fun ItemRow(
                 }
                 else -> null
             },
-            trailing = code?.let { load ->
+            trailing = live?.let { current ->
                 {
                     RvTotpCopyButton(
-                        load = load,
+                        code = current,
+                        source = code,
                         copied = strings.fieldCopied,
                         onCopy = { copy(it, true) },
                     )

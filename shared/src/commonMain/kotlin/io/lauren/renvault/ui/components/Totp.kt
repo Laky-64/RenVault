@@ -74,6 +74,18 @@ fun rememberTotpSlot(period: Int = 30): Long {
 }
 
 @Composable
+fun rememberTotpCode(load: suspend () -> String, period: Int = 30): String {
+    var code by remember(load) { mutableStateOf("") }
+    val slot = rememberTotpSlot(period)
+
+    LaunchedEffect(load, slot) {
+        code = runCatching { load() }.getOrDefault("")
+    }
+
+    return code
+}
+
+@Composable
 fun RvTotpCode(
     load: suspend () -> String,
     modifier: Modifier = Modifier,
@@ -81,12 +93,7 @@ fun RvTotpCode(
     style: TextStyle = MaterialTheme.typography.titleMedium,
     color: Color = MaterialTheme.colorScheme.onSurface,
 ) {
-    var code by remember(load) { mutableStateOf("") }
-    val slot = rememberTotpSlot(period)
-
-    LaunchedEffect(load, slot) {
-        code = runCatching { load() }.getOrDefault("")
-    }
+    val code = rememberTotpCode(load, period)
 
     Row(
         modifier = modifier,
@@ -206,19 +213,15 @@ private fun slotAt(millis: Long, period: Int): Long = floor(millis / 1000.0 / pe
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun RvTotpCopyButton(
-    load: suspend () -> String,
+    code: String,
     copied: String,
     onCopy: (String) -> Unit,
     modifier: Modifier = Modifier,
     period: Int = 30,
+    source: Any? = null,
 ) {
-    var code by remember(load) { mutableStateOf("") }
     var done by remember { mutableStateOf(false) }
-    val slot = rememberTotpSlot(period)
 
-    LaunchedEffect(load, slot) {
-        code = runCatching { load() }.getOrDefault("")
-    }
     LaunchedEffect(done) {
         if (done) {
             delay(CopiedHold)
@@ -258,7 +261,7 @@ fun RvTotpCopyButton(
                     RvTotpRing(size = 16.dp, period = period)
                     RvTotpDigits(
                         code = code,
-                        source = load,
+                        source = source,
                         gap = 4.dp,
                         style = MaterialTheme.typography.labelLarge,
                         color = LocalContentColor.current,
