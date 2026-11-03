@@ -148,6 +148,20 @@ object Vault {
     suspend fun importCsv(data: ByteArray): ImportResult =
         exchange(Op.IMPORT_CSV, BackupRequest("", data))
 
+    suspend fun exportCsv(): ByteArray = receive<BytesResponse>(Op.EXPORT_CSV).data
+
+    suspend fun inspectCsv(data: ByteArray): ImportPreview =
+        exchange(Op.INSPECT_CSV, BackupRequest("", data))
+
+    suspend fun inspectArchive(data: ByteArray, password: String = ""): ImportPreview =
+        exchange(Op.INSPECT_ARCHIVE, BackupRequest(password, data))
+
+    suspend fun inspectBackup(data: ByteArray, password: String = ""): ImportPreview =
+        exchange(Op.INSPECT_BACKUP, BackupRequest(password, data))
+
+    suspend fun importArchive(data: ByteArray, password: String): ImportResult =
+        exchange(Op.IMPORT_ARCHIVE, BackupRequest(password, data))
+
     suspend fun setSecure(on: Boolean) = send(Op.SECURE, SecureRequest(on))
 
     suspend fun setTitleBar(dark: Boolean, caption: Int, text: Int) =

@@ -291,6 +291,16 @@ internal data class BackupRequest(
 }
 
 @Serializable
+data class ImportPreview(
+    @SerialName("source") val source: String = "",
+    @SerialName("entries") val entries: Int = 0,
+    @SerialName("codes") val codes: Int = 0,
+    @SerialName("passkeys") val passkeys: Int = 0,
+    @SerialName("skipped") val skipped: Int = 0,
+    @SerialName("locked") val locked: Boolean = false,
+)
+
+@Serializable
 data class ImportResult(
     @SerialName("added") val added: Int = 0,
     @SerialName("updated") val updated: Int = 0,

@@ -321,6 +321,19 @@ func importResponseOf(r vault.ImportResult) importResponse {
 	return importResponse{Added: r.Added, Updated: r.Updated, Skipped: r.Skipped}
 }
 
+type previewResponse struct {
+	Source   string `cbor:"source"`
+	Entries  int    `cbor:"entries"`
+	Codes    int    `cbor:"codes"`
+	Passkeys int    `cbor:"passkeys"`
+	Skipped  int    `cbor:"skipped"`
+	Locked   bool   `cbor:"locked"`
+}
+
+func previewResponseOf(p vault.ImportPreview) previewResponse {
+	return previewResponse{Source: p.Source, Entries: p.Entries, Codes: p.Codes, Passkeys: p.Passkeys, Skipped: p.Skipped, Locked: p.Locked}
+}
+
 type joinRequest struct {
 	Text string `cbor:"text"`
 }

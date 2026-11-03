@@ -28,6 +28,11 @@ internal object Op {
     const val QUICK_DISABLE = 0x1019
     const val QUICK_UNLOCK = 0x101A
     const val VAULT_CHANGE_PASSWORD = 0x101B
+    const val EXPORT_CSV = 0x101C
+    const val INSPECT_CSV = 0x101D
+    const val INSPECT_ARCHIVE = 0x101E
+    const val IMPORT_ARCHIVE = 0x101F
+    const val INSPECT_BACKUP = 0x1020
 
     const val DEVICES = 0x1201
     const val DEVICE_REMOVE = 0x1202

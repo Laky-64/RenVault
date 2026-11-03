@@ -28,6 +28,11 @@ const (
 	OpQuickDisable         uint32 = 0x1019
 	OpQuickUnlock          uint32 = 0x101A
 	OpVaultChangePassword  uint32 = 0x101B
+	OpExportCSV            uint32 = 0x101C
+	OpInspectCSV           uint32 = 0x101D
+	OpInspectArchive       uint32 = 0x101E
+	OpImportArchive        uint32 = 0x101F
+	OpInspectBackup        uint32 = 0x1020
 )
 
 const (

@@ -8,6 +8,7 @@ import (
 	"github.com/Laky-64/renvault-core/portal"
 	"github.com/Laky-64/renvault-core/screen"
 	"github.com/Laky-64/renvault-core/tray"
+	"github.com/Laky-64/renvault-core/vault"
 )
 
 func installBackup() {
@@ -35,6 +36,39 @@ func installBackup() {
 			return importResponse{}, err
 		}
 		result, err := active.ImportCSV(request.Data)
+		return importResponseOf(result), err
+	})
+
+	query(bridge.OpExportCSV, func(context.Context) (bytesResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return bytesResponse{}, err
+		}
+		data, err := active.ExportCSV()
+		return bytesResponse{Data: data}, err
+	})
+
+	handle(bridge.OpInspectCSV, func(_ context.Context, request backupRequest) (previewResponse, error) {
+		preview, err := vault.InspectCSV(request.Data)
+		return previewResponseOf(preview), err
+	})
+
+	handle(bridge.OpInspectArchive, func(_ context.Context, request backupRequest) (previewResponse, error) {
+		preview, err := vault.InspectArchive(request.Data, request.Password)
+		return previewResponseOf(preview), err
+	})
+
+	handle(bridge.OpInspectBackup, func(_ context.Context, request backupRequest) (previewResponse, error) {
+		preview, err := vault.InspectBackup(request.Data, request.Password)
+		return previewResponseOf(preview), err
+	})
+
+	handle(bridge.OpImportArchive, func(_ context.Context, request backupRequest) (importResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return importResponse{}, err
+		}
+		result, err := active.ImportArchive(request.Data, request.Password)
 		return importResponseOf(result), err
 	})
 
