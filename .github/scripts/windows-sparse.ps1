@@ -36,7 +36,17 @@ $packageVersion = ($parts -join '.') + '.0'
 
 Add-Type -AssemblyName System.Drawing
 $icon = [System.Drawing.Image]::FromFile((Join-Path $root 'desktopApp\icons\renvault.png'))
-foreach ($asset in @(@('StoreLogo.png', 50), @('Square44x44Logo.png', 44), @('Square150x150Logo.png', 150))) {
+$assets = @(
+    @('StoreLogo.png', 50), @('StoreLogo.scale-100.png', 50), @('StoreLogo.scale-200.png', 100),
+    @('Square44x44Logo.png', 44), @('Square44x44Logo.scale-100.png', 44), @('Square44x44Logo.scale-200.png', 88),
+    @('Square150x150Logo.png', 150), @('Square150x150Logo.scale-100.png', 150), @('Square150x150Logo.scale-200.png', 300)
+)
+foreach ($size in 16, 20, 24, 30, 32, 36, 40, 48, 60, 64, 72, 80, 96, 256) {
+    $assets += , @("Square44x44Logo.targetsize-$size.png", $size)
+    $assets += , @("Square44x44Logo.targetsize-${size}_altform-unplated.png", $size)
+    $assets += , @("Square44x44Logo.targetsize-${size}_altform-lightunplated.png", $size)
+}
+foreach ($asset in $assets) {
     $bitmap = New-Object System.Drawing.Bitmap $asset[1], $asset[1]
     $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
     $graphics.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
@@ -46,6 +56,13 @@ foreach ($asset in @(@('StoreLogo.png', 50), @('Square44x44Logo.png', 44), @('Sq
     $bitmap.Dispose()
 }
 $icon.Dispose()
+
+$makepri = Join-Path $tools 'makepri.exe'
+$priconfig = Join-Path $work 'priconfig.xml'
+& $makepri createconfig /cf $priconfig /dq en-US /pv 10.0.0 /o
+if ($LASTEXITCODE -ne 0) { throw "makepri createconfig failed with $LASTEXITCODE" }
+& $makepri new /pr $stage /cf $priconfig /mn (Join-Path $stage 'AppxManifest.xml') /of (Join-Path $stage 'resources.pri') /o
+if ($LASTEXITCODE -ne 0) { throw "makepri new failed with $LASTEXITCODE" }
 
 $exe = Join-Path $AppImage 'RenVault.exe'
 Set-ItemProperty -Path $exe -Name IsReadOnly -Value $false
