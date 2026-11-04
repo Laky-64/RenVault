@@ -233,8 +233,14 @@ func webEntry(title string, links []string, username, password, note, totp strin
 	if password == "" {
 		return keychain.WebPassword{}, false
 	}
-	var domains []string
+	var domains, apps []string
 	for _, link := range links {
+		if app := appLinkOf(link); app != "" {
+			if !slices.Contains(apps, app) {
+				apps = append(apps, app)
+			}
+			continue
+		}
 		if host := siteOf(link); host != "" && !slices.Contains(domains, host) {
 			domains = append(domains, host)
 		}
@@ -243,9 +249,13 @@ func webEntry(title string, links []string, username, password, note, totp strin
 	if len(domains) > 0 {
 		domain = domains[0]
 	}
+	if title == "" && domain == "" && len(apps) > 0 {
+		title = strings.TrimPrefix(apps[0], appLinkScheme)
+	}
 	if domain == "" && title == "" {
 		return keychain.WebPassword{}, false
 	}
+	domains = append(domains, apps...)
 	return keychain.WebPassword{
 		Name:     title,
 		Domain:   domain,
@@ -257,6 +267,20 @@ func webEntry(title string, links []string, username, password, note, totp strin
 		TOTP:     totp,
 		Modified: modified,
 	}, true
+}
+
+func appLinkOf(raw string) string {
+	raw = strings.TrimSpace(raw)
+	for _, scheme := range []string{appLinkScheme, "android://"} {
+		if len(raw) > len(scheme) && strings.EqualFold(raw[:len(scheme)], scheme) {
+			pkg := strings.TrimRight(raw[len(scheme):], "/")
+			if at := strings.LastIndex(pkg, "@"); at >= 0 {
+				pkg = pkg[at+1:]
+			}
+			return AppLink(pkg)
+		}
+	}
+	return ""
 }
 
 func moreLinks(raw string) []string {

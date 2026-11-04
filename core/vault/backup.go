@@ -290,7 +290,8 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 				newer := e.Modified.After(cur.Modified)
 				named := defaultName(cur) && !defaultName(e)
 				noted := cur.Note == "" && e.Note != ""
-				if sameEntry(cur, e) || (!newer && (cur.TOTP != "" || e.TOTP == "") && !named && !noted) {
+				apps := slices.DeleteFunc(appLinksOf(e.Domains), func(link string) bool { return slices.Contains(cur.Domains, link) })
+				if sameEntry(cur, e) || (!newer && (cur.TOTP != "" || e.TOTP == "") && !named && !noted && len(apps) == 0) {
 					res.Skipped++
 					continue
 				}
@@ -299,8 +300,16 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 					next.Name, next.Password, next.Note, next.TOTP = e.Name, e.Password, e.Note, e.TOTP
 					if next.Website {
 						next.Domains = append([]string{next.Domain}, associatedSites(append(cur.Domains, e.Domains...), next.Domain)...)
+					} else if len(apps) > 0 {
+						next.Domains = append(slices.Clone(cur.Domains), apps...)
 					}
 				} else {
+					if len(apps) > 0 {
+						next.Domains = append(slices.Clone(cur.Domains), apps...)
+						if next.Website && !slices.Contains(next.Domains, next.Domain) {
+							next.Domains = append([]string{next.Domain}, next.Domains...)
+						}
+					}
 					if cur.TOTP == "" {
 						next.TOTP = e.TOTP
 					}
@@ -353,7 +362,7 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 			e.Modified = now
 			if !e.Website {
 				e.Domain = newLocalID()
-				e.Domains = nil
+				e.Domains = appLinksOf(e.Domains)
 			}
 			if local {
 				if err := v.sh.putWeb(key, "", e); err != nil {
@@ -395,6 +404,16 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 		return nil
 	})
 	return res, err
+}
+
+func appLinksOf(domains []string) []string {
+	var links []string
+	for _, d := range domains {
+		if isAppLink(d) && !slices.Contains(links, d) {
+			links = append(links, d)
+		}
+	}
+	return links
 }
 
 func defaultName(w keychain.WebPassword) bool {
