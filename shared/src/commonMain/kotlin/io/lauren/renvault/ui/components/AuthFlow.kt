@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -518,28 +520,22 @@ fun RvAuthFlow(
         RvProfileAvatar(size = 112.dp, photo = face, shape = MaterialShapes.Cookie12Sided.toShape())
     }
 
-    val page = here?.let { "step:${it.name}" } ?: "entry:${entry.name}"
-    val depth = steps.size
-
-    if (importing && backup != null) {
-        TransferPage(
-            mode = TransferMode.Import,
-            actions = backup,
-            strings = strings,
-            dialog = false,
-            onBack = { importing = false },
-            onFinished = onDone,
-        )
-        return
-    }
+    val current = here?.let { "step:${it.name}" } ?: "entry:${entry.name}"
+    val showImport = importing && backup != null
+    val page = if (showImport) ImportPage else current
+    val depth = if (showImport) steps.size + 1 else steps.size
 
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-        val previousPage = steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
+        val previousPage = if (showImport) {
+            current
+        } else {
+            steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
+        }
         val navigation = rememberBackTransition(
             screen = page to depth,
-            previous = (previousPage to depth - 1).takeIf { canGoBack },
+            previous = (previousPage to depth - 1).takeIf { showImport || canGoBack },
             label = "authStep",
-            onBack = goBack,
+            onBack = { if (showImport) importing = false else goBack() },
         )
         navigation.Content(
             modifier = Modifier.fillMaxSize(),
@@ -547,6 +543,18 @@ fun RvAuthFlow(
             forward = { targetState.second >= initialState.second },
         ) { (shown, _) ->
             when (shown) {
+                ImportPage -> backup?.let { actions ->
+                    ImportStage {
+                        TransferPage(
+                            mode = TransferMode.Import,
+                            actions = actions,
+                            strings = strings,
+                            dialog = !isCompact(),
+                            onBack = { importing = false },
+                            onFinished = onDone,
+                        )
+                    }
+                }
                 "entry:${AuthEntry.Master.name}" -> AuthPage(
                     hero = { AuthHero(RvLockIcon, MaterialShapes.Cookie9Sided) },
                     title = strings.authUnlockTitle,
@@ -1177,5 +1185,27 @@ private fun PrivacyNotice(strings: RvStrings, onPrivacy: () -> Unit) {
             style = MaterialTheme.typography.bodySmall,
             color = colors.onSurfaceVariant,
         )
+    }
+}
+
+private const val ImportPage = "import"
+
+@Composable
+private fun ImportStage(content: @Composable () -> Unit) {
+    if (isCompact()) {
+        content()
+        return
+    }
+    Box(
+        modifier = Modifier.fillMaxSize().imePadding().padding(32.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            modifier = Modifier.widthIn(max = 560.dp).fillMaxWidth().heightIn(max = 760.dp).fillMaxHeight(),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+        ) {
+            content()
+        }
     }
 }
