@@ -241,8 +241,8 @@ fun RvTotpCopyButton(
         shapes = ButtonDefaults.shapes(),
         colors = if (selected) {
             ButtonDefaults.filledTonalButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.12f),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             )
         } else {
             ButtonDefaults.filledTonalButtonColors()
@@ -267,16 +267,11 @@ fun RvTotpCopyButton(
                     Icon(RvCheckIcon, contentDescription = null, modifier = Modifier.size(18.dp))
                     Text(copied, style = MaterialTheme.typography.labelLarge, maxLines = 1)
                 } else {
-                    if (selected) {
-                        RvTotpRing(
-                            size = 16.dp,
-                            period = period,
-                            color = LocalContentColor.current,
-                            track = LocalContentColor.current.copy(alpha = 0.3f),
-                        )
-                    } else {
-                        RvTotpRing(size = 16.dp, period = period)
-                    }
+                    RvTotpRing(
+                        size = 16.dp,
+                        period = period,
+                        track = LocalContentColor.current.copy(alpha = 0.3f),
+                    )
                     RvTotpDigits(
                         code = code,
                         source = source,
