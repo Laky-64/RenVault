@@ -70,7 +70,11 @@ type protonData struct {
 	} `json:"platformSpecific"`
 }
 
-const protonActiveState = 1
+const (
+	protonActiveState = 1
+	protonSource      = "protonpass"
+	pgpArmorHeader    = "-----BEGIN PGP MESSAGE-----"
+)
 
 type bitwardenExport struct {
 	Encrypted bool            `json:"encrypted"`
@@ -115,28 +119,23 @@ type bitwardenURI struct {
 const bitwardenLoginType = 1
 
 func InspectArchive(raw []byte, password string) (ImportPreview, error) {
-	source, file, err := findArchiveSource(raw)
+	parsed, locked, err := loadArchive(raw, password)
 	if err != nil {
 		return ImportPreview{}, err
 	}
-	if (source.pgp || isEncrypted(file)) && password == "" {
-		return ImportPreview{Source: source.source, Locked: true}, nil
-	}
-	parsed, err := readArchive(source, file, password)
-	if err != nil {
-		return ImportPreview{}, err
+	if locked {
+		return ImportPreview{Source: parsed.source, Locked: true}, nil
 	}
 	return previewOf(parsed), nil
 }
 
 func (v *Vault) ImportArchive(raw []byte, password string) (ImportResult, error) {
-	source, file, err := findArchiveSource(raw)
+	parsed, locked, err := loadArchive(raw, password)
 	if err != nil {
 		return ImportResult{}, err
 	}
-	parsed, err := readArchive(source, file, password)
-	if err != nil {
-		return ImportResult{}, err
+	if locked {
+		return ImportResult{}, errArchivePassword
 	}
 	defer zeroPasskeys(parsed.passkeys)
 	result, err := v.importWeb(parsed.entries)
@@ -149,6 +148,38 @@ func (v *Vault) ImportArchive(raw []byte, password string) (ImportResult, error)
 	result.Updated += keys.Updated
 	result.Skipped += keys.Skipped
 	return result, err
+}
+
+func loadArchive(raw []byte, password string) (parsedImport, bool, error) {
+	if bytes.HasPrefix(bytes.TrimSpace(raw), []byte(pgpArmorHeader)) {
+		if password == "" {
+			return parsedImport{source: protonSource}, true, nil
+		}
+		plain, err := openPGPMessage(raw, password, archiveEntryLimit)
+		if err != nil {
+			return parsedImport{}, false, err
+		}
+		defer zero(plain)
+		if bytes.HasPrefix(bytes.TrimSpace(plain), []byte("{")) {
+			parsed, err := parseProtonJSON(plain)
+			parsed.source = protonSource
+			return parsed, false, err
+		}
+		parsed, locked, err := loadArchive(plain, "")
+		if locked {
+			return parsedImport{}, false, errArchiveFormat
+		}
+		return parsed, false, err
+	}
+	source, file, err := findArchiveSource(raw)
+	if err != nil {
+		return parsedImport{}, false, err
+	}
+	if (source.pgp || isEncrypted(file)) && password == "" {
+		return parsedImport{source: source.source}, true, nil
+	}
+	parsed, err := readArchive(source, file, password)
+	return parsed, false, err
 }
 
 func findArchiveSource(raw []byte) (archiveSource, *zip.File, error) {

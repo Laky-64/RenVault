@@ -138,7 +138,11 @@ internal fun TransferPage(
         FileFilter("CSV", listOf("csv"), listOf("text/csv", "text/comma-separated-values", "text/plain"))
     }
     val zipFilter = remember(strings) {
-        FileFilter(strings.transferZip, listOf("zip"), listOf("application/zip", "application/x-zip-compressed", "application/octet-stream"))
+        FileFilter(
+            strings.transferZip,
+            listOf("zip", "pgp"),
+            listOf("application/zip", "application/x-zip-compressed", "application/pgp-encrypted", "application/octet-stream"),
+        )
     }
 
     val run: (suspend () -> Unit) -> Unit = { block ->
