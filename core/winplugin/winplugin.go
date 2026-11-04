@@ -8,7 +8,10 @@ import (
 	"github.com/Laky-64/renvault-core/localkey"
 )
 
-const authenticatorName = "RenVault"
+const (
+	authenticatorName = "RenVault"
+	pluginRpID        = "io.lauren.renvault"
+)
 
 var (
 	ErrUnsupported = errors.New("winplugin: passkeys in windows need windows 11 24h2 or newer")

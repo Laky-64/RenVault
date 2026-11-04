@@ -99,6 +99,7 @@ func (s *Service) Install() error {
 	options := addOptions{
 		name:     utf16(authenticatorName),
 		clsid:    &clsidRenVault,
+		rpID:     utf16(pluginRpID),
 		infoSize: uint32(len(info)),
 		info:     bytesPtr(info),
 	}
