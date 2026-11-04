@@ -60,7 +60,7 @@ func winPasskeyService() *winplugin.Service {
 
 func syncWinPasskeys() {
 	if s := winPasskeyService(); s != nil {
-		go func() { _ = s.Sync() }()
+		go func() { winplugin.Note("sync", s.Sync()) }()
 	}
 }
 
@@ -97,7 +97,9 @@ func installWinPasskeys() {
 
 	command(bridge.OpWinPasskeySync, func(context.Context, none) error {
 		if s := winPasskeyService(); s != nil {
-			return s.Sync()
+			err := s.Sync()
+			winplugin.Note("sync", err)
+			return err
 		}
 		return nil
 	})

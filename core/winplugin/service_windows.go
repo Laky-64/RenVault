@@ -30,6 +30,7 @@ const (
 	commandMakeCredential byte = 0x01
 	commandGetAssertion   byte = 0x02
 
+	statusExcluded        byte = 0x19
 	statusOperationDenied byte = 0x27
 	statusNoCredentials   byte = 0x2e
 	statusCancelled       byte = 0x2d
@@ -432,6 +433,8 @@ func (s *Service) operate(command byte, req *operationRequest, resp *operationRe
 		return hrCancelled
 	case statusNoCredentials:
 		return hrNotFound
+	case statusExcluded:
+		return hrExists
 	default:
 		return eFail
 	}
@@ -442,6 +445,9 @@ func (s *Service) operate(command byte, req *operationRequest, resp *operationRe
 	}
 	resp.encodedSize = uint32(len(body))
 	resp.encoded = data
+	if command == commandMakeCredential {
+		go func() { Note("sync", s.Sync()) }()
+	}
 	return sOK
 }
 
