@@ -163,7 +163,7 @@ fun RvHomePage(
 ) {
     if (zones.isEmpty()) return
 
-    val compact = isCompact()
+    val compact = isHomeCompact()
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
 
@@ -536,10 +536,11 @@ fun RvHomePage(
                     .padding(end = 16.dp, bottom = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                zonesPane(Modifier.width(RvLayout.zonesPane).fillMaxHeight())
+                val (zonesWidth, listWidth) = homePaneWidths()
+                zonesPane(Modifier.width(zonesWidth).fillMaxHeight())
 
                 Surface(
-                    modifier = Modifier.width(RvLayout.listPane).fillMaxHeight().padding(top = 16.dp),
+                    modifier = Modifier.width(listWidth).fillMaxHeight().padding(top = 16.dp),
                     shape = MaterialTheme.shapes.extraLarge,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
