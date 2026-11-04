@@ -3,14 +3,15 @@ package winplugin
 import (
 	"context"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 
 	"github.com/Laky-64/renvault-core/ctap"
 	"github.com/Laky-64/renvault-core/localkey"
 )
 
 const (
-	authenticatorName = "RenVault"
-	pluginRpID        = "io.lauren.renvault"
+	authenticatorName = app.Name
+	pluginRpID        = app.ID
 )
 
 var (

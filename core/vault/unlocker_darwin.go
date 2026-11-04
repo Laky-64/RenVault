@@ -9,8 +9,8 @@ package vault
 
 int rv_touch_available(void);
 int rv_touch_verify(const char *reason, int credential);
-int rv_keychain_put(const char *account, const void *data, int length);
-int rv_keychain_get(const char *account, void *out, int capacity);
+int rv_keychain_put(const char *service, const char *account, const void *data, int length);
+int rv_keychain_get(const char *service, const char *account, void *out, int capacity);
 */
 import "C"
 
@@ -18,12 +18,14 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"strings"
 	"unsafe"
 )
 
 const (
-	touchReason      = "unlock RenVault"
+	touchReason      = "unlock " + app.Name
+	quickService     = app.ID + ".quick"
 	credentialPrefix = "credential:"
 )
 
@@ -48,7 +50,9 @@ func (touchUnlocker) Protect(k []byte, credential bool) ([]byte, error) {
 	name := hex.EncodeToString(id)
 	account := C.CString(name)
 	defer C.free(unsafe.Pointer(account))
-	if status := C.rv_keychain_put(account, unsafe.Pointer(&k[0]), C.int(len(k))); status != 0 {
+	service := C.CString(quickService)
+	defer C.free(unsafe.Pointer(service))
+	if status := C.rv_keychain_put(service, account, unsafe.Pointer(&k[0]), C.int(len(k))); status != 0 {
 		return nil, errors.New("vault: could not save the quick unlock key in the Keychain")
 	}
 	if credential {
@@ -65,7 +69,9 @@ func (touchUnlocker) Unlock(blob []byte) ([]byte, error) {
 	account := C.CString(name)
 	defer C.free(unsafe.Pointer(account))
 	out := make([]byte, 64)
-	n := C.rv_keychain_get(account, unsafe.Pointer(&out[0]), C.int(len(out)))
+	service := C.CString(quickService)
+	defer C.free(unsafe.Pointer(service))
+	n := C.rv_keychain_get(service, account, unsafe.Pointer(&out[0]), C.int(len(out)))
 	if n <= 0 {
 		return nil, errQuickOff
 	}

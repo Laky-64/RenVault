@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"slices"
 	"strings"
 	"time"
@@ -17,7 +18,7 @@ import (
 
 const (
 	archiveVaultEntry = "vault.json"
-	archiveComment    = "RenVault"
+	archiveComment    = app.Name
 )
 
 type bitwardenExportItem struct {

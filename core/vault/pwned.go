@@ -7,6 +7,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/Laky-64/renvault-core/app"
 	"strconv"
 	"strings"
 	"sync"
@@ -17,7 +18,7 @@ import (
 
 const (
 	pwnedRangeURL      = "https://api.pwnedpasswords.com/range/"
-	pwnedUserAgent     = "RenVault"
+	pwnedUserAgent     = app.Name
 	pwnedPrefixLen     = 5
 	pwnedConcurrency   = 8
 	pwnedRequestTries  = 3

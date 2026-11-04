@@ -5,6 +5,7 @@ import (
 	"crypto/ecdh"
 	"crypto/rand"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -296,7 +297,7 @@ func (sh *share) reseal(from, to []byte) {
 func cleanDeviceName(name string) string {
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return "RenVault"
+		return app.Name
 	}
 	if utf8.RuneCountInString(name) > maxDeviceName {
 		name = string([]rune(name)[:maxDeviceName])
@@ -567,7 +568,7 @@ func (v *Vault) Devices() ([]DeviceInfo, error) {
 		synced := v.sh.Peers[d.ID].SyncedAt
 		out = append(out, DeviceInfo{
 			ID:       d.ID,
-			Name:     cmp.Or(v.sh.deviceName(key, d), "RenVault"),
+			Name:     cmp.Or(v.sh.deviceName(key, d), app.Name),
 			Self:     d.ID == v.sh.Node,
 			SyncedAt: synced,
 			Online:   d.ID != v.sh.Node && (time.Since(v.seen[d.ID].at) < onlineWindow || time.Since(synced) < onlineWindow),

@@ -4,6 +4,7 @@ package vault
 
 import (
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"runtime"
 	"syscall"
 	"time"
@@ -12,7 +13,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-const helloMessage = "RenVault"
+const helloMessage = app.Name
 
 var (
 	combase                    = windows.NewLazySystemDLL("combase.dll")

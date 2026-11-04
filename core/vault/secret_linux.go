@@ -3,6 +3,7 @@
 package vault
 
 import (
+	"github.com/Laky-64/renvault-core/app"
 	"github.com/godbus/dbus/v5"
 )
 
@@ -22,7 +23,7 @@ type secretValue struct {
 }
 
 func secretAttributes(base string) map[string]string {
-	return map[string]string{"application": "io.lauren.renvault", "purpose": "device-secret", "base": base}
+	return map[string]string{"application": app.ID, "purpose": "device-secret", "base": base}
 }
 
 func withSecrets(fn func(conn *dbus.Conn, session dbus.ObjectPath) error) error {
@@ -70,7 +71,7 @@ func systemSecret(base string, create bool) ([]byte, error) {
 			return err
 		}
 		properties := map[string]dbus.Variant{
-			secretsPrefix + "Item.Label":      dbus.MakeVariant("RenVault device key"),
+			secretsPrefix + "Item.Label":      dbus.MakeVariant(app.Name + " device key"),
 			secretsPrefix + "Item.Attributes": dbus.MakeVariant(secretAttributes(base)),
 		}
 		value := secretValue{Session: session, Params: []byte{}, Value: fresh, ContentType: "application/octet-stream"}

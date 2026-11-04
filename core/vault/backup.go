@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"crypto/rand"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"slices"
 	"strings"
 	"time"
@@ -102,7 +103,7 @@ func openBackup(raw []byte, password string) (backupData, error) {
 		return data, errBackupFormat
 	}
 	if f.Version != backupVersion {
-		return data, errors.New("vault: this backup needs a newer RenVault")
+		return data, errors.New("vault: this backup needs a newer " + app.Name)
 	}
 	if f.Argon.Memory > 1<<20 || f.Argon.Time > 16 || f.Argon.KeyLen != 32 || f.Argon.Threads == 0 {
 		return data, errBackupFormat

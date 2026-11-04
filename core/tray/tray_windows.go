@@ -4,6 +4,7 @@ package tray
 
 import (
 	"encoding/binary"
+	"github.com/Laky-64/renvault-core/app"
 	"runtime"
 	"sync"
 	"syscall"
@@ -74,7 +75,7 @@ var (
 	procDestroyIcon              = user32.NewProc("DestroyIcon")
 	procShellNotifyIcon          = shell32.NewProc("Shell_NotifyIconW")
 
-	className = windows.StringToUTF16Ptr("RenVaultTray")
+	className = windows.StringToUTF16Ptr(app.Name + "Tray")
 	wndProc   = syscall.NewCallback(handle)
 
 	showing        sync.Mutex

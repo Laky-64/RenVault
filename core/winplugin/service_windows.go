@@ -11,6 +11,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/Laky-64/renvault-core/app"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,8 +41,8 @@ const (
 
 	restartWait = 30
 
-	packageFile     = "RenVault.msix"
-	certificateFile = "RenVault.cer"
+	packageFile     = app.Name + ".msix"
+	certificateFile = app.Name + ".cer"
 )
 
 var transportsInternal = []string{"internal"}
@@ -573,7 +574,7 @@ func logPath() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(dir, "RenVault", "winplugin.log")
+	return filepath.Join(dir, app.Name, "winplugin.log")
 }
 
 func writeLog(line string) {

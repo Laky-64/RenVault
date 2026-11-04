@@ -3,6 +3,7 @@ package localkey
 import (
 	"context"
 	"errors"
+	"github.com/Laky-64/renvault-core/app"
 	"sync"
 
 	"github.com/Laky-64/renvault-core/ctap"
@@ -10,7 +11,7 @@ import (
 	"github.com/Laky-64/renvault-core/vault"
 )
 
-const deviceName = "RenVault Passkey"
+const deviceName = app.Name + " Passkey"
 
 var errLocked = errors.New("localkey: the vault is locked")
 

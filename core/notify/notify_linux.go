@@ -3,6 +3,7 @@
 package notify
 
 import (
+	"github.com/Laky-64/renvault-core/app"
 	"sync"
 
 	"github.com/godbus/dbus/v5"
@@ -84,11 +85,11 @@ func Show(title, body string, onOpen func(token string)) (uint32, error) {
 	}
 	hints := map[string]dbus.Variant{
 		"urgency":       dbus.MakeVariant(byte(1)),
-		"desktop-entry": dbus.MakeVariant("io.lauren.renvault"),
+		"desktop-entry": dbus.MakeVariant(app.ID),
 	}
 	var id uint32
 	err = bus.Object(service, path).Call(iface+".Notify", 0,
-		"RenVault", uint32(0), "", title, body, []string{"default", title}, hints, int32(expireTime),
+		app.Name, uint32(0), "", title, body, []string{"default", title}, hints, int32(expireTime),
 	).Store(&id)
 	if err != nil {
 		return 0, err

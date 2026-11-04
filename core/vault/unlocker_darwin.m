@@ -4,8 +4,6 @@
 #import <LocalAuthentication/LocalAuthentication.h>
 #import <Security/Security.h>
 
-static NSString *const RvQuickService = @"io.lauren.renvault.quick";
-
 int rv_touch_available(void) {
     LAContext *context = [[LAContext alloc] init];
     return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthenticationWithBiometrics error:nil] ? 1 : 0;
@@ -31,16 +29,16 @@ int rv_touch_verify(const char *reason, int credential) {
     return result;
 }
 
-static NSDictionary *rv_query(const char *account) {
+static NSDictionary *rv_query(const char *service, const char *account) {
     return @{
         (__bridge id)kSecClass: (__bridge id)kSecClassGenericPassword,
-        (__bridge id)kSecAttrService: RvQuickService,
+        (__bridge id)kSecAttrService: [NSString stringWithUTF8String:service],
         (__bridge id)kSecAttrAccount: [NSString stringWithUTF8String:account],
     };
 }
 
-int rv_keychain_put(const char *account, const void *data, int length) {
-    NSDictionary *query = rv_query(account);
+int rv_keychain_put(const char *service, const char *account, const void *data, int length) {
+    NSDictionary *query = rv_query(service, account);
     SecItemDelete((__bridge CFDictionaryRef)query);
     NSMutableDictionary *item = [query mutableCopy];
     item[(__bridge id)kSecValueData] = [NSData dataWithBytes:data length:(NSUInteger)length];
@@ -48,8 +46,8 @@ int rv_keychain_put(const char *account, const void *data, int length) {
     return (int)SecItemAdd((__bridge CFDictionaryRef)item, NULL);
 }
 
-int rv_keychain_get(const char *account, void *out, int capacity) {
-    NSMutableDictionary *query = [rv_query(account) mutableCopy];
+int rv_keychain_get(const char *service, const char *account, void *out, int capacity) {
+    NSMutableDictionary *query = [rv_query(service, account) mutableCopy];
     query[(__bridge id)kSecReturnData] = @YES;
     query[(__bridge id)kSecMatchLimit] = (__bridge id)kSecMatchLimitOne;
     CFTypeRef found = NULL;
