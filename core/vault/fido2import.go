@@ -31,7 +31,7 @@ func bitwardenPasskeyEntry(c bitwardenPasskey, title, note string) (passkeyEntry
 	created, _ := time.Parse(time.RFC3339Nano, c.CreationDate)
 	siteTitle := strings.TrimSpace(c.RpName)
 	return passkeyEntry{
-		Title:        cmp.Or(title, siteTitle, rp),
+		Title:        cmp.Or(namedTitle(title, rp), siteTitle, rp),
 		SiteTitle:    siteTitle,
 		RelyingParty: rp,
 		UserName:     strings.TrimSpace(c.UserName),
@@ -43,6 +43,13 @@ func bitwardenPasskeyEntry(c bitwardenPasskey, title, note string) (passkeyEntry
 		Created:      created.UTC(),
 		Modified:     created.UTC(),
 	}, true
+}
+
+func namedTitle(title, rp string) string {
+	if strings.EqualFold(strings.TrimPrefix(title, "www."), rp) {
+		return ""
+	}
+	return title
 }
 
 func bitwardenScalar(value string) ([]byte, bool) {

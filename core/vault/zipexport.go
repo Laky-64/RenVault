@@ -91,6 +91,9 @@ func (v *Vault) ExportArchive(password string) ([]byte, error) {
 			if credential, ok := bitwardenPasskeyOf(p); ok {
 				item.Login.Fido2 = append(item.Login.Fido2, credential)
 				attached[i] = true
+				if strings.TrimSpace(w.Name) == "" {
+					item.Name = cmp.Or(passkeyTitle(p), item.Name)
+				}
 			}
 		}
 		items = append(items, item)
@@ -157,7 +160,7 @@ func bitwardenPasskeyItem(p passkeyEntry, credential bitwardenExportPasskey) bit
 	return bitwardenExportItem{
 		ID:           newLocalID(),
 		Type:         bitwardenLoginType,
-		Name:         cmp.Or(p.CustomTitle, p.Title, p.SiteTitle, p.RelyingParty),
+		Name:         cmp.Or(passkeyTitle(p), p.RelyingParty),
 		Notes:        optional(p.Note),
 		RevisionDate: exportTime(cmp.Or(p.Modified, p.Created)),
 		CreationDate: exportTime(p.Created),
@@ -200,7 +203,7 @@ func bitwardenPasskeyOf(p passkeyEntry) (bitwardenExportPasskey, bool) {
 		KeyCurve:        "P-256",
 		KeyValue:        base64.RawURLEncoding.EncodeToString(der),
 		RpID:            p.RelyingParty,
-		RpName:          cmp.Or(p.SiteTitle, p.RelyingParty),
+		RpName:          cmp.Or(passkeyTitle(p), p.RelyingParty),
 		UserHandle:      base64.RawURLEncoding.EncodeToString(p.UserHandle),
 		UserName:        p.UserName,
 		UserDisplayName: cmp.Or(p.DisplayName, p.UserName),
@@ -208,6 +211,10 @@ func bitwardenPasskeyOf(p passkeyEntry) (bitwardenExportPasskey, bool) {
 		Discoverable:    "true",
 		CreationDate:    exportTime(p.Created),
 	}, true
+}
+
+func passkeyTitle(p passkeyEntry) string {
+	return strings.TrimSpace(cmp.Or(p.CustomTitle, p.Title, p.SiteTitle))
 }
 
 func optional(value string) *string {
