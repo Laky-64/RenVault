@@ -61,6 +61,13 @@ type protonData struct {
 		URLs         []string `json:"urls"`
 		TotpURI      string   `json:"totpUri"`
 	} `json:"content"`
+	PlatformSpecific struct {
+		Android struct {
+			AllowedApps []struct {
+				PackageName string `json:"packageName"`
+			} `json:"allowedApps"`
+		} `json:"android"`
+	} `json:"platformSpecific"`
 }
 
 const protonActiveState = 1
@@ -243,9 +250,16 @@ func parseProtonJSON(data []byte) (parsedImport, error) {
 			if item.ModifyTime > 0 {
 				modified = time.Unix(item.ModifyTime, 0).UTC()
 			}
+			title := strings.TrimSpace(item.Data.Metadata.Name)
+			links := slices.Clone(content.URLs)
+			for _, app := range item.Data.PlatformSpecific.Android.AllowedApps {
+				if pkg := strings.TrimSpace(app.PackageName); pkg != "" {
+					links = append(links, AppLink(pkg))
+				}
+			}
 			entry, ok := webEntry(
-				strings.TrimSpace(item.Data.Metadata.Name),
-				content.URLs,
+				title,
+				links,
 				strings.TrimSpace(username),
 				content.Password,
 				item.Data.Metadata.Note,
