@@ -179,6 +179,7 @@ fun RvHomePage(
     var selecting by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf(emptySet<String>()) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var deleting by remember { mutableStateOf<RvItem?>(null) }
     var editing by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
     var draft by remember { mutableStateOf(RvDraft()) }
@@ -211,7 +212,8 @@ fun RvHomePage(
     val passkeyTarget = passkeyEditableOf(current)
     val purging = active.kind == RvZoneKind.Deleted
     val pickedItems = items.filter { (it is RvWebItem || it is RvPasskeyItem) && it.id in picked }
-    val onlyPasskeys = pickedItems.isNotEmpty() && pickedItems.all { it is RvPasskeyItem }
+    val deleteTargets = deleting?.let(::listOf) ?: pickedItems
+    val onlyPasskeys = deleteTargets.isNotEmpty() && deleteTargets.all { it is RvPasskeyItem }
     val draftOk = if (passkeyTarget != null) websitesOk(draft.websites) else canSave(draft)
 
     LaunchedEffect(active.kind, zoneKind == null) { picked = emptySet() }
@@ -376,7 +378,14 @@ fun RvHomePage(
             onBack = { zoneKind = null },
             onOpen = { itemId = it },
             onAdd = { creating = true },
-            onDeleteSelected = { confirmDelete = true },
+            onDeleteSelected = {
+                deleting = null
+                confirmDelete = true
+            },
+            onDeleteItem = { item ->
+                deleting = item
+                confirmDelete = true
+            },
             canDeleteSelected = pickedItems.isNotEmpty(),
         )
     }
@@ -570,23 +579,33 @@ fun RvHomePage(
 
     RvConfirmDialog(
         open = confirmDelete,
-        onOpenChange = { confirmDelete = it },
-        title = if (onlyPasskeys) strings.deletePasskeyTitle(pickedItems.size) else strings.deleteTitle(pickedItems.size),
-        description = when {
-            onlyPasskeys && purging -> strings.deletePasskeyHardDesc(pickedItems.size)
-            onlyPasskeys -> strings.deletePasskeySoftDesc(pickedItems.size)
-            purging -> strings.deleteHardDesc(pickedItems.size)
-            else -> strings.deleteSoftDesc(pickedItems.size)
+        onOpenChange = {
+            confirmDelete = it
+            if (!it) deleting = null
         },
-        confirm = if (onlyPasskeys) strings.deletePasskeyTitle(pickedItems.size) else strings.deleteConfirm(pickedItems.size),
+        title = if (onlyPasskeys) strings.deletePasskeyTitle(deleteTargets.size) else strings.deleteTitle(deleteTargets.size),
+        description = when {
+            onlyPasskeys && purging -> strings.deletePasskeyHardDesc(deleteTargets.size)
+            onlyPasskeys -> strings.deletePasskeySoftDesc(deleteTargets.size)
+            purging -> strings.deleteHardDesc(deleteTargets.size)
+            else -> strings.deleteSoftDesc(deleteTargets.size)
+        },
+        confirm = if (onlyPasskeys) strings.deletePasskeyTitle(deleteTargets.size) else strings.deleteConfirm(deleteTargets.size),
         cancel = strings.cancel,
         danger = true,
         icon = RvDeleteIcon,
         onConfirm = {
-            val ids = pickedItems.flatMap(::withLinked).distinct()
+            val single = deleting != null
+            val ids = deleteTargets.flatMap(::withLinked).distinct()
             if (ids.isNotEmpty()) {
                 scope.launch {
-                    runCatching { onDeleteMany(ids, purging) }.onSuccess { selecting = false }
+                    runCatching { onDeleteMany(ids, purging) }.onSuccess {
+                        if (single) {
+                            if (itemId in ids) itemId = null
+                        } else {
+                            selecting = false
+                        }
+                    }
                 }
             }
         },

@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import kotlin.math.roundToInt
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.widthIn
@@ -102,6 +103,7 @@ fun RvListPane(
     onDeleteSelected: () -> Unit,
     canDeleteSelected: Boolean,
     modifier: Modifier = Modifier,
+    onDeleteItem: (RvItem) -> Unit = {},
 ) {
     if (zone.kind == RvZoneKind.Codes) RvSecureScreen()
     val text = strings.zoneText(zone.kind, zone.items.isEmpty())
@@ -234,6 +236,11 @@ fun RvListPane(
                                 }
                             },
                             onOpen = { onOpen(entry.id) },
+                            onDelete = if (entry !is RvWifiItem) {
+                                { onDeleteItem(entry) }
+                            } else {
+                                null
+                            },
                             onSelect = if (zone.kind != RvZoneKind.Networks) {
                                 {
                                     if (!selecting) onSelecting(true)
@@ -289,6 +296,7 @@ private fun ItemRow(
     open: Boolean,
     onClick: () -> Unit,
     onOpen: () -> Unit,
+    onDelete: (() -> Unit)?,
     onSelect: (() -> Unit)?,
 ) {
     val names = LocalNameMask.current
@@ -443,14 +451,18 @@ private fun ItemRow(
                     },
                 )
             }
-            if (onSelect != null) {
+            if (onDelete != null) {
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                 DropdownMenuItem(
-                    text = { Text(strings.listSelect) },
-                    leadingIcon = { Icon(RvSelectIcon, contentDescription = null) },
+                    text = { Text(strings.listDelete) },
+                    leadingIcon = { Icon(RvDeleteIcon, contentDescription = null) },
+                    colors = MenuDefaults.itemColors(
+                        textColor = MaterialTheme.colorScheme.error,
+                        leadingIconColor = MaterialTheme.colorScheme.error,
+                    ),
                     onClick = {
                         menu = false
-                        onSelect()
+                        onDelete()
                     },
                 )
             }
