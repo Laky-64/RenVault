@@ -55,8 +55,9 @@ jobs:
           ./gradlew :androidApp:assembleRelease \
             -Prenvault.version="${{ steps.version.outputs.name }}" \
             -Prenvault.version_code="${{ steps.version.outputs.code }}"
+          app=$(sed -n 's/^renvault\.name=//p' gradle.properties)
           mkdir -p dist
-          cp androidApp/build/outputs/apk/release/androidApp-release.apk "dist/RenVault-${{ steps.version.outputs.name }}.apk"
+          cp androidApp/build/outputs/apk/release/androidApp-release.apk "dist/$app-Android-${{ steps.version.outputs.name }}.apk"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -128,16 +129,26 @@ jobs:
 
       - name: Collect the packages
         run: |
-          name="RenVault-${{ steps.version.outputs.name }}"
+          app=$(sed -n 's/^renvault\.name=//p' gradle.properties)
+          case "${{ runner.arch }}" in
+            ARM64) arch=ARM64 ;;
+            *) arch=x64 ;;
+          esac
+          case "$RUNNER_OS" in
+            Windows) platform="Windows-$arch" ;;
+            macOS) platform=$([ "$arch" = ARM64 ] && echo macOS-Apple-Silicon || echo macOS-Intel) ;;
+            *) platform="Linux-$arch" ;;
+          esac
+          name="$app-$platform-${{ steps.version.outputs.name }}"
           binaries=desktopApp/build/compose/binaries/main
           mkdir -p dist
           for format in deb rpm msi dmg; do
             for file in "$binaries/$format"/*."$format"; do
-              [ -f "$file" ] && cp "$file" "dist/$name-${{ runner.arch }}.$format"
+              [ -f "$file" ] && cp "$file" "dist/$name.$format"
             done
           done
           if [ "$RUNNER_OS" = "Linux" ]; then
-            tar -czf "dist/$name-linux-${{ runner.arch }}.tar.gz" -C "$binaries/app" .
+            tar -czf "dist/$name.tar.gz" -C "$binaries/app" .
           fi
 
       - uses: actions/upload-artifact@v7
