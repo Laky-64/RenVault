@@ -425,7 +425,7 @@
     <string name="transfer_up_to_date">Already up to date</string>
     <string name="transfer_count_added">Added</string>
     <string name="transfer_count_updated">Updated</string>
-    <string name="auth_restore">Restore from backup</string>
+    <string name="auth_restore">Import passwords</string>
     <string name="quick_biometrics">biometrics</string>
     <string name="quick_unlock_with">Unlock with %1$s</string>
     <string name="quick_prompt_title">Unlock RenVault</string>

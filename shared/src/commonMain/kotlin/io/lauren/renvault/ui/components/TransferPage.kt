@@ -99,6 +99,7 @@ internal fun TransferPage(
     strings: RvStrings,
     dialog: Boolean,
     onBack: () -> Unit,
+    onFinished: (() -> Unit)? = null,
 ) {
     val scope = rememberCoroutineScope()
     val accents = RenVault.accents
@@ -191,7 +192,7 @@ internal fun TransferPage(
     }
 
     val action: Pair<String, (() -> Unit)?> = when {
-        step == TransferSteps -> strings.transferDone to onBack
+        step == TransferSteps -> strings.transferDone to (onFinished ?: onBack)
         step == 1 && mode == TransferMode.Export -> strings.transferContinue to { step = 2 }
         step == 1 -> strings.transferChooseFile to when (format) {
             TransferFormat.Backup -> openBackup

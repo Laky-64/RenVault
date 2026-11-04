@@ -163,14 +163,7 @@ fun RvAuthFlow(
     var profileFace by remember { mutableStateOf<ImageBitmap?>(null) }
     var joinCode by remember { mutableStateOf("") }
     var joinError by remember { mutableStateOf("") }
-    val restoreFlow = backup?.let {
-        rememberBackupFlow(
-            actions = it,
-            strings = strings,
-            onMessage = { text -> joinError = text },
-            onImported = { onDone() },
-        )
-    }
+    var importing by remember { mutableStateOf(false) }
 
     val signInShake = remember { Animatable(0f) }
     val passcodeShake = remember { Animatable(0f) }
@@ -528,6 +521,18 @@ fun RvAuthFlow(
     val page = here?.let { "step:${it.name}" } ?: "entry:${entry.name}"
     val depth = steps.size
 
+    if (importing && backup != null) {
+        TransferPage(
+            mode = TransferMode.Import,
+            actions = backup,
+            strings = strings,
+            dialog = false,
+            onBack = { importing = false },
+            onFinished = onDone,
+        )
+        return
+    }
+
     Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
         val previousPage = steps.getOrNull(steps.size - 2)?.let { "step:${it.name}" } ?: "entry:${entry.name}"
         val navigation = rememberBackTransition(
@@ -810,10 +815,10 @@ fun RvAuthFlow(
                             onClick = { submitJoin(joinCode) },
                             enabled = joinCode.isNotBlank(),
                         )
-                        restoreFlow?.restore?.let { restore ->
+                        if (backup != null) {
                             RvButton(
                                 text = strings.authRestore,
-                                onClick = restore,
+                                onClick = { importing = true },
                                 kind = RvButtonKind.Tonal,
                                 icon = RvRestoreIcon,
                                 enabled = !busy,

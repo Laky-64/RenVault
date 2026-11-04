@@ -420,7 +420,7 @@
     <string name="transfer_up_to_date">Già aggiornato</string>
     <string name="transfer_count_added">Aggiunte</string>
     <string name="transfer_count_updated">Aggiornate</string>
-    <string name="auth_restore">Ripristina da backup</string>
+    <string name="auth_restore">Importa password</string>
     <string name="quick_biometrics">biometria</string>
     <string name="quick_unlock_with">Sblocca con %1$s</string>
     <string name="quick_prompt_title">Sblocca RenVault</string>
