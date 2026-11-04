@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -119,6 +120,7 @@ fun RvVaultApp(
     strings: RvStrings = LocalStrings.current,
     onOpenUrl: ((String) -> Unit)? = null,
     onLocalKeyPrompt: (HybridPrompt?) -> Unit = {},
+    onUnlockedChange: (Boolean) -> Unit = {},
 ) {
     val links = LocalUriHandler.current
     val openUrl: (String) -> Unit = onOpenUrl ?: { target -> runCatching { links.openUri(target) } }
@@ -129,6 +131,8 @@ fun RvVaultApp(
 
     var ready by remember { mutableStateOf(false) }
     var unlocked by remember { mutableStateOf(false) }
+    val unlockedChange by rememberUpdatedState(onUnlockedChange)
+    LaunchedEffect(unlocked) { unlockedChange(unlocked) }
     var web by remember { mutableStateOf(emptyList<RvWebItem>()) }
     var wifi by remember { mutableStateOf(emptyList<RvWifiItem>()) }
     var passkeys by remember { mutableStateOf(emptyList<RvPasskeyItem>()) }

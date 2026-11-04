@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
@@ -53,6 +56,8 @@ private val MinimumSize = DpSize(350.dp, 690.dp)
 
 private val StartSize = DpSize(1000.dp, 670.dp)
 
+private val AuthSize = DpSize(480.dp, 740.dp)
+
 private const val DesktopEntry = "$RvAppId-$RvAppName"
 
 fun main() {
@@ -75,7 +80,8 @@ private fun nameWindowClass() {
 
 private fun vaultApplication() = application {
     val appName = stringResource(Res.string.app_name)
-    val state = rememberWindowState(size = StartSize)
+    val state = rememberWindowState(size = AuthSize, position = WindowPosition(Alignment.Center))
+    var expanded by remember { mutableStateOf(false) }
     val mac = remember { System.getProperty("os.name").orEmpty().startsWith("Mac", ignoreCase = true) }
     val awtTray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
     var nativeTray by remember { mutableStateOf<Boolean?>(if (mac) false else null) }
@@ -210,6 +216,15 @@ private fun vaultApplication() = application {
 
             RvVaultApp(
                 title = appName,
+                onUnlockedChange = { unlocked ->
+                    if (unlocked && !expanded) {
+                        expanded = true
+                        if (state.placement == WindowPlacement.Floating) {
+                            state.size = StartSize
+                            state.position = WindowPosition(Alignment.Center)
+                        }
+                    }
+                },
                 onOpenUrl = { target ->
                     runCatching { Desktop.getDesktop().browse(URI(target)) }
                 },
