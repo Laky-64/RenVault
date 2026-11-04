@@ -33,7 +33,7 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.ui.theme.RenVault
 import kotlinx.coroutines.launch
 
-data class RvNameMatch(val id: String, val title: String)
+data class RvNameMatch(val id: String, val title: String, val subtitle: String = "")
 
 private data class NameEdit(val index: Int?, val swap: RvNameSwap)
 
@@ -161,6 +161,9 @@ internal fun NamesPage(
                                     index = index,
                                     count = matches.size,
                                     onClick = { onOpenItem(match.id) },
+                                    supporting = match.subtitle.takeIf { it.isNotEmpty() }?.let { subtitle ->
+                                        { Text(subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                                    },
                                     trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                                 ) {
                                     Text(match.title, maxLines = 1, overflow = TextOverflow.Ellipsis)

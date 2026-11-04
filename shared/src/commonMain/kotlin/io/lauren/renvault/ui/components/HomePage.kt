@@ -424,9 +424,18 @@ fun RvHomePage(
     }
 
     val nameMatches = remember(everything, names, strings) {
-        everything.filter { hidesName(it, names) }
-            .map { RvNameMatch(it.id, viewOf(it, strings).masked(names).title) }
-            .sortedBy { it.title.lowercase() }
+        everything.filter { item ->
+            when (item) {
+                is RvWebItem -> !item.entry.isDeleted
+                is RvPasskeyItem -> !item.entry.isDeleted && item.linked == null
+                else -> true
+            } && hidesName(item, names)
+        }
+            .map { item ->
+                val view = viewOf(item, strings).masked(names)
+                RvNameMatch(item.id, view.title, view.subtitle)
+            }
+            .sortedWith(compareBy({ it.title.lowercase() }, { it.subtitle.lowercase() }))
     }
 
     val settingsPane: @Composable (Modifier, Boolean) -> Unit = { paneModifier, dialog ->
