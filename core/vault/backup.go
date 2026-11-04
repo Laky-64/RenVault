@@ -428,8 +428,8 @@ func cleanImport(e keychain.WebPassword) keychain.WebPassword {
 	e.Domain = strings.ToLower(strings.TrimSpace(e.Domain))
 	e.Website = e.Website && keychain.IsWebsiteDomain(e.Domain)
 	if e.Website {
-		if e.Name == "" {
-			e.Name = e.Domain
+		if strings.EqualFold(strings.TrimPrefix(e.Name, "www."), strings.TrimPrefix(e.Domain, "www.")) {
+			e.Name = ""
 		}
 		e.Domains = append([]string{e.Domain}, associatedSites(e.Domains, e.Domain)...)
 	}
