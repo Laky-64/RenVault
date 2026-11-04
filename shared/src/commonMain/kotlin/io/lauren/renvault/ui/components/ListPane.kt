@@ -1,14 +1,10 @@
 package io.lauren.renvault.ui.components
 
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.DpOffset
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.RvWebItem
 import io.lauren.renvault.lib.RvWifiItem
@@ -31,6 +27,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import kotlin.math.roundToInt
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -295,10 +294,8 @@ private fun ItemRow(
     val names = LocalNameMask.current
     val copy = rememberClipboardCopy()
     val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
     var menu by remember { mutableStateOf(false) }
-    var anchor by remember { mutableStateOf(DpOffset.Zero) }
-    var height by remember { mutableIntStateOf(0) }
+    var anchor by remember { mutableStateOf(IntOffset.Zero) }
     val username = when (entry) {
         is RvWebItem -> entry.entry.username
         is RvPasskeyItem -> entry.entry.username
@@ -323,14 +320,13 @@ private fun ItemRow(
 
     Box(
         modifier = Modifier
-            .onSizeChanged { height = it.height }
             .pointerInput(entry.id, selecting) {
                 awaitPointerEventScope {
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed && !selecting) {
                             val at = event.changes.first().position
-                            anchor = with(density) { DpOffset(at.x.toDp(), at.y.toDp() - height.toDp()) }
+                            anchor = IntOffset(at.x.roundToInt(), at.y.roundToInt())
                             menu = true
                             event.changes.forEach { it.consume() }
                         }
@@ -403,10 +399,10 @@ private fun ItemRow(
             Text(view.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
+        Box(modifier = Modifier.offset { anchor }.size(0.dp)) {
         DropdownMenu(
             expanded = menu,
             onDismissRequest = { menu = false },
-            offset = anchor,
             shape = MaterialTheme.shapes.large,
         ) {
             DropdownMenuItem(
@@ -458,6 +454,7 @@ private fun ItemRow(
                     },
                 )
             }
+        }
         }
     }
 }
