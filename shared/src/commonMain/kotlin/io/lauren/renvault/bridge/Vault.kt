@@ -161,6 +161,9 @@ object Vault {
     suspend fun inspectBackup(data: ByteArray, password: String = ""): ImportPreview =
         exchange(Op.INSPECT_BACKUP, BackupRequest(password, data))
 
+    suspend fun exportArchive(password: String): ByteArray =
+        exchange<BackupRequest, BytesResponse>(Op.EXPORT_ARCHIVE, BackupRequest(password, ByteArray(0))).data
+
     suspend fun importArchive(data: ByteArray, password: String): ImportResult =
         exchange(Op.IMPORT_ARCHIVE, BackupRequest(password, data))
 

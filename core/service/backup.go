@@ -63,6 +63,15 @@ func installBackup() {
 		return previewResponseOf(preview), err
 	})
 
+	handle(bridge.OpExportArchive, func(_ context.Context, request backupRequest) (bytesResponse, error) {
+		active, err := unlocked()
+		if err != nil {
+			return bytesResponse{}, err
+		}
+		data, err := active.ExportArchive(request.Password)
+		return bytesResponse{Data: data}, err
+	})
+
 	handle(bridge.OpImportArchive, func(_ context.Context, request backupRequest) (importResponse, error) {
 		active, err := unlocked()
 		if err != nil {

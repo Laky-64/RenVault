@@ -528,6 +528,8 @@ fun RvVaultApp(
 
             override suspend fun exportCsv(): ByteArray = Vault.exportCsv()
 
+            override suspend fun exportArchive(password: String): ByteArray = Vault.exportArchive(password)
+
             override suspend fun inspectCsv(data: ByteArray): RvImportPreview = Vault.inspectCsv(data).preview()
 
             override suspend fun inspectArchive(data: ByteArray, password: String): RvImportPreview =

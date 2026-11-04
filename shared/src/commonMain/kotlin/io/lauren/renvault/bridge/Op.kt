@@ -33,6 +33,7 @@ internal object Op {
     const val INSPECT_ARCHIVE = 0x101E
     const val IMPORT_ARCHIVE = 0x101F
     const val INSPECT_BACKUP = 0x1020
+    const val EXPORT_ARCHIVE = 0x1021
 
     const val DEVICES = 0x1201
     const val DEVICE_REMOVE = 0x1202

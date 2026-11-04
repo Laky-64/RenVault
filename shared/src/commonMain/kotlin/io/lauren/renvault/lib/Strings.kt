@@ -226,6 +226,9 @@ interface RvStrings {
     val transferCsvExportDesc: String
     val transferZip: String
     val transferZipDesc: String
+    val transferZipExportDesc: String
+    val transferZipNote: String
+    val transferZipHint: String
     val transferBackupNote: String
     val transferCsvNote: String
     val transferContinue: String

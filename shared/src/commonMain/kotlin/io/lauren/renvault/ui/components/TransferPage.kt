@@ -121,6 +121,7 @@ internal fun TransferPage(
     val options = if (mode == TransferMode.Export) {
         listOf(
             FormatOption(TransferFormat.Backup, RvShieldIcon, accents.blue, strings.backupFileType, strings.transferBackupExportDesc),
+            FormatOption(TransferFormat.Zip, RvFolderZipIcon, accents.teal, strings.transferZip, strings.transferZipExportDesc),
             FormatOption(TransferFormat.Csv, RvUploadFileIcon, accents.orange, "CSV", strings.transferCsvExportDesc),
         )
     } else {
@@ -160,6 +161,8 @@ internal fun TransferPage(
     val onSaved: (Boolean) -> Unit = { saved -> if (saved) step = TransferSteps }
     val saveBackup = rememberFileSaver(strings.backupExport, backupFilter, onSaved)
     val saveCsv = rememberFileSaver(strings.transferExportTitle, csvFilter, onSaved)
+    val zipSaveFilter = remember(strings) { FileFilter(strings.transferZip, listOf("zip"), listOf("application/zip")) }
+    val saveZip = rememberFileSaver(strings.transferExportTitle, zipSaveFilter, onSaved)
 
     val opened: (ByteArray) -> Unit = { bytes ->
         data = bytes
@@ -199,13 +202,14 @@ internal fun TransferPage(
             TransferFormat.Csv -> openCsv
             TransferFormat.Zip -> openZip
         }
-        mode == TransferMode.Export && format == TransferFormat.Backup -> {
+        mode == TransferMode.Export && format != TransferFormat.Csv -> {
             val ready = password.length >= MinBackupPassword && again == password
-            strings.transferExportAction to saveBackup?.takeIf { ready }?.let { save ->
+            val zip = format == TransferFormat.Zip
+            strings.transferExportAction to (if (zip) saveZip else saveBackup)?.takeIf { ready }?.let { save ->
                 {
                     run {
-                        val bytes = actions.export(password)
-                        savedName = transferName("renvault")
+                        val bytes = if (zip) actions.exportArchive(password) else actions.export(password)
+                        savedName = transferName(if (zip) "zip" else "renvault")
                         save(savedName, bytes)
                     }
                 }
@@ -308,6 +312,7 @@ internal fun TransferPage(
                                 footer = when {
                                     mode == TransferMode.Import -> null
                                     format == TransferFormat.Backup -> strings.transferBackupNote
+                                    format == TransferFormat.Zip -> strings.transferZipNote
                                     else -> strings.transferCsvNote
                                 },
                             ) {
@@ -344,8 +349,11 @@ internal fun TransferPage(
                                 )
                             }
                         }
-                        mode == TransferMode.Export && format == TransferFormat.Backup -> {
-                            StepIntro(strings.transferProtectTitle, strings.backupExportHint)
+                        mode == TransferMode.Export && format != TransferFormat.Csv -> {
+                            StepIntro(
+                                strings.transferProtectTitle,
+                                if (format == TransferFormat.Zip) strings.transferZipHint else strings.backupExportHint,
+                            )
                             BackupPasswordFields(
                                 password = password,
                                 again = again,

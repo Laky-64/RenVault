@@ -200,6 +200,9 @@ import io.lauren.renvault.resources.transfer_unlock_archive_title
 import io.lauren.renvault.resources.transfer_unlock_backup_title
 import io.lauren.renvault.resources.transfer_zip
 import io.lauren.renvault.resources.transfer_zip_desc
+import io.lauren.renvault.resources.transfer_zip_export_desc
+import io.lauren.renvault.resources.transfer_zip_note
+import io.lauren.renvault.resources.transfer_zip_hint
 import io.lauren.renvault.resources.auth_restore
 import io.lauren.renvault.resources.auth_2fa_hint
 import io.lauren.renvault.resources.auth_2fa_resend_action
@@ -545,6 +548,9 @@ private val TextResources = listOf(
     Res.string.transfer_csv_export_desc,
     Res.string.transfer_zip,
     Res.string.transfer_zip_desc,
+    Res.string.transfer_zip_export_desc,
+    Res.string.transfer_zip_note,
+    Res.string.transfer_zip_hint,
     Res.string.transfer_backup_note,
     Res.string.transfer_csv_note,
     Res.string.transfer_continue,
@@ -1159,6 +1165,9 @@ private class ResourceStrings(
     override val transferCsvExportDesc: String get() = text(Res.string.transfer_csv_export_desc)
     override val transferZip: String get() = text(Res.string.transfer_zip)
     override val transferZipDesc: String get() = text(Res.string.transfer_zip_desc)
+    override val transferZipExportDesc: String get() = text(Res.string.transfer_zip_export_desc)
+    override val transferZipNote: String get() = text(Res.string.transfer_zip_note)
+    override val transferZipHint: String get() = text(Res.string.transfer_zip_hint)
     override val transferBackupNote: String get() = text(Res.string.transfer_backup_note)
     override val transferCsvNote: String get() = text(Res.string.transfer_csv_note)
     override val transferContinue: String get() = text(Res.string.transfer_continue)

@@ -389,7 +389,10 @@
     <string name="transfer_backup_import_desc">File .renvault</string>
     <string name="transfer_csv_export_desc">Non crittografato · Solo password e codici</string>
     <string name="transfer_zip">Archivio ZIP</string>
-    <string name="transfer_zip_desc">Keyguard, Proton Pass</string>
+    <string name="transfer_zip_desc">RenVault, Keyguard, Proton Pass</string>
+    <string name="transfer_zip_export_desc">Crittografato · Password, passkey e codici</string>
+    <string name="transfer_zip_note">Compatibile con Keyguard. Le reti Wi-Fi non vengono esportate.</string>
+    <string name="transfer_zip_hint">Ti servirà per aprire l\'archivio. Non può essere recuperata.</string>
     <string name="transfer_backup_note">Può essere ripristinato solo in RenVault.</string>
     <string name="transfer_csv_note">Compatibile con la maggior parte dei gestori di password.</string>
     <string name="transfer_continue">Continua</string>

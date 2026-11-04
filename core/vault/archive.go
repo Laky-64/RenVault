@@ -27,9 +27,9 @@ type archiveSource struct {
 }
 
 var archiveSources = []archiveSource{
-	{"keyguard", "vault.json", false, parseBitwardenJSON},
-	{"protonpass", "Proton Pass/data.json", false, parseProtonJSON},
-	{"protonpass", "Proton Pass/data.pgp", true, parseProtonJSON},
+	{"keyguard", archiveVaultEntry, false, parseBitwardenJSON},
+	{protonSource, "Proton Pass/data.json", false, parseProtonJSON},
+	{protonSource, "Proton Pass/data.pgp", true, parseProtonJSON},
 }
 
 type protonExport struct {
@@ -190,6 +190,9 @@ func findArchiveSource(raw []byte) (archiveSource, *zip.File, error) {
 	for _, source := range archiveSources {
 		index := slices.IndexFunc(reader.File, func(f *zip.File) bool { return f.Name == source.entry })
 		if index >= 0 {
+			if source.entry == archiveVaultEntry && reader.Comment == archiveComment {
+				source.source = "renvault"
+			}
 			return source, reader.File[index], nil
 		}
 	}

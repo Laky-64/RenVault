@@ -7,9 +7,11 @@ import (
 	"crypto/aes"
 	"crypto/hmac"
 	"crypto/pbkdf2"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/binary"
 	"io"
+	"time"
 )
 
 const (
@@ -130,4 +132,93 @@ func readLimited(r io.Reader, limit int64) ([]byte, error) {
 		return nil, errArchiveFormat
 	}
 	return data, nil
+}
+
+const (
+	zipAESVersion2  = 2
+	zipAESStrength  = 3
+	zipAESKeySize   = 32
+	zipAESExtraSize = 7
+)
+
+func writeEncryptedZip(name string, data []byte, password, comment string) ([]byte, error) {
+	var compressed bytes.Buffer
+	deflater, err := flate.NewWriter(&compressed, flate.BestCompression)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := deflater.Write(data); err != nil {
+		return nil, err
+	}
+	if err := deflater.Close(); err != nil {
+		return nil, err
+	}
+	plain := compressed.Bytes()
+	defer zero(plain)
+
+	salt := make([]byte, zipAESKeySize/2)
+	if _, err := rand.Read(salt); err != nil {
+		return nil, err
+	}
+	derived, err := pbkdf2.Key(sha1.New, password, salt, zipAESIterations, 2*zipAESKeySize+zipAESCheckSize)
+	if err != nil {
+		return nil, err
+	}
+	defer zero(derived)
+	block, err := aes.NewCipher(derived[:zipAESKeySize])
+	if err != nil {
+		return nil, err
+	}
+	sealed := make([]byte, len(plain))
+	var counter, stream [aes.BlockSize]byte
+	for offset, index := 0, uint64(1); offset < len(plain); offset, index = offset+aes.BlockSize, index+1 {
+		binary.LittleEndian.PutUint64(counter[:8], index)
+		block.Encrypt(stream[:], counter[:])
+		end := min(offset+aes.BlockSize, len(plain))
+		for i := offset; i < end; i++ {
+			sealed[i] = plain[i] ^ stream[i-offset]
+		}
+	}
+	sum := hmac.New(sha1.New, derived[zipAESKeySize:2*zipAESKeySize])
+	sum.Write(sealed)
+
+	body := make([]byte, 0, len(salt)+zipAESCheckSize+len(sealed)+zipAESMacSize)
+	body = append(body, salt...)
+	body = append(body, derived[2*zipAESKeySize:]...)
+	body = append(body, sealed...)
+	body = append(body, sum.Sum(nil)[:zipAESMacSize]...)
+
+	extra := make([]byte, 4+zipAESExtraSize)
+	binary.LittleEndian.PutUint16(extra[0:], zipExtraAES)
+	binary.LittleEndian.PutUint16(extra[2:], zipAESExtraSize)
+	binary.LittleEndian.PutUint16(extra[4:], zipAESVersion2)
+	copy(extra[6:], "AE")
+	extra[8] = zipAESStrength
+	binary.LittleEndian.PutUint16(extra[9:], zip.Deflate)
+
+	var out bytes.Buffer
+	writer := zip.NewWriter(&out)
+	if err := writer.SetComment(comment); err != nil {
+		return nil, err
+	}
+	header := &zip.FileHeader{
+		Name:               name,
+		Method:             zipMethodAES,
+		Flags:              zipEncryptedFlag,
+		Extra:              extra,
+		CompressedSize64:   uint64(len(body)),
+		UncompressedSize64: uint64(len(data)),
+		Modified:           time.Now(),
+	}
+	entry, err := writer.CreateRaw(header)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := entry.Write(body); err != nil {
+		return nil, err
+	}
+	if err := writer.Close(); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }

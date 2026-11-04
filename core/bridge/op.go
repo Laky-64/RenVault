@@ -33,6 +33,7 @@ const (
 	OpInspectArchive       uint32 = 0x101E
 	OpImportArchive        uint32 = 0x101F
 	OpInspectBackup        uint32 = 0x1020
+	OpExportArchive        uint32 = 0x1021
 )
 
 const (

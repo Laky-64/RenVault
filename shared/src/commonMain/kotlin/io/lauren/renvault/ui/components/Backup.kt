@@ -16,6 +16,7 @@ interface RvBackupActions {
     suspend fun restore(data: ByteArray, password: String): RvImported
     suspend fun importCsv(data: ByteArray): RvImported
     suspend fun exportCsv(): ByteArray
+    suspend fun exportArchive(password: String): ByteArray
     suspend fun inspectCsv(data: ByteArray): RvImportPreview
     suspend fun inspectArchive(data: ByteArray, password: String): RvImportPreview
     suspend fun inspectBackup(data: ByteArray, password: String): RvImportPreview
