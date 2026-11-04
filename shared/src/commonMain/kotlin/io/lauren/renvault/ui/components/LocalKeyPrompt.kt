@@ -87,7 +87,6 @@ fun RvLocalKeyPrompt(strings: RvStrings, onChange: (HybridPrompt?) -> Unit = {})
                                 count = current.accounts.size,
                                 onClick = { answer(index) },
                                 leading = { RvSiteIcon(fallback = name) },
-                                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                                 supporting = if (account.title.isNotEmpty() && account.title != name) ({ Text(account.title) }) else null,
                             ) {
                                 Text(name)

@@ -215,7 +215,6 @@ internal fun DevicesPage(
                                     DeviceStatus(device, statusOf(device, now, strings), MaterialTheme.typography.bodySmall)
                                 }
                             },
-                            trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                         ) {
                             Text(device.name)
                         }

@@ -682,7 +682,6 @@ fun RvAuthFlow(
                                         )
                                     },
                                     supporting = { Text(device.model) },
-                                    trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                                 ) {
                                     Text(device.name)
                                 }
@@ -741,7 +740,6 @@ fun RvAuthFlow(
                                 onClick = { chooseLocal(LocalMode.New) },
                                 leading = { SettingBadge(RvAddIcon, RenVault.accents.blue) },
                                 supporting = { Text(strings.authLocalNewDesc) },
-                                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                             ) {
                                 Text(strings.authLocalNew)
                             }
@@ -751,7 +749,6 @@ fun RvAuthFlow(
                                 onClick = { chooseLocal(LocalMode.Join) },
                                 leading = { SettingBadge(RvDevicesIcon, RenVault.accents.teal) },
                                 supporting = { Text(strings.authLocalJoinDesc) },
-                                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                             ) {
                                 Text(strings.authLocalJoin)
                             }

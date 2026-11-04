@@ -65,7 +65,6 @@ import io.lauren.renvault.R
 import io.lauren.renvault.bridge.HybridPrompt
 import io.lauren.renvault.bridge.Vault
 import io.lauren.renvault.ui.components.RvCheckIcon
-import io.lauren.renvault.ui.components.RvChevronRightIcon
 import io.lauren.renvault.ui.components.RvComputerIcon
 import io.lauren.renvault.ui.components.RvFavicon
 import io.lauren.renvault.ui.components.RvPasskeyIcon
@@ -376,7 +375,6 @@ private fun Ask(prompt: HybridPrompt, onAnswer: (HybridPrompt, Int) -> Unit) {
                     count = prompt.accounts.size,
                     onClick = { onAnswer(prompt, index) },
                     leading = { RvSiteIcon(fallback = name) },
-                    trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     supporting = if (account.title.isNotEmpty() && account.title != name) ({ Text(account.title) }) else null,
                 ) {
                     Text(name)

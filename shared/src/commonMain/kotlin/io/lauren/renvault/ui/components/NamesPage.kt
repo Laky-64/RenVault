@@ -164,7 +164,6 @@ internal fun NamesPage(
                                     supporting = match.subtitle.takeIf { it.isNotEmpty() }?.let { subtitle ->
                                         { Text(subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                                     },
-                                    trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                                 ) {
                                     Text(match.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }

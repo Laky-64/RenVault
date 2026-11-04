@@ -129,7 +129,6 @@ fun RvItemEditor(
                 onClick = { websitesOpen = true },
                 leading = { Icon(RvGlobeIcon, contentDescription = null) },
                 supporting = { Text(websiteLabel, maxLines = 1) },
-                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
             ) {
                 Text(strings.fieldWebsite)
             }
@@ -264,7 +263,6 @@ fun RvPasskeyEditor(
                 onClick = { websitesOpen = true },
                 leading = { Icon(RvGlobeIcon, contentDescription = null) },
                 supporting = { Text(websiteLabel, maxLines = 1) },
-                trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
             ) {
                 Text(strings.fieldWebsite)
             }

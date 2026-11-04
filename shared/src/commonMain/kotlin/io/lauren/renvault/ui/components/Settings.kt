@@ -431,7 +431,6 @@ private fun RootPage(
                             supporting = {
                                 Text(strings.devicesCount(state.devices.size) + " · " + (lastPeer ?: strings.devicesNever))
                             },
-                            trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                         ) {
                             Text(strings.devicesTitle)
                         }
@@ -450,7 +449,6 @@ private fun RootPage(
                         onClick = onLanguage,
                         leading = { SettingBadge(RvLanguageIcon, accents.blue) },
                         supporting = { Text(locale.nameOf(locale.current)) },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.settingsLanguage)
                     }
@@ -522,7 +520,6 @@ private fun RootPage(
                                 },
                             )
                         },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.namesTitle)
                     }
@@ -739,7 +736,6 @@ private fun RootPage(
                                 },
                             )
                         },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.settingsSiteIcons)
                     }
@@ -766,7 +762,6 @@ private fun RootPage(
                         onClick = onExport,
                         leading = { SettingBadge(RvDownloadIcon, accents.blue) },
                         supporting = { Text(strings.transferExportDesc) },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.transferExportTitle)
                     }
@@ -776,7 +771,6 @@ private fun RootPage(
                         onClick = onImport,
                         leading = { SettingBadge(RvUploadFileIcon, accents.green) },
                         supporting = { Text(strings.transferImportDesc) },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.transferImportTitle)
                     }
@@ -793,7 +787,6 @@ private fun RootPage(
                         supporting = {
                             Text(state.anisette.ifEmpty { strings.anisetteDefault }, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         },
-                        trailing = { Icon(RvChevronRightIcon, contentDescription = null) },
                     ) {
                         Text(strings.anisetteTitle)
                     }
@@ -831,7 +824,6 @@ private fun RootPage(
                         trailing = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 ChannelPill(state.channel, strings)
-                                Icon(RvChevronRightIcon, contentDescription = null, modifier = Modifier.padding(start = 8.dp))
                             }
                         },
                     ) {
