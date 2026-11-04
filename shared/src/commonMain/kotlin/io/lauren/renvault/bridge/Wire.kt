@@ -579,6 +579,11 @@ data class WinPasskeyEnable(
 )
 
 @Serializable
+data class WinPasskeyHandOff(
+    @SerialName("quit") val quit: Boolean = false,
+)
+
+@Serializable
 internal data class ChangePasswordRequest(
     @SerialName("current") val current: String,
     @SerialName("next") val next: String,

@@ -25,6 +25,10 @@ type winPasskeyEnable struct {
 	Restart bool `cbor:"restart"`
 }
 
+type winPasskeyHandOff struct {
+	Quit bool `cbor:"quit"`
+}
+
 var winPasskeys struct {
 	sync.Mutex
 	service *winplugin.Service
@@ -103,6 +107,10 @@ func installWinPasskeys() {
 			return s.Uninstall()
 		}
 		return winplugin.ErrUnsupported
+	})
+
+	query(bridge.OpWinPasskeyHandOff, func(context.Context) (winPasskeyHandOff, error) {
+		return winPasskeyHandOff{Quit: winplugin.HandOff()}, nil
 	})
 
 	command(bridge.OpWinPasskeyRestart, func(context.Context, none) error {

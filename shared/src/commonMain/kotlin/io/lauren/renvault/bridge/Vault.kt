@@ -70,6 +70,8 @@ object Vault {
 
     suspend fun winPasskeyRestart() = send(Op.WIN_PASSKEY_RESTART)
 
+    suspend fun winPasskeyHandOff(): WinPasskeyHandOff = receive(Op.WIN_PASSKEY_HAND_OFF)
+
     suspend fun notify(title: String, body: String): Long =
         exchange<NotifyRequest, NotifyId>(Op.NOTIFY_SHOW, NotifyRequest(title, body)).id
 

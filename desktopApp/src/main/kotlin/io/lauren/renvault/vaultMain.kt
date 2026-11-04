@@ -45,6 +45,7 @@ import java.awt.Frame
 import androidx.compose.ui.awt.ComposeWindow
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.net.URI
 import kotlin.math.roundToInt
 
@@ -57,6 +58,7 @@ private const val DesktopEntry = "io.lauren.renvault-RenVault"
 fun main() {
     nameWindowClass()
     if (!RvInstance.claim()) return
+    if (runBlocking { runCatching { Vault.winPasskeyHandOff().quit }.getOrDefault(false) }) return
     vaultApplication()
 }
 

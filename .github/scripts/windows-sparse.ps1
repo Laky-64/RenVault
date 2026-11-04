@@ -61,13 +61,30 @@ $makepri = Join-Path $tools 'makepri.exe'
 $priconfig = Join-Path $work 'priconfig.xml'
 & $makepri createconfig /cf $priconfig /dq en-US /pv 10.0.0 /o
 if ($LASTEXITCODE -ne 0) { throw "makepri createconfig failed with $LASTEXITCODE" }
+$config = [xml](Get-Content $priconfig -Raw)
+$packaging = $config.resources.SelectSingleNode('packaging')
+if ($packaging) { [void]$config.resources.RemoveChild($packaging) }
+$config.Save($priconfig)
 & $makepri new /pr $stage /cf $priconfig /mn (Join-Path $stage 'AppxManifest.xml') /of (Join-Path $stage 'resources.pri') /o
 if ($LASTEXITCODE -ne 0) { throw "makepri new failed with $LASTEXITCODE" }
+
+Copy-Item -Path (Join-Path $stage 'Assets') -Destination $AppImage -Recurse -Force
+Copy-Item -Path (Join-Path $stage 'resources.pri') -Destination $AppImage -Force
 
 $exe = Join-Path $AppImage 'RenVault.exe'
 Set-ItemProperty -Path $exe -Name IsReadOnly -Value $false
 & $mt -nologo -inputresource:"$exe;#1" -manifest (Join-Path $source 'RenVault.exe.manifest') -outputresource:"$exe;#1"
 if ($LASTEXITCODE -ne 0) { throw "mt.exe failed with $LASTEXITCODE" }
+
+$cfg = Join-Path $AppImage 'app\RenVault.cfg'
+Set-ItemProperty -Path $cfg -Name IsReadOnly -Value $false
+$lines = [IO.File]::ReadAllLines($cfg)
+if ($lines -notcontains 'win.norestart=true') {
+    $index = [array]::IndexOf($lines, '[Application]')
+    if ($index -lt 0) { throw 'RenVault.cfg has no [Application] section' }
+    $lines = $lines[0..$index] + 'win.norestart=true' + $lines[($index + 1)..($lines.Length - 1)]
+    [IO.File]::WriteAllLines($cfg, $lines)
+}
 
 $pfx = Join-Path $work 'signing.pfx'
 [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERT_PFX))

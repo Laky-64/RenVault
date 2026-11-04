@@ -115,4 +115,5 @@ const (
 	OpWinPasskeySync    uint32 = 0x130c
 	OpWinPasskeyDisable uint32 = 0x130d
 	OpWinPasskeyRestart uint32 = 0x130e
+	OpWinPasskeyHandOff uint32 = 0x130f
 )

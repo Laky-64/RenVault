@@ -24,6 +24,8 @@ func (s *Service) Register() error { return ErrUnsupported }
 
 func (s *Service) Restart() error { return ErrUnsupported }
 
+func HandOff() bool { return false }
+
 func OpenSettings() error { return ErrUnsupported }
 
 func Note(string, error) {}

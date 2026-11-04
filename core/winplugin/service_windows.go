@@ -3,15 +3,18 @@
 package winplugin
 
 import (
+	"archive/zip"
 	"context"
 	"crypto/sha1"
 	"crypto/x509"
 	"encoding/hex"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -204,6 +207,124 @@ func (s *Service) Restart() error {
 	cmd := exec.Command("powershell.exe", "-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", script)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: windows.DETACHED_PROCESS}
 	return cmd.Start()
+}
+
+func HandOff() bool {
+	if !available() || !packaged() || embedded() {
+		return false
+	}
+	script := fmt.Sprintf("Wait-Process -Id %d -Timeout %d -ErrorAction SilentlyContinue; ", os.Getpid(), restartWait)
+	if pkg, dir := bundledUpdate(); pkg != "" {
+		script += fmt.Sprintf("try { Add-AppxPackage -Path %s -ExternalLocation %s -ForceUpdateFromAnyVersion -ErrorAction Stop } catch { Add-Content -LiteralPath %s -Value ((Get-Date -Format s) + ' package update failed: ' + $_) }; ", quote(pkg), quote(dir), quote(logPath()))
+	}
+	script += fmt.Sprintf("[void][Activator]::CreateInstance([Type]::GetTypeFromCLSID('%s'))", clsidRenVault.String())
+	err := startOutsidePackage("cmd.exe /d /c powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -Command \"" + script + "\"")
+	if err != nil {
+		writeLog(fmt.Sprintf("hand off failed: %v", err))
+		return false
+	}
+	return true
+}
+
+func startOutsidePackage(command string) error {
+	attributes, err := windows.NewProcThreadAttributeList(1)
+	if err != nil {
+		return err
+	}
+	defer attributes.Delete()
+	policy := uint32(desktopAppBreakawayProcessTree)
+	if err := attributes.Update(procThreadAttributeDesktopAppPolicy, unsafe.Pointer(&policy), unsafe.Sizeof(policy)); err != nil {
+		return err
+	}
+	info := windows.StartupInfoEx{ProcThreadAttributeList: attributes.List()}
+	info.Cb = uint32(unsafe.Sizeof(info))
+	info.Flags = windows.STARTF_USESHOWWINDOW
+	info.ShowWindow = windows.SW_HIDE
+	line, err := windows.UTF16PtrFromString(command)
+	if err != nil {
+		return err
+	}
+	var process windows.ProcessInformation
+	if err := windows.CreateProcess(nil, line, nil, nil, false, windows.EXTENDED_STARTUPINFO_PRESENT|windows.CREATE_NO_WINDOW, nil, nil, &info.StartupInfo, &process); err != nil {
+		return err
+	}
+	windows.CloseHandle(process.Thread)
+	windows.CloseHandle(process.Process)
+	return nil
+}
+
+func bundledUpdate() (pkg, dir string) {
+	exe, err := os.Executable()
+	if err != nil {
+		return "", ""
+	}
+	dir = filepath.Dir(exe)
+	pkg = locate(dir, packageFile)
+	if pkg == "" {
+		return "", ""
+	}
+	bundled, err := bundledVersion(pkg)
+	if err != nil {
+		writeLog(fmt.Sprintf("read %s failed: %v", packageFile, err))
+		return "", ""
+	}
+	if compareVersions(bundled, registeredVersion()) <= 0 {
+		return "", ""
+	}
+	return pkg, dir
+}
+
+func bundledVersion(pkg string) (string, error) {
+	archive, err := zip.OpenReader(pkg)
+	if err != nil {
+		return "", err
+	}
+	defer archive.Close()
+	manifest, err := archive.Open("AppxManifest.xml")
+	if err != nil {
+		return "", err
+	}
+	defer manifest.Close()
+	var parsed struct {
+		Identity struct {
+			Version string `xml:"Version,attr"`
+		} `xml:"Identity"`
+	}
+	if err := xml.NewDecoder(manifest).Decode(&parsed); err != nil {
+		return "", err
+	}
+	return parsed.Identity.Version, nil
+}
+
+func registeredVersion() string {
+	length := uint32(256)
+	name := make([]uint16, length)
+	r, _, _ := procCurrentPackageFullName.Call(uintptr(unsafe.Pointer(&length)), uintptr(unsafe.Pointer(&name[0])))
+	if r != 0 {
+		return ""
+	}
+	parts := strings.Split(windows.UTF16ToString(name), "_")
+	if len(parts) < 2 {
+		return ""
+	}
+	return parts[1]
+}
+
+func compareVersions(a, b string) int {
+	x, y := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < 4; i++ {
+		var p, q int
+		if i < len(x) {
+			p, _ = strconv.Atoi(x[i])
+		}
+		if i < len(y) {
+			q, _ = strconv.Atoi(y[i])
+		}
+		if p != q {
+			return p - q
+		}
+	}
+	return 0
 }
 
 func OpenSettings() error {
@@ -441,16 +562,23 @@ func Note(step string, err error) {
 	writeLog(fmt.Sprintf("%s failed: %v available=%v packaged=%v", step, err, available(), packaged()))
 }
 
-func writeLog(line string) {
+func logPath() string {
 	dir, err := os.UserCacheDir()
 	if err != nil {
+		return ""
+	}
+	return filepath.Join(dir, "RenVault", "winplugin.log")
+}
+
+func writeLog(line string) {
+	path := logPath()
+	if path == "" {
 		return
 	}
-	dir = filepath.Join(dir, "RenVault")
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return
 	}
-	f, err := os.OpenFile(filepath.Join(dir, "winplugin.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return
 	}

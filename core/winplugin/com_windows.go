@@ -4,6 +4,7 @@ package winplugin
 
 import (
 	"runtime"
+	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -154,4 +155,8 @@ func registerClass() error {
 		comErr = <-ready
 	})
 	return comErr
+}
+
+func embedded() bool {
+	return strings.Contains(strings.ToLower(windows.UTF16PtrToString(windows.GetCommandLine())), "-embedding")
 }

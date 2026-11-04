@@ -37,11 +37,15 @@ const (
 	classNoAggregate = 0x80040110
 	hrCancelled      = 0x800704C7
 	hrNotFound       = 0x80090011
+	hrExists         = 0x8009000F
 	hrBusy           = 0x800700AA
 
 	coinitMultithreaded = 0x0
 	clsctxLocalServer   = 0x4
 	regclsMultipleUse   = 0x1
+
+	procThreadAttributeDesktopAppPolicy = 0x00020012
+	desktopAppBreakawayProcessTree      = 0x1
 
 	appmodelNoPackage = 15700
 	stateEnabled      = 1
