@@ -86,6 +86,11 @@ func installWinPasskeys() {
 			}
 			return winPasskeyEnable{Restart: true}, nil
 		}
+		if s.Status().Installed {
+			err := winplugin.OpenSettings()
+			winplugin.Note("open settings", err)
+			return winPasskeyEnable{}, err
+		}
 		if err := s.Install(); err != nil {
 			winplugin.Note("install", err)
 			return winPasskeyEnable{}, err

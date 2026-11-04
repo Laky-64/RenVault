@@ -658,6 +658,12 @@ private fun RootPage(
 
             if (RvWinPasskeys.status.supported) item {
                 val win = RvWinPasskeys.status
+                LaunchedEffect(win.installed, win.enabled) {
+                    while (win.installed && !win.enabled) {
+                        delay(2000)
+                        RvWinPasskeys.refresh()
+                    }
+                }
                 RvSection(title = strings.localKeySection) {
                     val ready = win.packaged || win.bundled
                     TooltipBox(
@@ -673,7 +679,7 @@ private fun RootPage(
                             onClick = {
                                 scope.launch {
                                     actionBusy = true
-                                    val result = if (win.installed) RvWinPasskeys.disable() else RvWinPasskeys.enable()
+                                    val result = if (win.enabled) RvWinPasskeys.disable() else RvWinPasskeys.enable()
                                     result.onFailure { failure ->
                                         println("winplugin: ${failure.message}")
                                         snackbar.showSnackbar(strings.winPasskeysFailed)
@@ -691,7 +697,7 @@ private fun RootPage(
                                     },
                                 )
                             },
-                            trailing = { Switch(checked = win.installed, onCheckedChange = null, enabled = !actionBusy && ready) },
+                            trailing = { Switch(checked = win.enabled, onCheckedChange = null, enabled = !actionBusy && ready) },
                         ) {
                             Text(strings.winPasskeysTitle)
                         }
