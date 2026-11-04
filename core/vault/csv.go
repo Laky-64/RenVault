@@ -93,8 +93,22 @@ func (v *Vault) ExportCSV() ([]byte, error) {
 	}
 	v.resetTimerLocked()
 	web := slices.DeleteFunc(slices.Clone(v.p.Web), func(w keychain.WebPassword) bool { return w.IsDeleted })
+	var titles []passkeyEntry
+	for _, p := range v.p.Passkey {
+		if !p.IsDeleted {
+			titles = append(titles, passkeyEntry{Title: p.Title, CustomTitle: p.CustomTitle, SiteTitle: p.SiteTitle, RelyingParty: p.RelyingParty, UserName: p.UserName})
+		}
+	}
 	v.mu.Unlock()
 
+	for i, e := range web {
+		if strings.TrimSpace(e.Name) != "" || !e.Website {
+			continue
+		}
+		if at := slices.IndexFunc(titles, func(p passkeyEntry) bool { return passkeyBelongs(p, e) && passkeyTitle(p) != "" }); at >= 0 {
+			web[i].Name = passkeyTitle(titles[at])
+		}
+	}
 	slices.SortStableFunc(web, func(a, b keychain.WebPassword) int {
 		return strings.Compare(strings.ToLower(csvName(a)), strings.ToLower(csvName(b)))
 	})
@@ -105,11 +119,16 @@ func (v *Vault) ExportCSV() ([]byte, error) {
 	}
 	for _, e := range web {
 		var links []string
-		if e.Website {
-			for _, domain := range append([]string{e.Domain}, e.Domains...) {
-				if link := "https://" + domain; domain != "" && !slices.Contains(links, link) {
-					links = append(links, link)
-				}
+		for _, domain := range append([]string{e.Domain}, e.Domains...) {
+			link := "https://" + domain
+			switch {
+			case isAppLink(domain):
+				link = domain
+			case !e.Website || domain == "":
+				continue
+			}
+			if !slices.Contains(links, link) {
+				links = append(links, link)
 			}
 		}
 		row := []string{csvName(e), strings.Join(links, ","), e.Username, e.Password, e.Note, e.TOTP}
