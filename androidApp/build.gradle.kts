@@ -48,12 +48,16 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
 }
 
+val appId = providers.gradleProperty("renvault.id").get()
+val appName = providers.gradleProperty("renvault.name").get()
+
 android {
-    namespace = "io.lauren.renvault"
+    namespace = appId
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "io.lauren.renvault"
+        applicationId = appId
+        resValue("string", "app_name", appName)
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = providers.gradleProperty("renvault.version_code").get().toInt()
@@ -94,5 +98,6 @@ android {
     }
     buildFeatures {
         compose = true
+        resValues = true
     }
 }

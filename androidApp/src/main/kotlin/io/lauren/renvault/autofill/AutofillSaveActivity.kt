@@ -1,5 +1,6 @@
 package io.lauren.renvault.autofill
 
+import io.lauren.renvault.RvAppId
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -24,8 +25,8 @@ import io.lauren.renvault.lib.appLabel
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import kotlinx.coroutines.launch
 
-internal const val ExtraSaveUsername = "io.lauren.renvault.autofill.SAVE_USERNAME"
-internal const val ExtraSavePassword = "io.lauren.renvault.autofill.SAVE_PASSWORD"
+internal const val ExtraSaveUsername = "$RvAppId.autofill.SAVE_USERNAME"
+internal const val ExtraSavePassword = "$RvAppId.autofill.SAVE_PASSWORD"
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AutofillSaveActivity : FragmentActivity() {

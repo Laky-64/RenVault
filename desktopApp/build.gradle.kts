@@ -23,31 +23,34 @@ val runtime = javaToolchains.launcherFor {
     vendor = JvmVendorSpec.JETBRAINS
 }
 
+val appId = providers.gradleProperty("renvault.id").get()
+val appName = providers.gradleProperty("renvault.name").get()
+
 compose.desktop {
     application {
-        mainClass = System.getProperty("renvault.main") ?: "io.lauren.renvault.MainKt"
+        mainClass = "$appId." + (System.getProperty("renvault.main") ?: "MainKt")
         javaHome = runtime.get().metadata.installationPath.asFile.absolutePath
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
         jvmArgs += "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "RenVault"
+            packageName = appName
             packageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
             macOS {
-                bundleID = "io.lauren.renvault"
+                bundleID = appId
                 iconFile.set(project.file("icons/renvault.icns"))
             }
             windows {
                 upgradeUuid = "737d67c8-f74c-4bc3-8e60-847cdd4be676"
                 iconFile.set(project.file("icons/renvault.ico"))
-                menuGroup = "RenVault"
+                menuGroup = appName
                 shortcut = true
                 menu = true
                 dirChooser = true
             }
             linux {
-                packageName = "io.lauren.renvault"
+                packageName = appId
                 iconFile.set(project.file("icons/renvault.png"))
             }
         }

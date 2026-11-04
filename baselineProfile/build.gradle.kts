@@ -12,7 +12,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.lauren.renvault.baseline"
+    namespace = providers.gradleProperty("renvault.id").get() + ".baseline"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     compileOptions {

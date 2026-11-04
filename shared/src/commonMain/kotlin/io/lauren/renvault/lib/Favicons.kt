@@ -1,11 +1,12 @@
 package io.lauren.renvault.lib
 
+import io.lauren.renvault.RvAppName
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 enum class RvIconProvider(val key: String, val label: String) {
-    Site("site", "RenVault"),
+    Site("site", RvAppName),
     DuckDuckGo("duckduckgo", "DuckDuckGo"),
     Google("google", "Google"),
     Bitwarden("bitwarden", "Bitwarden"),

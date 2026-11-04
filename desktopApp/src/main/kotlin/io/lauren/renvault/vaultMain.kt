@@ -53,7 +53,7 @@ private val MinimumSize = DpSize(350.dp, 690.dp)
 
 private val StartSize = DpSize(1000.dp, 670.dp)
 
-private const val DesktopEntry = "io.lauren.renvault-RenVault"
+private const val DesktopEntry = "$RvAppId-$RvAppName"
 
 fun main() {
     nameWindowClass()

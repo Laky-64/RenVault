@@ -1,5 +1,6 @@
 package io.lauren.renvault.bridge
 
+import io.lauren.renvault.RvAppId
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -12,7 +13,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 internal object DeviceSecret {
-    private const val Alias = "io.lauren.renvault.device"
+    private const val Alias = "$RvAppId.device"
     private const val Store = "AndroidKeyStore"
     private const val Transform = "AES/GCM/NoPadding"
     private const val IvSize = 12

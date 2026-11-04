@@ -1,5 +1,6 @@
 package io.lauren.renvault.passkey
 
+import io.lauren.renvault.RvAppId
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -174,8 +175,8 @@ class PasskeyActivity : FragmentActivity() {
             return recent
         }
 
-        const val ExtraMode = "io.lauren.renvault.passkey.MODE"
-        const val ExtraPasskey = "io.lauren.renvault.passkey.ID"
+        const val ExtraMode = "$RvAppId.passkey.MODE"
+        const val ExtraPasskey = "$RvAppId.passkey.ID"
         const val ModeUnlock = "unlock"
         const val ModeGet = "get"
         const val ModeCreate = "create"

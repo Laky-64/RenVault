@@ -1,4 +1,4 @@
-rootProject.name = "RenVault"
+rootProject.name = providers.gradleProperty("renvault.name").get()
 
 pluginManagement {
     includeBuild("build-logic")

@@ -94,7 +94,7 @@ jobs:
       - name: Build the app image
         run: |
           ./gradlew :desktopApp:createDistributable \
-            -Drenvault.main=io.lauren.renvault.VaultMainKt \
+            -Drenvault.main=VaultMainKt \
             -Prenvault.version="${{ steps.version.outputs.name }}" \
             -Prenvault.version_code="${{ steps.version.outputs.code }}" \
             -Prenvault.package_version="${{ steps.version.outputs.package }}"
@@ -113,7 +113,7 @@ jobs:
       - name: Build the packages
         run: |
           ./gradlew :desktopApp:packageDistributionForCurrentOS -x :desktopApp:createDistributable \
-            -Drenvault.main=io.lauren.renvault.VaultMainKt \
+            -Drenvault.main=VaultMainKt \
             -Prenvault.version="${{ steps.version.outputs.name }}" \
             -Prenvault.version_code="${{ steps.version.outputs.code }}" \
             -Prenvault.package_version="${{ steps.version.outputs.package }}"

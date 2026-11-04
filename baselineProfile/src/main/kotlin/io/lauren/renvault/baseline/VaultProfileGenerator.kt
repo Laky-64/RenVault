@@ -10,7 +10,8 @@ import org.junit.Rule
 import org.junit.Test
 import java.util.regex.Pattern
 
-private const val Package = "io.lauren.renvault"
+private val Package: String
+    get() = InstrumentationRegistry.getInstrumentation().targetContext.packageName
 private const val Settle = 5_000L
 
 class VaultProfileGenerator {

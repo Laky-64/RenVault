@@ -4,9 +4,18 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$action = 'RenVaultRemovePasskeyPackage'
+$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+$properties = @{}
+Get-Content (Join-Path $root 'gradle.properties') | ForEach-Object {
+    if ($_ -match '^\s*([^#=\s]+)\s*=\s*(.*?)\s*$') { $properties[$Matches[1]] = $Matches[2] }
+}
+$appId = $properties['renvault.id']
+$appName = $properties['renvault.name']
+if (-not $appId -or -not $appName) { throw 'renvault.id and renvault.name must be set in gradle.properties' }
+
+$action = "${appName}RemovePasskeyPackage"
 $condition = 'REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE'
-$command = '"[System64Folder]WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -WindowStyle Hidden -Command "Get-AppxPackage -AllUsers -Name io.lauren.renvault | Remove-AppxPackage -AllUsers"'
+$command = '"[System64Folder]WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -WindowStyle Hidden -Command "Get-AppxPackage -AllUsers -Name ' + $appId + ' | Remove-AppxPackage -AllUsers"'
 $type = 34 + 64 + 1024 + 2048
 
 $installer = New-Object -ComObject WindowsInstaller.Installer

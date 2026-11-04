@@ -14,6 +14,8 @@ plugins {
 
 val goHost = extensions.getByType<RenVaultNativeExtension>().host()
 
+val appId = providers.gradleProperty("renvault.id")
+val appName = providers.gradleProperty("renvault.name")
 val appVersion = providers.gradleProperty("renvault.version").orElse("0.0.0")
 val appVersionCode = providers.gradleProperty("renvault.version_code").orElse("0")
 val appChannel = providers.gradleProperty("renvault.channel")
@@ -30,11 +32,15 @@ val appCommit = providers.environmentVariable("GITHUB_SHA")
 val goMod = rootProject.layout.projectDirectory.file("core/go.mod")
 val generateVersion = tasks.register("generateAppVersion") {
     val out = layout.buildDirectory.dir("generated/version/kotlin")
+    val id = appId
+    val name = appName
     val version = appVersion
     val code = appVersionCode
     val channel = appChannel
     val commit = appCommit
     val mod = goMod
+    inputs.property("id", id)
+    inputs.property("name", name)
     inputs.property("version", version)
     inputs.property("code", code)
     inputs.property("channel", channel)
@@ -48,6 +54,10 @@ val generateVersion = tasks.register("generateAppVersion") {
         file.writeText(
             """
             |package io.lauren.renvault
+            |
+            |const val RvAppId: String = "${id.get()}"
+            |
+            |const val RvAppName: String = "${name.get()}"
             |
             |const val RvAppVersion: String = "${version.get()}"
             |
@@ -86,7 +96,7 @@ kotlin {
     jvm()
 
     android {
-       namespace = "io.lauren.renvault.shared"
+       namespace = appId.get() + ".shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
 
@@ -146,7 +156,7 @@ kotlin {
 
 compose.resources {
     publicResClass = true
-    packageOfResClass = "io.lauren.renvault.resources"
+    packageOfResClass = appId.get() + ".resources"
 }
 
 dependencies {

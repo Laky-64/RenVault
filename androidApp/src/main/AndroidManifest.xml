@@ -79,7 +79,7 @@
                 <data android:scheme="fido" />
             </intent-filter>
             <intent-filter>
-                <action android:name="io.lauren.renvault.HYBRID" />
+                <action android:name="${applicationId}.HYBRID" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

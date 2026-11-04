@@ -47,7 +47,7 @@ go.dir=/path/to/go
 Then:
 
 - Android: `./gradlew :androidApp:assembleDebug`
-- Desktop: `./gradlew :desktopApp:run -Drenvault.main=io.lauren.renvault.VaultMainKt`
+- Desktop: `./gradlew :desktopApp:run -Drenvault.main=VaultMainKt`
 - Desktop packages: `./gradlew :desktopApp:packageDistributionForCurrentOS`
 
 ## Project layout

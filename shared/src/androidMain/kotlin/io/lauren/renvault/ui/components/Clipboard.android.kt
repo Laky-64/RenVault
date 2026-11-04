@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import io.lauren.renvault.RvAppName
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
@@ -25,7 +26,7 @@ actual fun rememberClipboardCopy(): (text: String, sensitive: Boolean) -> Unit {
 
 fun copyToClipboard(context: Context, text: String, sensitive: Boolean) {
     val clipboard = context.getSystemService<ClipboardManager>() ?: return
-    val label = "RenVault ${Random.nextLong()}"
+    val label = "$RvAppName ${Random.nextLong()}"
     val clip = ClipData.newPlainText(label, text)
     if (sensitive && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         clip.description.extras = PersistableBundle().apply {

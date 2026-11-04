@@ -1,5 +1,6 @@
 package io.lauren.renvault.lib
 
+import io.lauren.renvault.RvAppName
 import android.net.ConnectivityManager
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -44,7 +45,7 @@ internal actual object RvLan {
         stop()
         val manager = nsd ?: return
         val info = NsdServiceInfo().apply {
-            serviceName = "RenVault-" + node.take(8)
+            serviceName = "$RvAppName-" + node.take(8)
             serviceType = LanService
             this.port = port
             setAttribute(LanNodeKey, node)

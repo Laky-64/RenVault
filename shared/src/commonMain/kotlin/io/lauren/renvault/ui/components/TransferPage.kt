@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import io.lauren.renvault.RvAppName
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
@@ -69,7 +70,7 @@ private enum class TransferFormat { Backup, Csv, Zip }
 private const val TransferSteps = 3
 
 private val SourceNames = mapOf(
-    "renvault" to "RenVault",
+    "renvault" to RvAppName,
     "chrome" to "Chrome",
     "bitwarden" to "Bitwarden",
     "protonpass" to "Proton Pass",
@@ -723,4 +724,4 @@ private fun BackupPasswordFields(
 
 @OptIn(ExperimentalTime::class)
 private fun transferName(extension: String): String =
-    "RenVault-${Clock.System.now().toString().substringBefore('T')}.$extension"
+    "$RvAppName-${Clock.System.now().toString().substringBefore('T')}.$extension"

@@ -1,5 +1,6 @@
 package io.lauren.renvault.passkey
 
+import io.lauren.renvault.RvAppName
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
@@ -66,7 +67,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-private const val LogTag = "RenVaultHybrid"
+private const val LogTag = "${RvAppName}Hybrid"
 private const val NoCredentials = 0x2E
 private const val CredentialExcluded = 0x19
 private const val DiscoveryTimeout = 30_000L

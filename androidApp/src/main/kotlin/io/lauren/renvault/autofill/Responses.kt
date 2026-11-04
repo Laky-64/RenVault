@@ -1,5 +1,6 @@
 package io.lauren.renvault.autofill
 
+import io.lauren.renvault.RvAppId
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -29,13 +30,13 @@ import io.lauren.renvault.lib.autofillCopyTotp
 
 private const val MaxDatasets = 8
 
-internal const val ExtraUsername = "io.lauren.renvault.autofill.USERNAME"
-internal const val ExtraPassword = "io.lauren.renvault.autofill.PASSWORD"
-internal const val ExtraDomain = "io.lauren.renvault.autofill.DOMAIN"
-internal const val ExtraPackage = "io.lauren.renvault.autofill.PACKAGE"
-internal const val ExtraPick = "io.lauren.renvault.autofill.PICK"
-internal const val ExtraInline = "io.lauren.renvault.autofill.INLINE"
-internal const val ExtraEntry = "io.lauren.renvault.autofill.ENTRY"
+internal const val ExtraUsername = "$RvAppId.autofill.USERNAME"
+internal const val ExtraPassword = "$RvAppId.autofill.PASSWORD"
+internal const val ExtraDomain = "$RvAppId.autofill.DOMAIN"
+internal const val ExtraPackage = "$RvAppId.autofill.PACKAGE"
+internal const val ExtraPick = "$RvAppId.autofill.PICK"
+internal const val ExtraInline = "$RvAppId.autofill.INLINE"
+internal const val ExtraEntry = "$RvAppId.autofill.ENTRY"
 
 internal fun presentation(context: Context, title: String, detail: String = ""): RemoteViews =
     RemoteViews(context.packageName, R.layout.autofill_item).apply {

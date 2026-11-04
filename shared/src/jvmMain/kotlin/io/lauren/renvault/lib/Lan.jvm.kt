@@ -1,5 +1,6 @@
 package io.lauren.renvault.lib
 
+import io.lauren.renvault.RvAppName
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import kotlinx.coroutines.runBlocking
@@ -56,7 +57,7 @@ internal actual object RvLan {
                     return@thread
                 }
                 runCatching {
-                    val info = ServiceInfo.create(type, "RenVault-" + node.take(8), port, 0, 0, mapOf(LanNodeKey to node))
+                    val info = ServiceInfo.create(type, "$RvAppName-" + node.take(8), port, 0, 0, mapOf(LanNodeKey to node))
                     dns.registerService(info)
                     dns.addServiceListener(type, listener)
                 }

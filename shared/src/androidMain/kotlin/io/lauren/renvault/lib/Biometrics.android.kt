@@ -1,5 +1,6 @@
 package io.lauren.renvault.lib
 
+import io.lauren.renvault.RvAppId
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
@@ -22,7 +23,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
 
-private const val KeyAlias = "io.lauren.renvault.quick"
+private const val KeyAlias = "$RvAppId.quick"
 private const val Transformation = "AES/GCM/NoPadding"
 private const val IvSize = 12
 

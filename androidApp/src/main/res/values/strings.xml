@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">RenVault</string>
     <string name="autofill_unlock">Unlock RenVault</string>
     <string name="passkey_unlock">Unlock RenVault to use your passkeys</string>
     <string name="passkey_verify">Confirm it\'s you</string>

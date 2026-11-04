@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import io.lauren.renvault.RvAppId
 import io.lauren.renvault.lib.RvLockGuard
 import android.content.Context
 import android.content.Intent
@@ -70,7 +71,7 @@ internal actual fun rememberHybridLauncher(): (() -> Unit)? {
     return remember(context) {
         {
             RvLockGuard.expectLeave()
-            context.startActivity(Intent("io.lauren.renvault.HYBRID").setPackage(context.packageName))
+            context.startActivity(Intent("$RvAppId.HYBRID").setPackage(context.packageName))
         }
     }
 }
