@@ -78,7 +78,7 @@ jobs:
 
       - uses: actions/setup-java@v6
         with:
-          distribution: temurin
+          distribution: ${{ runner.os == 'Windows' && runner.arch == 'ARM64' && 'zulu' || 'temurin' }}
           java-version: 25
 
       - uses: actions/setup-go@v7
