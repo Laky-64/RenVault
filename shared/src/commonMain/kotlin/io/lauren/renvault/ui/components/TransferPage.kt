@@ -3,14 +3,6 @@ package io.lauren.renvault.ui.components
 import io.lauren.renvault.RvAppName
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.border
-import androidx.compose.foundation.background
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -43,6 +35,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -340,7 +333,7 @@ internal fun TransferPage(
                                         selected = format == option.format,
                                         leading = { SettingBadge(option.icon, option.tone) },
                                         supporting = { Text(option.detail) },
-                                        trailing = { SelectionDot(format == option.format) },
+                                        trailing = { RadioButton(selected = format == option.format, onClick = null) },
                                     ) {
                                         Text(option.title)
                                     }
@@ -735,19 +728,6 @@ private fun BackupPasswordFields(
         imeAction = ImeAction.Done,
         onDone = onDone,
     )
-}
-
-@Composable
-private fun SelectionDot(selected: Boolean) {
-    val colors = MaterialTheme.colorScheme
-    val dot by animateDpAsState(if (selected) 10.dp else 0.dp, tween(180), label = "selectionDot")
-    val ring by animateColorAsState(if (selected) colors.primary else colors.onSurfaceVariant, tween(180), label = "selectionRing")
-    Box(
-        modifier = Modifier.size(20.dp).border(2.dp, ring, CircleShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(modifier = Modifier.size(dot.coerceAtLeast(0.dp)).background(ring, CircleShape))
-    }
 }
 
 @OptIn(ExperimentalTime::class)
