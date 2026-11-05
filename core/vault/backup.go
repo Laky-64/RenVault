@@ -210,6 +210,9 @@ func (v *Vault) importPasskeys(entries []passkeyEntry) (ImportResult, error) {
 			if v.sh == nil {
 				queuePasskeyAdd(p, e)
 			} else {
+				if title := strings.TrimSpace(e.Title); e.CustomTitle == "" && title != "" && !strings.EqualFold(title, e.RelyingParty) {
+					e.CustomTitle = title
+				}
 				if err := v.sh.putPasskey(key, "", e); err != nil {
 					return err
 				}
