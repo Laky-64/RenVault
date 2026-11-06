@@ -11,6 +11,7 @@ import io.lauren.renvault.lib.RvWifiItem
 import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -325,6 +326,7 @@ private fun ItemRow(
     val live = code?.let { rememberTotpCode(it) }
 
     val motion = MaterialTheme.motionScheme
+    val pick = updateTransition(selecting && checked, label = "rowPick")
 
     Box(
         modifier = Modifier
@@ -357,17 +359,11 @@ private fun ItemRow(
                         favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
                     )
                 }
-                if (!selecting) {
-                    siteIcon()
-                    return@RvSegment
-                }
-                AnimatedContent(
-                    targetState = checked,
+                pick.AnimatedContent(
                     transitionSpec = {
                         (scaleIn(motion.fastSpatialSpec(), initialScale = 0.6f) + fadeIn()) togetherWith
                             (scaleOut(motion.fastSpatialSpec(), targetScale = 0.6f) + fadeOut())
                     },
-                    label = "rowPick",
                 ) { tick ->
                     if (tick) {
                         Box(
