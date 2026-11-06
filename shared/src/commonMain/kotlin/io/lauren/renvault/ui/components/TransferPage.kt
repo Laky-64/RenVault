@@ -197,6 +197,8 @@ internal fun TransferPage(
         }
     }
 
+    RvBackHandler(enabled = step == 2 && !busy, onBack = back)
+
     val action: Pair<String, (() -> Unit)?> = when {
         step == TransferSteps -> strings.transferDone to (onFinished ?: onBack)
         step == 1 && mode == TransferMode.Export -> strings.transferContinue to { step = 2 }
