@@ -26,8 +26,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -252,6 +254,12 @@ fun RvSegment(
     content: @Composable () -> Unit,
 ) {
     val shapes = segmentShapes(index, count)
+    val currentLeading by rememberUpdatedState(leading)
+    val currentTrailing by rememberUpdatedState(trailing)
+    val movableLeading = remember { movableContentOf { currentLeading?.invoke() } }
+    val movableTrailing = remember { movableContentOf { currentTrailing?.invoke() } }
+    val leadingSlot: (@Composable () -> Unit)? = leading?.let { { movableLeading() } }
+    val trailingSlot: (@Composable () -> Unit)? = trailing?.let { { movableTrailing() } }
 
     if (checked != null && onClick != null) {
         SegmentedListItem(
@@ -261,8 +269,8 @@ fun RvSegment(
             modifier = modifier,
             enabled = enabled,
             onLongClick = onLongClick,
-            leadingContent = leading,
-            trailingContent = trailing,
+            leadingContent = leadingSlot,
+            trailingContent = trailingSlot,
             overlineContent = overline,
             supportingContent = supporting,
             colors = colors,
@@ -279,8 +287,8 @@ fun RvSegment(
             modifier = modifier,
             enabled = enabled,
             onLongClick = onLongClick,
-            leadingContent = leading,
-            trailingContent = trailing,
+            leadingContent = leadingSlot,
+            trailingContent = trailingSlot,
             overlineContent = overline,
             supportingContent = supporting,
             colors = colors,
@@ -296,8 +304,8 @@ fun RvSegment(
             modifier = modifier,
             enabled = enabled,
             onLongClick = onLongClick,
-            leadingContent = leading,
-            trailingContent = trailing,
+            leadingContent = leadingSlot,
+            trailingContent = trailingSlot,
             overlineContent = overline,
             supportingContent = supporting,
             colors = colors,
