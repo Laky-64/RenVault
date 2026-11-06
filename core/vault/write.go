@@ -75,7 +75,7 @@ func repointPwned(p *payload, from, to string) {
 }
 
 func (v *Vault) AddPassword(title, website, username, password, note string) error {
-	return v.addPassword(title, website, username, password, note, nil, false)
+	return v.addPassword(title, website, username, password, note, nil, true)
 }
 
 func (v *Vault) addPassword(title, website, username, password, note string, links []string, named bool) error {
