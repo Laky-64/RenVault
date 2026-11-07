@@ -24,6 +24,7 @@ func Install() {
 		installBackup()
 		installQuick()
 		installIcons()
+		installGenerator()
 		installHybrid()
 		installLocalKey()
 		installWinPasskeys()

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Laky-64/renvault-core/bridge"
 	"github.com/Laky-64/renvault-core/icons"
+	"github.com/Laky-64/renvault-core/passgen"
 	"github.com/Laky-64/renvault-core/vault"
 )
 
@@ -29,6 +30,7 @@ func start(base string, secret []byte) {
 	}
 
 	tiles.SetDir(filepath.Join(base, "icons"))
+	passgen.SetDir(filepath.Join(base, "passgen"))
 	opened := vault.New(base)
 	opened.SetOnLock(func() { bridge.Emit(bridge.EventLocked, none{}) })
 	opened.SetOnSync(func() {

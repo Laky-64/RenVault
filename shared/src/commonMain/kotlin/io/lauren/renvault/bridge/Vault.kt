@@ -282,6 +282,12 @@ object Vault {
     suspend fun changePasswordUrl(domain: String): String =
         exchange<DomainRequest, SecretResponse>(Op.CHANGE_PASSWORD_AT, DomainRequest(domain)).secret
 
+    suspend fun checkPassword(domain: String, password: String): RvRuleCheck =
+        exchange(Op.CHECK_PASSWORD, CheckRequest(domain, password))
+
+    suspend fun generatePassword(domain: String, kind: String, length: Int, digits: Boolean, symbols: Boolean, words: Int, rules: String = ""): RvGenerated =
+        exchange(Op.GENERATE_PASSWORD, GenerateRequest(domain, rules, kind, length, digits, symbols, words))
+
     suspend fun passwordHistory(id: String): List<RvPasswordVersion> =
         exchange<IdentifierRequest, HistoryResponse>(Op.PASSWORD_HISTORY, IdentifierRequest(id)).items
 

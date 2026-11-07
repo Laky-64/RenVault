@@ -44,7 +44,6 @@ import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.domainOf
-import io.lauren.renvault.lib.generatePassword
 import io.lauren.renvault.lib.isDomain
 import io.lauren.renvault.lib.strengthLabel
 import io.lauren.renvault.lib.strengthOf
@@ -66,6 +65,10 @@ fun RvItemEditor(
     var websitesOpen by remember { mutableStateOf(false) }
     var totpOpen by remember { mutableStateOf(false) }
     var dropOpen by remember { mutableStateOf(false) }
+    var generatorOpen by remember { mutableStateOf(false) }
+    var passwordShown by remember { mutableStateOf(false) }
+    val generatorDomain = draft.websites.firstOrNull().orEmpty()
+    val ruleProblem = rememberRuleProblem(generatorDomain, draft.password, strings)
 
     val savedCode = hasTotp && !draft.totpRemoved
     val holdsCode = savedCode || draft.totpKey != null
@@ -108,9 +111,29 @@ fun RvItemEditor(
                 label = strings.fieldPassword,
                 leading = RvKeyIcon,
                 secret = true,
+                shown = passwordShown,
+                onShownChange = { passwordShown = it },
+                error = ruleProblem,
+                trailing = {
+                    Row {
+                        IconButton(onClick = { passwordShown = !passwordShown }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(if (passwordShown) RvVisibilityOffIcon else RvVisibilityIcon, contentDescription = null)
+                        }
+                        IconButton(onClick = { generatorOpen = true }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(RvWandIcon, contentDescription = strings.generatorTitle)
+                        }
+                    }
+                },
             )
-            if (draft.password.isNotEmpty()) {
+            if (draft.password.isNotEmpty() && ruleProblem == null) {
                 StrengthFor(draft.password, strings)
+            } else if (draft.password.isEmpty()) {
+                RvPasswordSuggestion(
+                    domain = generatorDomain,
+                    strings = strings,
+                    onUse = { onDraft(draft.copy(password = it)) },
+                    onMore = { generatorOpen = true },
+                )
             }
             if (draft.websites.isNotEmpty()) {
                 TextButton(
@@ -193,6 +216,17 @@ fun RvItemEditor(
         addLabel = strings.websitesAdd,
     )
 
+    RvGeneratorSheet(
+        open = generatorOpen,
+        onOpenChange = { generatorOpen = it },
+        domain = generatorDomain,
+        strings = strings,
+        onUse = {
+            onDraft(draft.copy(password = it))
+            passwordShown = true
+        },
+    )
+
     RvTotpDialog(
         open = totpOpen,
         onOpenChange = { totpOpen = it },
@@ -226,6 +260,20 @@ fun RvPasskeyEditor(
 ) {
     var dropOpen by remember { mutableStateOf(false) }
     var websitesOpen by remember { mutableStateOf(false) }
+    var generatorOpen by remember { mutableStateOf(false) }
+    var passwordShown by remember { mutableStateOf(false) }
+    val generatorDomain = relyingParty
+
+    RvGeneratorSheet(
+        open = generatorOpen,
+        onOpenChange = { generatorOpen = it },
+        domain = generatorDomain,
+        strings = strings,
+        onUse = {
+            onDraft(draft.copy(password = it))
+            passwordShown = true
+        },
+    )
 
     val extra = tidyWebsites(draft.websites).filter { it != relyingParty }
     val websiteLabel = if (extra.isEmpty()) relyingParty else strings.fieldWebsiteMore(relyingParty, extra.size)
@@ -251,6 +299,18 @@ fun RvPasskeyEditor(
                 label = strings.fieldPassword,
                 leading = RvKeyIcon,
                 secret = true,
+                shown = passwordShown,
+                onShownChange = { passwordShown = it },
+                trailing = {
+                    Row {
+                        IconButton(onClick = { passwordShown = !passwordShown }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(if (passwordShown) RvVisibilityOffIcon else RvVisibilityIcon, contentDescription = null)
+                        }
+                        IconButton(onClick = { generatorOpen = true }, shapes = IconButtonDefaults.shapes()) {
+                            Icon(RvWandIcon, contentDescription = strings.generatorTitle)
+                        }
+                    }
+                },
             )
             if (draft.password.isNotEmpty()) {
                 StrengthFor(draft.password, strings)
@@ -335,7 +395,8 @@ fun RvNewPasswordSheet(
     )
     val scope = rememberCoroutineScope()
 
-    var draft by remember { mutableStateOf(RvEditorDraft(password = generatePassword())) }
+    var draft by remember { mutableStateOf(RvEditorDraft()) }
+    var generatorOpen by remember { mutableStateOf(false) }
 
     val domain = domainOf(draft.website)
     val websiteOk = if (draft.website.isNotBlank()) isDomain(domain) else draft.title.isNotBlank()
@@ -348,6 +409,7 @@ fun RvNewPasswordSheet(
         delay(IconSettleMs.milliseconds)
         iconDomain = domain
     }
+    val ruleProblem = rememberRuleProblem(iconDomain, draft.password, strings)
     val canSave = websiteOk && (draft.password.isNotEmpty() || draft.username.isNotBlank())
 
     val close: () -> Unit = {
@@ -435,16 +497,33 @@ fun RvNewPasswordSheet(
                 onValueChange = { draft = draft.copy(password = it) },
                 label = strings.fieldPassword,
                 leading = RvKeyIcon,
+                error = ruleProblem,
                 trailing = {
                     IconButton(
-                        onClick = { draft = draft.copy(password = generatePassword()) },
+                        onClick = { generatorOpen = true },
                         shapes = IconButtonDefaults.shapes(),
                     ) {
-                        Icon(RvGenerateIcon, contentDescription = null)
+                        Icon(RvWandIcon, contentDescription = strings.generatorTitle)
                     }
                 },
             )
-            if (draft.password.isNotEmpty()) StrengthFor(draft.password, strings)
+            if (draft.password.isNotEmpty() && ruleProblem == null) {
+                StrengthFor(draft.password, strings)
+            } else if (draft.password.isEmpty()) {
+                RvPasswordSuggestion(
+                    domain = iconDomain,
+                    strings = strings,
+                    onUse = { draft = draft.copy(password = it) },
+                    onMore = { generatorOpen = true },
+                )
+            }
+            RvGeneratorSheet(
+                open = generatorOpen,
+                onOpenChange = { generatorOpen = it },
+                domain = domain,
+                strings = strings,
+                onUse = { draft = draft.copy(password = it) },
+            )
             RvTextField(
                 value = draft.notes,
                 onValueChange = { draft = draft.copy(notes = it) },

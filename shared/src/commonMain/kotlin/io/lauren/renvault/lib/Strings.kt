@@ -7,6 +7,9 @@ interface RvStrings {
     val generatedRemoveDesc: String
     val generatedRemoveConfirm: String
     val generatedUseHint: String
+    fun rulesInvalid(site: String): String
+    val generatorRuleDigits: String
+    val generatorRuleSpecial: String
     fun historyChanged(time: String): String
     val historyRestoreTitle: String
     val historyRestoreDesc: String
@@ -20,6 +23,25 @@ interface RvStrings {
     val generatedClear: String
     val generatedNote: String
     val strengthVeryStrong: String
+    val generatorTitle: String
+    val generatorKindApple: String
+    val generatorKindRandom: String
+    val generatorKindWords: String
+    val generatorLength: String
+    val generatorWords: String
+    val generatorDigits: String
+    val generatorSymbols: String
+    fun generatorRules(site: String, rules: String): String
+    fun generatorRuleMax(count: String): String
+    fun generatorRuleMin(count: String): String
+    fun generatorRuleSymbols(symbols: String): String
+    val generatorRuleApplied: String
+    val generatorCopy: String
+    val generatorUse: String
+    val generatorAgain: String
+    val generatorSuggested: String
+    val generatorMore: String
+    val generatorUseShort: String
     val fieldUsername: String
     val fieldPassword: String
     val fieldWebsite: String

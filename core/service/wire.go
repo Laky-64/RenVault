@@ -38,6 +38,65 @@ type clipboardRequest struct {
 	ClearAfter int    `cbor:"clear_after"`
 }
 
+type generateRequest struct {
+	Domain  string `cbor:"domain"`
+	Rules   string `cbor:"rules"`
+	Kind    string `cbor:"kind"`
+	Length  int    `cbor:"length"`
+	Digits  bool   `cbor:"digits"`
+	Symbols bool   `cbor:"symbols"`
+	Words   int    `cbor:"words"`
+}
+
+type checkRequest struct {
+	Domain   string `cbor:"domain"`
+	Password string `cbor:"password"`
+}
+
+type checkResponse struct {
+	Problems  []string `cbor:"problems"`
+	MinLength int      `cbor:"min_length"`
+	MaxLength int      `cbor:"max_length"`
+}
+
+type generateResponse struct {
+	Password  string   `cbor:"password"`
+	Kind      string   `cbor:"kind"`
+	Bits      float64  `cbor:"bits"`
+	Ruled     bool     `cbor:"ruled"`
+	MinLength int      `cbor:"min_length"`
+	MaxLength int      `cbor:"max_length"`
+	Symbols   string   `cbor:"symbols"`
+	Blocked   []string `cbor:"blocked"`
+	Digits    bool     `cbor:"needs_digits"`
+	Special   bool     `cbor:"needs_symbols"`
+}
+
+type versionEntry struct {
+	Password string `cbor:"password"`
+	Until    int64  `cbor:"until"`
+}
+
+type historyResponse struct {
+	Items []versionEntry `cbor:"items"`
+}
+
+type generatedEntry struct {
+	Password string `cbor:"password"`
+	Domain   string `cbor:"domain"`
+	At       int64  `cbor:"at"`
+	Saved    bool   `cbor:"saved"`
+}
+
+type generatedResponse struct {
+	Items []generatedEntry `cbor:"items"`
+}
+
+type generatedRequest struct {
+	Password string `cbor:"password"`
+	Domain   string `cbor:"domain"`
+}
+
 type iconsRequest struct {
 	Provider string `cbor:"provider"`
 	Plain    bool   `cbor:"plain"`

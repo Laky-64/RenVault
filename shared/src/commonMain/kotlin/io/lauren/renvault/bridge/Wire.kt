@@ -590,6 +590,43 @@ internal data class ChangePasswordRequest(
 )
 
 @Serializable
+internal data class CheckRequest(
+    @SerialName("domain") val domain: String,
+    @SerialName("password") val password: String,
+)
+
+@Serializable
+data class RvRuleCheck(
+    @SerialName("problems") val problems: List<String> = emptyList(),
+    @SerialName("min_length") val minLength: Int = 0,
+    @SerialName("max_length") val maxLength: Int = 0,
+)
+
+@Serializable
+internal data class GenerateRequest(
+    @SerialName("domain") val domain: String,
+    @SerialName("rules") val rules: String,
+    @SerialName("kind") val kind: String,
+    @SerialName("length") val length: Int,
+    @SerialName("digits") val digits: Boolean,
+    @SerialName("symbols") val symbols: Boolean,
+    @SerialName("words") val words: Int,
+)
+
+@Serializable
+data class RvGenerated(
+    @SerialName("password") val password: String = "",
+    @SerialName("kind") val kind: String = "",
+    @SerialName("bits") val bits: Double = 0.0,
+    @SerialName("ruled") val ruled: Boolean = false,
+    @SerialName("min_length") val minLength: Int = 8,
+    @SerialName("max_length") val maxLength: Int = 64,
+    @SerialName("symbols") val symbols: String = "",
+    @SerialName("blocked") val blocked: List<String> = emptyList(),
+    @SerialName("needs_digits") val needsDigits: Boolean = false,
+    @SerialName("needs_symbols") val needsSymbols: Boolean = false,
+)
+
 @Serializable
 data class RvPasswordVersion(
     @SerialName("password") val password: String = "",
@@ -616,6 +653,7 @@ internal data class GeneratedRequest(
     @SerialName("domain") val domain: String,
 )
 
+@Serializable
 internal data class IconsRequest(
     @SerialName("provider") val provider: String,
     @SerialName("plain") val plain: Boolean = false,

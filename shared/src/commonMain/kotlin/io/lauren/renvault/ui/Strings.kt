@@ -22,6 +22,9 @@ import io.lauren.renvault.resources.generated_remove_title
 import io.lauren.renvault.resources.generated_remove_desc
 import io.lauren.renvault.resources.generated_remove_confirm
 import io.lauren.renvault.resources.generated_use_hint
+import io.lauren.renvault.resources.rules_invalid
+import io.lauren.renvault.resources.generator_rule_digits
+import io.lauren.renvault.resources.generator_rule_special
 import io.lauren.renvault.resources.history_changed
 import io.lauren.renvault.resources.history_restore_title
 import io.lauren.renvault.resources.history_restore_desc
@@ -34,7 +37,26 @@ import io.lauren.renvault.resources.generated_unsaved
 import io.lauren.renvault.resources.generated_empty
 import io.lauren.renvault.resources.generated_clear
 import io.lauren.renvault.resources.generated_note
+import io.lauren.renvault.resources.generator_title
 import io.lauren.renvault.resources.strength_very_strong
+import io.lauren.renvault.resources.generator_kind_apple
+import io.lauren.renvault.resources.generator_kind_random
+import io.lauren.renvault.resources.generator_kind_words
+import io.lauren.renvault.resources.generator_length
+import io.lauren.renvault.resources.generator_words
+import io.lauren.renvault.resources.generator_digits
+import io.lauren.renvault.resources.generator_symbols
+import io.lauren.renvault.resources.generator_rules
+import io.lauren.renvault.resources.generator_rule_max
+import io.lauren.renvault.resources.generator_rule_min
+import io.lauren.renvault.resources.generator_rule_symbols
+import io.lauren.renvault.resources.generator_rule_applied
+import io.lauren.renvault.resources.generator_copy
+import io.lauren.renvault.resources.generator_use
+import io.lauren.renvault.resources.generator_again
+import io.lauren.renvault.resources.generator_suggested
+import io.lauren.renvault.resources.generator_more
+import io.lauren.renvault.resources.generator_use_short
 import io.lauren.renvault.resources.tray_open
 import io.lauren.renvault.resources.tray_quit
 import io.lauren.renvault.resources.photo_filter
@@ -625,6 +647,9 @@ private val TextResources = listOf(
     Res.string.generated_remove_desc,
     Res.string.generated_remove_confirm,
     Res.string.generated_use_hint,
+    Res.string.rules_invalid,
+    Res.string.generator_rule_digits,
+    Res.string.generator_rule_special,
     Res.string.history_changed,
     Res.string.history_restore_title,
     Res.string.history_restore_desc,
@@ -638,6 +663,25 @@ private val TextResources = listOf(
     Res.string.generated_clear,
     Res.string.generated_note,
     Res.string.strength_very_strong,
+    Res.string.generator_title,
+    Res.string.generator_kind_apple,
+    Res.string.generator_kind_random,
+    Res.string.generator_kind_words,
+    Res.string.generator_length,
+    Res.string.generator_words,
+    Res.string.generator_digits,
+    Res.string.generator_symbols,
+    Res.string.generator_rules,
+    Res.string.generator_rule_max,
+    Res.string.generator_rule_min,
+    Res.string.generator_rule_symbols,
+    Res.string.generator_rule_applied,
+    Res.string.generator_copy,
+    Res.string.generator_use,
+    Res.string.generator_again,
+    Res.string.generator_suggested,
+    Res.string.generator_more,
+    Res.string.generator_use_short,
     Res.string.totp_scan_invalid,
     Res.string.totp_scan_found,
     Res.string.totp_scan_format,
@@ -1278,6 +1322,9 @@ private class ResourceStrings(
     override val generatedRemoveDesc: String get() = text(Res.string.generated_remove_desc)
     override val generatedRemoveConfirm: String get() = text(Res.string.generated_remove_confirm)
     override val generatedUseHint: String get() = text(Res.string.generated_use_hint)
+    override fun rulesInvalid(site: String): String = text(Res.string.rules_invalid, site)
+    override val generatorRuleDigits: String get() = text(Res.string.generator_rule_digits)
+    override val generatorRuleSpecial: String get() = text(Res.string.generator_rule_special)
     override fun historyChanged(time: String): String = text(Res.string.history_changed, time)
     override val historyRestoreTitle: String get() = text(Res.string.history_restore_title)
     override val historyRestoreDesc: String get() = text(Res.string.history_restore_desc)
@@ -1291,6 +1338,25 @@ private class ResourceStrings(
     override val generatedClear: String get() = text(Res.string.generated_clear)
     override val generatedNote: String get() = text(Res.string.generated_note)
     override val strengthVeryStrong: String get() = text(Res.string.strength_very_strong)
+    override val generatorTitle: String get() = text(Res.string.generator_title)
+    override val generatorKindApple: String get() = text(Res.string.generator_kind_apple)
+    override val generatorKindRandom: String get() = text(Res.string.generator_kind_random)
+    override val generatorKindWords: String get() = text(Res.string.generator_kind_words)
+    override val generatorLength: String get() = text(Res.string.generator_length)
+    override val generatorWords: String get() = text(Res.string.generator_words)
+    override val generatorDigits: String get() = text(Res.string.generator_digits)
+    override val generatorSymbols: String get() = text(Res.string.generator_symbols)
+    override fun generatorRules(site: String, rules: String): String = text(Res.string.generator_rules, site, rules)
+    override fun generatorRuleMax(count: String): String = text(Res.string.generator_rule_max, count)
+    override fun generatorRuleMin(count: String): String = text(Res.string.generator_rule_min, count)
+    override fun generatorRuleSymbols(symbols: String): String = text(Res.string.generator_rule_symbols, symbols)
+    override val generatorRuleApplied: String get() = text(Res.string.generator_rule_applied)
+    override val generatorCopy: String get() = text(Res.string.generator_copy)
+    override val generatorUse: String get() = text(Res.string.generator_use)
+    override val generatorAgain: String get() = text(Res.string.generator_again)
+    override val generatorSuggested: String get() = text(Res.string.generator_suggested)
+    override val generatorMore: String get() = text(Res.string.generator_more)
+    override val generatorUseShort: String get() = text(Res.string.generator_use_short)
     override val totpScanInvalid: String get() = text(Res.string.totp_scan_invalid)
     override val totpScanFound: String get() = text(Res.string.totp_scan_found)
     override fun totpScanFormat(digits: Int, period: Int): String = text(Res.string.totp_scan_format, digits.toString(), period.toString())

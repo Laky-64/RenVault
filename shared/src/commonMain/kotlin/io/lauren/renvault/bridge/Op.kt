@@ -107,6 +107,8 @@ internal object Op {
     const val RAISE = 0x300A
     const val ICONS_PROVIDER = 0x300B
     const val CLIPBOARD_SET = 0x300C
+    const val GENERATE_PASSWORD = 0x300D
+    const val CHECK_PASSWORD = 0x300E
 }
 
 internal object FailureKind {
