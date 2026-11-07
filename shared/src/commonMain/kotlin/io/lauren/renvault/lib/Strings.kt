@@ -1,6 +1,7 @@
 package io.lauren.renvault.lib
 
 interface RvStrings {
+    val strengthVeryStrong: String
     val fieldUsername: String
     val fieldPassword: String
     val fieldWebsite: String

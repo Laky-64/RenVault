@@ -160,14 +160,15 @@ fun RvStrengthMeter(
 
     val target = when (strength) {
         RvPasswordStrength.None -> 0.08f
-        RvPasswordStrength.Weak -> 0.33f
-        RvPasswordStrength.Fair -> 0.66f
-        RvPasswordStrength.Strong -> 1f
+        RvPasswordStrength.Weak -> 0.3f
+        RvPasswordStrength.Fair -> 0.55f
+        RvPasswordStrength.Strong -> 0.8f
+        RvPasswordStrength.VeryStrong -> 1f
     }
     val tint = when (strength) {
         RvPasswordStrength.None, RvPasswordStrength.Weak -> colors.error
         RvPasswordStrength.Fair -> accents.fair
-        RvPasswordStrength.Strong -> accents.strong
+        RvPasswordStrength.Strong, RvPasswordStrength.VeryStrong -> accents.strong
     }
 
     val progress by animateFloatAsState(target, motion.slowSpatialSpec(), label = "strength")

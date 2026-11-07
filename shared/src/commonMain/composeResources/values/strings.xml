@@ -513,4 +513,5 @@
     <string name="icons_off_desc">With icons turned off, each password shows the first letter of its name and RenVault doesn\'t contact any website</string>
     <string name="icons_use">Use site icons</string>
     <string name="icons_provider">Provider</string>
+    <string name="strength_very_strong">Very strong</string>
 </resources>

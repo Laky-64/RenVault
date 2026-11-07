@@ -16,6 +16,7 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.unescape
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.RvZoneText
+import io.lauren.renvault.resources.strength_very_strong
 import io.lauren.renvault.resources.tray_open
 import io.lauren.renvault.resources.tray_quit
 import io.lauren.renvault.resources.photo_filter
@@ -600,6 +601,7 @@ private val TextResources = listOf(
     Res.string.totp_setup_desc,
     Res.string.totp_key_placeholder,
     Res.string.totp_key_confirm,
+    Res.string.strength_very_strong,
     Res.string.totp_scan_invalid,
     Res.string.totp_scan_found,
     Res.string.totp_scan_format,
@@ -1234,6 +1236,7 @@ private class ResourceStrings(
     override val websitesAdd: String get() = text(Res.string.websites_add)
     override val totpKeyPlaceholder: String get() = text(Res.string.totp_key_placeholder)
     override val totpKeyConfirm: String get() = text(Res.string.totp_key_confirm)
+    override val strengthVeryStrong: String get() = text(Res.string.strength_very_strong)
     override val totpScanInvalid: String get() = text(Res.string.totp_scan_invalid)
     override val totpScanFound: String get() = text(Res.string.totp_scan_found)
     override fun totpScanFormat(digits: Int, period: Int): String = text(Res.string.totp_scan_format, digits.toString(), period.toString())

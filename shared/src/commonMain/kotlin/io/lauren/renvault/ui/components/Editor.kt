@@ -46,6 +46,7 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.domainOf
 import io.lauren.renvault.lib.generatePassword
 import io.lauren.renvault.lib.isDomain
+import io.lauren.renvault.lib.strengthLabel
 import io.lauren.renvault.lib.strengthOf
 import io.lauren.renvault.lib.titleOf
 import kotlinx.coroutines.launch
@@ -313,12 +314,7 @@ private fun StrengthFor(password: String, strings: RvStrings) {
     val level = strengthOf(password)
     RvStrengthMeter(
         strength = level,
-        label = when (level) {
-            RvPasswordStrength.Weak -> strings.strengthWeak
-            RvPasswordStrength.Fair -> strings.strengthFair
-            RvPasswordStrength.Strong -> strings.strengthStrong
-            RvPasswordStrength.None -> null
-        },
+        label = strings.strengthLabel(level),
     )
 }
 

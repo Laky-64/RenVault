@@ -508,4 +508,5 @@
     <string name="icons_off_desc">Con le icone disattivate, ogni password mostra l\'iniziale del nome e RenVault non contatta nessun sito</string>
     <string name="icons_use">Usa le icone dei siti</string>
     <string name="icons_provider">Fornitore</string>
+    <string name="strength_very_strong">Molto forte</string>
 </resources>

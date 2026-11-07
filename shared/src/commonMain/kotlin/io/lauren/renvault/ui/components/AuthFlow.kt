@@ -75,6 +75,7 @@ import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.RvBiometricGone
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
+import io.lauren.renvault.lib.strengthLabel
 import io.lauren.renvault.lib.strengthOf
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.theme.RenVault
@@ -867,12 +868,7 @@ fun RvAuthFlow(
                             AnimatedVisibility(visible = master.isNotEmpty()) {
                                 RvStrengthMeter(
                                     strength = level,
-                                    label = when (level) {
-                                        RvPasswordStrength.Weak -> strings.strengthWeak
-                                        RvPasswordStrength.Fair -> strings.strengthFair
-                                        RvPasswordStrength.Strong -> strings.strengthStrong
-                                        RvPasswordStrength.None -> null
-                                    },
+                                    label = strings.strengthLabel(level),
                                 )
                             }
 

@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.bridge.FileFilter
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
+import io.lauren.renvault.lib.strengthLabel
 import io.lauren.renvault.lib.strengthOf
 import io.lauren.renvault.ui.theme.RenVault
 import io.lauren.renvault.ui.theme.RvTone
@@ -709,12 +710,7 @@ private fun BackupPasswordFields(
     AnimatedVisibility(visible = password.isNotEmpty()) {
         RvStrengthMeter(
             strength = level,
-            label = when (level) {
-                RvPasswordStrength.Weak -> strings.strengthWeak
-                RvPasswordStrength.Fair -> strings.strengthFair
-                RvPasswordStrength.Strong -> strings.strengthStrong
-                RvPasswordStrength.None -> null
-            },
+            label = strings.strengthLabel(level),
         )
     }
     RvTextField(
