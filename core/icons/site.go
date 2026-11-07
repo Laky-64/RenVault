@@ -27,6 +27,8 @@ const (
 	imageBatch     = 2
 	headChunk      = 16 << 10
 	clearSide      = 96
+	tinySide       = 48
+	logoAttempts   = 2
 	touchIconSize  = 180
 	unknownSize    = 32
 	siteUserAgent  = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
@@ -38,6 +40,7 @@ const (
 var (
 	errNoSiteIcon = errors.New("icons: the site declares no usable icon")
 	linkTag       = regexp.MustCompile(`(?is)<link\b[^>]*>`)
+	imgTag        = regexp.MustCompile(`(?is)<img\b[^>]*>`)
 	metaTag       = regexp.MustCompile(`(?is)<meta\b[^>]*itemprop\s*=\s*["']?image[^>]*>`)
 	headEnd       = regexp.MustCompile(`(?i)</head>`)
 	iconRel       = regexp.MustCompile(`(?i)rel\s*=\s*["']?[^"'>]*icon`)
@@ -62,6 +65,7 @@ func siteIcon(domain string) (image.Image, error) {
 func siteIconAt(domain, scheme string) (image.Image, error) {
 	root := &url.URL{Scheme: scheme, Host: domain, Path: "/"}
 	var icons []candidate
+	reached := false
 	page, final, err := fetchLimited(root.String(), siteAcceptHTML, headLimit)
 	if _, unreachable := errors.AsType[*url.Error](err); unreachable {
 		return nil, err
@@ -70,6 +74,7 @@ func siteIconAt(domain, scheme string) (image.Image, error) {
 		root = final
 		found, manifest := parseLinks(page, final)
 		icons = found
+		reached = true
 		if best(icons) < goodEnough && manifest != "" {
 			icons = append(icons, manifestIcons(manifest)...)
 		}
@@ -94,8 +99,25 @@ func siteIconAt(domain, scheme string) (image.Image, error) {
 		queue = queue[:imageAttempts]
 	}
 
+	found := fetchImages(queue, square, imageKeep)
+	chosen, err := pick(found)
+	if reached && (err != nil || tiny(chosen)) {
+		var marks []image.Image
+		for _, logo := range fetchImages(pageLogos(root), nil, logoAttempts) {
+			if mark, ok := logoMark(logo); ok {
+				marks = append(marks, mark)
+			}
+		}
+		if len(marks) > 0 {
+			return pick(marks)
+		}
+	}
+	return chosen, err
+}
+
+func fetchImages(queue []string, square map[string]bool, keep int) []image.Image {
 	var found []image.Image
-	for start := 0; start < len(queue) && len(found) < imageKeep; start += imageBatch {
+	for start := 0; start < len(queue) && len(found) < keep; start += imageBatch {
 		batch := queue[start:min(start+imageBatch, len(queue))]
 		results := make([]image.Image, len(batch))
 		var wg sync.WaitGroup
@@ -119,7 +141,55 @@ func siteIconAt(domain, scheme string) (image.Image, error) {
 			}
 		}
 	}
-	return pick(found)
+	return found
+}
+
+func tiny(img image.Image) bool {
+	return min(img.Bounds().Dx(), img.Bounds().Dy()) < tinySide
+}
+
+func logoMark(img image.Image) (image.Image, bool) {
+	flat := toNRGBA(img)
+	box, ok := contentBounds(flat)
+	if !ok {
+		return nil, false
+	}
+	mark := crop(flat, box)
+	return mark, squarish(mark) && !tiny(mark)
+}
+
+func pageLogos(root *url.URL) []string {
+	page, final, err := fetch(root.String(), siteAcceptHTML, headLimit, true)
+	if err != nil {
+		return nil
+	}
+	return logoLinks(page, final)
+}
+
+func logoLinks(page []byte, base *url.URL) []string {
+	var links []string
+	for _, tag := range imgTag.FindAll(page, -1) {
+		attrs := attributesOf(tag)
+		src := attrs["src"]
+		if src == "" || strings.HasPrefix(src, "data:") || strings.HasSuffix(strings.ToLower(src), ".svg") {
+			continue
+		}
+		hint := strings.ToLower(strings.Join([]string{attrs["class"], attrs["id"], attrs["alt"], src}, " "))
+		if !strings.Contains(hint, "logo") {
+			continue
+		}
+		target, err := base.Parse(src)
+		if err != nil || (target.Scheme != "https" && target.Scheme != "http") {
+			continue
+		}
+		if link := target.String(); !slices.Contains(links, link) {
+			links = append(links, link)
+			if len(links) == logoAttempts {
+				break
+			}
+		}
+	}
+	return links
 }
 
 func squarish(img image.Image) bool {
@@ -262,6 +332,10 @@ func manifestIcons(address string) []candidate {
 }
 
 func fetchLimited(address, accept string, limit int64) ([]byte, *url.URL, error) {
+	return fetch(address, accept, limit, false)
+}
+
+func fetch(address, accept string, limit int64, whole bool) ([]byte, *url.URL, error) {
 	request, err := nethttp.NewRequest(nethttp.MethodGet, address, nil)
 	if err != nil {
 		return nil, nil, err
@@ -287,7 +361,7 @@ func fetchLimited(address, accept string, limit int64) ([]byte, *url.URL, error)
 	if response.StatusCode != nethttp.StatusOK {
 		return nil, nil, fmt.Errorf("http status code %d", response.StatusCode)
 	}
-	if accept == siteAcceptHTML {
+	if accept == siteAcceptHTML && !whole {
 		data, err := readHead(response.Body, limit)
 		return data, response.Request.URL, err
 	}
