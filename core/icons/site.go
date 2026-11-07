@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"io"
+	"net"
 	nethttp "net/http"
 	"net/url"
 	"regexp"
@@ -67,7 +68,7 @@ func siteIconAt(domain, scheme string) (image.Image, error) {
 	var icons []candidate
 	reached := false
 	page, final, err := fetchLimited(root.String(), siteAcceptHTML, headLimit)
-	if _, unreachable := errors.AsType[*url.Error](err); unreachable {
+	if unreachable(err) {
 		return nil, err
 	}
 	if err == nil {
@@ -113,6 +114,14 @@ func siteIconAt(domain, scheme string) (image.Image, error) {
 		}
 	}
 	return chosen, err
+}
+
+func unreachable(err error) bool {
+	if _, ok := errors.AsType[*net.DNSError](err); ok {
+		return true
+	}
+	dial, ok := errors.AsType[*net.OpError](err)
+	return ok && dial.Op == "dial"
 }
 
 func fetchImages(queue []string, square map[string]bool, keep int) []image.Image {
