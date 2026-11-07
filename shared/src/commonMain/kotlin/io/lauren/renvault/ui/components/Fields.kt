@@ -317,7 +317,7 @@ fun RvSegment(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = shapes.shape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = colors.containerColor,
     ) {
         ListItem(
             headlineContent = content,
@@ -325,7 +325,7 @@ fun RvSegment(
             trailingContent = trailing,
             overlineContent = overline,
             supportingContent = supporting,
-            colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+            colors = ListItemDefaults.colors(containerColor = colors.containerColor),
         )
     }
 }
