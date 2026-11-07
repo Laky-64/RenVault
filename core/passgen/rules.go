@@ -1,6 +1,7 @@
 package passgen
 
 import (
+	"github.com/Laky-64/renvault-core/quirks"
 	"slices"
 	"strconv"
 	"strings"
@@ -55,18 +56,11 @@ func (r Rules) Symbols() string {
 }
 
 func RulesFor(domain string) Rules {
-	host := strings.ToLower(strings.TrimSuffix(strings.TrimSpace(domain), "."))
-	for host != "" {
-		if text, ok := quirkFor(host); ok {
-			return ParseRules(text)
-		}
-		_, rest, found := strings.Cut(host, ".")
-		if !found || !strings.Contains(rest, ".") {
-			break
-		}
-		host = rest
+	text, ok := quirks.PasswordRules(domain)
+	if !ok {
+		return Rules{}
 	}
-	return Rules{}
+	return ParseRules(text)
 }
 
 func ParseRules(text string) Rules {
