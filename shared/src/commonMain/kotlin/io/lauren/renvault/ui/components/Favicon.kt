@@ -133,13 +133,7 @@ private fun squareCorners(pixels: IntArray, width: Int, height: Int): Boolean {
         pixels[(height - 1 - inset) * width + inset],
         pixels[(height - 1 - inset) * width + width - 1 - inset],
     )
-    if (corners.any { (it ushr 24) <= 230 }) return false
-    val first = corners.first()
-    return corners.all { pixel ->
-        kotlin.math.abs(((pixel shr 16) and 0xFF) - ((first shr 16) and 0xFF)) +
-            kotlin.math.abs(((pixel shr 8) and 0xFF) - ((first shr 8) and 0xFF)) +
-            kotlin.math.abs((pixel and 0xFF) - (first and 0xFF)) <= BandTolerance
-    }
+    return corners.none { (it ushr 24) <= 230 }
 }
 
 private fun strongest(pixels: IntArray): Color? {
