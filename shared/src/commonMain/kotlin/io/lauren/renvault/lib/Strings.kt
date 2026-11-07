@@ -273,6 +273,17 @@ interface RvStrings {
     val websitesAdd: String
     val totpKeyPlaceholder: String
     val totpKeyConfirm: String
+    val totpScanInvalid: String
+    val totpScanFound: String
+    fun totpScanFormat(digits: Int, period: Int): String
+    fun totpChooseDesc(site: String): String
+    val totpScanDetail: String
+    val totpEnterKey: String
+    val totpEnterKeyDetail: String
+    fun totpScanOtherSite(issuer: String, site: String): String
+    fun totpScanOtherAccount(account: String, username: String): String
+    val totpScanOtherSiteTitle: String
+    val totpScanOtherAccountTitle: String
 
     val authSignInTitle: String
     val authSignInHint: String

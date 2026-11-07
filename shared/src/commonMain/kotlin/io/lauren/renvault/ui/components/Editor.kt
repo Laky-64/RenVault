@@ -195,11 +195,10 @@ fun RvItemEditor(
     RvTotpDialog(
         open = totpOpen,
         onOpenChange = { totpOpen = it },
-        title = strings.editSetUpCode,
-        description = strings.totpSetupDesc(draft.websites.firstOrNull() ?: titleOf(draft)),
-        placeholder = strings.totpKeyPlaceholder,
-        confirm = strings.totpKeyConfirm,
-        cancel = strings.cancel,
+        strings = strings,
+        site = draft.websites.firstOrNull().orEmpty(),
+        name = titleOf(draft),
+        username = draft.username,
         onKey = { onDraft(draft.copy(totpKey = it, totpRemoved = false)) },
     )
 

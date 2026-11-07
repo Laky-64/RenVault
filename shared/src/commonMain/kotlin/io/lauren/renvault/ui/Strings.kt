@@ -87,6 +87,17 @@ import io.lauren.renvault.resources.anisette_default
 import io.lauren.renvault.resources.anisette_invalid
 import io.lauren.renvault.resources.anisette_note
 import io.lauren.renvault.resources.totp_key_confirm
+import io.lauren.renvault.resources.totp_scan_invalid
+import io.lauren.renvault.resources.totp_scan_found
+import io.lauren.renvault.resources.totp_scan_format
+import io.lauren.renvault.resources.totp_choose_desc
+import io.lauren.renvault.resources.totp_scan_detail
+import io.lauren.renvault.resources.totp_enter_key
+import io.lauren.renvault.resources.totp_enter_key_detail
+import io.lauren.renvault.resources.totp_scan_other_site
+import io.lauren.renvault.resources.totp_scan_other_account
+import io.lauren.renvault.resources.totp_scan_other_site_title
+import io.lauren.renvault.resources.totp_scan_other_account_title
 import io.lauren.renvault.resources.totp_key_placeholder
 import io.lauren.renvault.resources.totp_setup_desc
 import io.lauren.renvault.resources.websites_add
@@ -589,6 +600,17 @@ private val TextResources = listOf(
     Res.string.totp_setup_desc,
     Res.string.totp_key_placeholder,
     Res.string.totp_key_confirm,
+    Res.string.totp_scan_invalid,
+    Res.string.totp_scan_found,
+    Res.string.totp_scan_format,
+    Res.string.totp_choose_desc,
+    Res.string.totp_scan_detail,
+    Res.string.totp_enter_key,
+    Res.string.totp_enter_key_detail,
+    Res.string.totp_scan_other_site,
+    Res.string.totp_scan_other_account,
+    Res.string.totp_scan_other_site_title,
+    Res.string.totp_scan_other_account_title,
     Res.string.auth_sign_in_title,
     Res.string.auth_sign_in_hint,
     Res.string.auth_email_placeholder,
@@ -1212,6 +1234,17 @@ private class ResourceStrings(
     override val websitesAdd: String get() = text(Res.string.websites_add)
     override val totpKeyPlaceholder: String get() = text(Res.string.totp_key_placeholder)
     override val totpKeyConfirm: String get() = text(Res.string.totp_key_confirm)
+    override val totpScanInvalid: String get() = text(Res.string.totp_scan_invalid)
+    override val totpScanFound: String get() = text(Res.string.totp_scan_found)
+    override fun totpScanFormat(digits: Int, period: Int): String = text(Res.string.totp_scan_format, digits.toString(), period.toString())
+    override fun totpChooseDesc(site: String): String = text(Res.string.totp_choose_desc, site)
+    override val totpScanDetail: String get() = text(Res.string.totp_scan_detail)
+    override val totpEnterKey: String get() = text(Res.string.totp_enter_key)
+    override val totpEnterKeyDetail: String get() = text(Res.string.totp_enter_key_detail)
+    override fun totpScanOtherSite(issuer: String, site: String): String = text(Res.string.totp_scan_other_site, issuer, site)
+    override fun totpScanOtherAccount(account: String, username: String): String = text(Res.string.totp_scan_other_account, account, username)
+    override val totpScanOtherSiteTitle: String get() = text(Res.string.totp_scan_other_site_title)
+    override val totpScanOtherAccountTitle: String get() = text(Res.string.totp_scan_other_account_title)
 
     override val authSignInTitle: String get() = text(Res.string.auth_sign_in_title)
     override val authSignInHint: String get() = text(Res.string.auth_sign_in_hint)

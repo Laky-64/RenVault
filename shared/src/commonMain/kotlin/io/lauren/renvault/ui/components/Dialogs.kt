@@ -25,6 +25,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.toShape
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -35,14 +43,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -53,6 +61,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import io.lauren.renvault.lib.RvStrings
+import io.lauren.renvault.ui.theme.RenVault
+import io.lauren.renvault.ui.theme.RvTone
 import io.lauren.renvault.lib.tidyWebsites
 import io.lauren.renvault.lib.websitesOk
 import kotlinx.coroutines.delay
@@ -184,52 +194,286 @@ private fun usable(raw: String): Boolean {
     return Base32.matches(value.replace(Loose, "").replace(Padding, ""))
 }
 
+private enum class TotpStage { Choose, Key, Scanned }
+
 @Composable
 fun RvTotpDialog(
     open: Boolean,
     onOpenChange: (Boolean) -> Unit,
-    title: String,
-    description: String,
-    placeholder: String,
-    confirm: String,
-    cancel: String,
+    strings: RvStrings,
+    site: String,
+    name: String,
+    username: String,
     onKey: (String) -> Unit = {},
 ) {
     if (!open) return
 
     var key by remember { mutableStateOf("") }
-    val ready = usable(key)
+    var scanned by remember { mutableStateOf<OtpScan?>(null) }
+    var rejected by remember { mutableStateOf(false) }
+    val scanner = rememberQrScanner { raw ->
+        val result = otpScanOf(raw)
+        rejected = result == null
+        if (result != null) scanned = result
+    }
+    var manual by remember { mutableStateOf(false) }
+    val stage = when {
+        scanned != null -> TotpStage.Scanned
+        manual || scanner == null -> TotpStage.Key
+        else -> TotpStage.Choose
+    }
+    val ready = when (stage) {
+        TotpStage.Scanned -> true
+        TotpStage.Key -> usable(key)
+        TotpStage.Choose -> false
+    }
     val submit = {
         if (ready) {
-            onKey(key.trim())
+            onKey(scanned?.url ?: key.trim())
             onOpenChange(false)
         }
     }
+    val motion = MaterialTheme.motionScheme
 
     AlertDialog(
         onDismissRequest = { onOpenChange(false) },
         icon = { Icon(RvCodesIcon, contentDescription = null) },
-        title = { Text(title) },
+        title = { Text(strings.editSetUpCode) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Text(description)
-                RvTextField(
-                    value = key,
-                    onValueChange = { key = it },
-                    label = placeholder,
-                    capitalization = KeyboardCapitalization.Characters,
-                    keyboard = KeyboardType.Ascii,
-                    onDone = submit,
-                )
+            AnimatedContent(
+                targetState = stage,
+                transitionSpec = {
+                    (fadeIn(motion.defaultEffectsSpec()) + scaleIn(motion.defaultSpatialSpec(), initialScale = 0.94f)) togetherWith
+                        fadeOut(motion.fastEffectsSpec()) using SizeTransform(clip = false)
+                },
+                label = "totpStage",
+            ) { shown ->
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    when (shown) {
+                        TotpStage.Choose -> {
+                            Text(strings.totpChooseDesc(site.ifEmpty { name }))
+                            RvSection {
+                                TotpOption(
+                                    index = 0,
+                                    icon = RvQrScanIcon,
+                                    tone = RenVault.accents.blue,
+                                    title = strings.pairScan,
+                                    detail = strings.totpScanDetail,
+                                    onClick = {
+                                        rejected = false
+                                        scanner?.invoke()
+                                    },
+                                )
+                                TotpOption(
+                                    index = 1,
+                                    icon = RvKeyIcon,
+                                    tone = RenVault.accents.green,
+                                    title = strings.totpEnterKey,
+                                    detail = strings.totpEnterKeyDetail,
+                                    onClick = { manual = true },
+                                )
+                            }
+                            if (rejected) {
+                                Text(
+                                    text = strings.totpScanInvalid,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        }
+                        TotpStage.Key -> {
+                            Text(strings.totpSetupDesc(site.ifEmpty { name }))
+                            RvTextField(
+                                value = key,
+                                onValueChange = { key = it },
+                                label = strings.totpKeyPlaceholder,
+                                capitalization = KeyboardCapitalization.Characters,
+                                keyboard = KeyboardType.Ascii,
+                                onDone = submit,
+                            )
+                        }
+                        TotpStage.Scanned -> scanned?.let { result ->
+                            ScanSummary(
+                                result = result,
+                                format = strings.totpScanFormat(result.digits, result.period),
+                                title = result.issuer.ifEmpty { strings.totpScanFound },
+                                warning = when {
+                                    !siteMatches(result.issuer, site) ->
+                                        ScanWarning(strings.totpScanOtherSiteTitle, strings.totpScanOtherSite(result.issuer, site))
+                                    !accountMatches(result.account, username) ->
+                                        ScanWarning(strings.totpScanOtherAccountTitle, strings.totpScanOtherAccount(result.account, username))
+                                    else -> null
+                                },
+                                rescan = strings.pairScan,
+                                onRescan = { scanner?.invoke() },
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
-            Button(onClick = submit, enabled = ready, shapes = ButtonDefaults.shapes()) { Text(confirm) }
+            if (stage != TotpStage.Choose) {
+                Button(onClick = submit, enabled = ready, shapes = ButtonDefaults.shapes()) { Text(strings.totpKeyConfirm) }
+            }
         },
         dismissButton = {
-            TextButton(onClick = { onOpenChange(false) }, shapes = ButtonDefaults.shapes()) { Text(cancel) }
+            TextButton(onClick = { onOpenChange(false) }, shapes = ButtonDefaults.shapes()) { Text(strings.cancel) }
         },
     )
+}
+
+@Composable
+private fun TotpOption(
+    index: Int,
+    icon: ImageVector,
+    tone: RvTone,
+    title: String,
+    detail: String,
+    onClick: () -> Unit,
+) {
+    RvSegment(
+        index = index,
+        count = 2,
+        onClick = onClick,
+        colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+        leading = { RvShapeBadge(icon = icon, tone = tone, polygon = MaterialShapes.Circle, size = 40.dp, iconSize = 22.dp) },
+        supporting = { Text(detail) },
+    ) {
+        Text(title)
+    }
+}
+
+private class ScanWarning(val title: String, val detail: String)
+
+@Composable
+private fun ScanSummary(
+    result: OtpScan,
+    title: String,
+    format: String,
+    warning: ScanWarning?,
+    rescan: String,
+    onRescan: () -> Unit,
+) {
+    val colors = ListItemDefaults.segmentedColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+    val count = if (warning != null) 2 else 1
+    RvSection {
+        RvSegment(
+            index = 0,
+            count = count,
+            colors = colors,
+            leading = {
+                RvSiteIcon(
+                    fallback = result.issuer.ifEmpty { result.account },
+                    size = 48.dp,
+                    shape = MaterialShapes.Cookie9Sided.toShape(),
+                )
+            },
+            supporting = {
+                Column {
+                    if (result.account.isNotEmpty()) {
+                        Text(result.account, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Text(format)
+                }
+            },
+            trailing = {
+                IconButton(onClick = onRescan, shapes = IconButtonDefaults.shapes()) {
+                    Icon(RvQrScanIcon, contentDescription = rescan)
+                }
+            },
+        ) {
+            Text(title, style = MaterialTheme.typography.titleMediumEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        if (warning != null) {
+            RvSegment(
+                index = 1,
+                count = count,
+                colors = colors,
+                leading = {
+                    RvShapeBadge(
+                        icon = RvWarningIcon,
+                        tone = RvTone(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer),
+                        polygon = MaterialShapes.Circle,
+                        size = 40.dp,
+                        iconSize = 22.dp,
+                    )
+                },
+                supporting = { Text(warning.detail) },
+            ) {
+                Text(warning.title)
+            }
+        }
+    }
+}
+
+private val GenericLabels = setOf("www", "login", "accounts", "account", "access", "auth", "sso", "id", "app", "my", "secure", "signin")
+
+private fun squash(text: String): String = text.lowercase().filter { it.isLetterOrDigit() }
+
+private fun siteMatches(issuer: String, site: String): Boolean {
+    val name = squash(issuer)
+    if (name.isEmpty() || site.isBlank()) return true
+    val host = site.lowercase().substringAfter("://").substringBefore('/')
+    if (squash(host).contains(name)) return true
+    return host.split('.').dropLast(1).any { label ->
+        label !in GenericLabels && label.length >= 3 && name.contains(squash(label))
+    }
+}
+
+private fun accountMatches(account: String, username: String): Boolean {
+    val code = account.trim().lowercase()
+    val user = username.trim().lowercase()
+    return code.isEmpty() || user.isEmpty() || code.contains(user) || user.contains(code)
+}
+
+private class OtpScan(
+    val url: String,
+    val secret: String,
+    val issuer: String,
+    val account: String,
+    val digits: Int,
+    val period: Int,
+)
+
+private fun otpScanOf(raw: String): OtpScan? {
+    val value = raw.trim()
+    if (!OtpAuth.containsMatchIn(value) || !usable(value)) return null
+    val rest = value.substringAfter("://")
+    val label = percentDecode(rest.substringAfter('/', "").substringBefore('?'))
+    val query = rest.substringAfter('?', "").split('&').mapNotNull { pair ->
+        val parts = pair.split('=', limit = 2)
+        if (parts.size == 2) parts[0].lowercase() to percentDecode(parts[1].replace('+', ' ')) else null
+    }.toMap()
+    val secret = query["secret"].orEmpty().replace(Loose, "").replace(Padding, "").uppercase()
+    if (secret.isEmpty()) return null
+    return OtpScan(
+        url = value,
+        secret = secret,
+        issuer = query["issuer"].orEmpty().ifBlank { label.substringBefore(':', "") }.trim(),
+        account = label.substringAfter(':').trim(),
+        digits = query["digits"]?.toIntOrNull() ?: 6,
+        period = query["period"]?.toIntOrNull() ?: 30,
+    )
+}
+
+private fun percentDecode(text: String): String {
+    val bytes = text.encodeToByteArray()
+    val out = ArrayList<Byte>(bytes.size)
+    var index = 0
+    while (index < bytes.size) {
+        val byte = bytes[index]
+        val high = if (byte == '%'.code.toByte()) bytes.getOrNull(index + 1)?.toInt()?.toChar()?.digitToIntOrNull(16) else null
+        val low = if (high != null) bytes.getOrNull(index + 2)?.toInt()?.toChar()?.digitToIntOrNull(16) else null
+        if (high != null && low != null) {
+            out.add((high * 16 + low).toByte())
+            index += 3
+        } else {
+            out.add(byte)
+            index++
+        }
+    }
+    return out.toByteArray().decodeToString()
 }
 
 private val RowDelay = 220.milliseconds
