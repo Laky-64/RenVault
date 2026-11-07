@@ -836,6 +836,7 @@ private fun sortFieldOf(key: String): RvSortField = when (key) {
     "website" -> RvSortField.Website
     "modified" -> RvSortField.Modified
     "created" -> RvSortField.Created
+    "priority" -> RvSortField.Priority
     else -> RvSortField.Title
 }
 
@@ -844,6 +845,7 @@ private fun sortKeyOf(field: RvSortField): String = when (field) {
     RvSortField.Modified -> "modified"
     RvSortField.Created -> "created"
     RvSortField.Title -> "title"
+    RvSortField.Priority -> "priority"
 }
 
 private suspend fun deviceArt(url: String): ImageBitmap? {

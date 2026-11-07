@@ -62,18 +62,6 @@ func webIndex(p *payload, id string) int {
 	return slices.IndexFunc(p.Web, func(w keychain.WebPassword) bool { return webID(w) == id })
 }
 
-func repointPwned(p *payload, from, to string) {
-	if from == to {
-		return
-	}
-	for i := range p.Pwned {
-		if p.Pwned[i] == from {
-			p.Pwned[i] = to
-		}
-	}
-	slices.Sort(p.Pwned)
-}
-
 func (v *Vault) AddPassword(title, website, username, password, note string) error {
 	return v.addPassword(title, website, username, password, note, nil, true)
 }
@@ -245,7 +233,6 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 			e.Domains = assoc
 		}
 		e.Modified = time.Now().UTC()
-		repointPwned(p, webKey(w), webKey(e))
 		moveHistory(p, webKey(w), webKey(e))
 		rememberPassword(p, webKey(e), w.Password, e.Password)
 		next = webID(e)
@@ -348,6 +335,5 @@ func (v *Vault) purgeWeb(p *payload, id string) error {
 	}
 	pushOp(p, outboxOp{Kind: opPurge, Domain: w.Domain, Username: w.Username})
 	p.Web = slices.Delete(p.Web, i, i+1)
-	p.Pwned = slices.DeleteFunc(p.Pwned, func(s string) bool { return s == webKey(w) })
 	return nil
 }

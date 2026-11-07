@@ -442,6 +442,9 @@ func (v *Vault) absorb(in delta, node string) error {
 	if res.changed && onSync != nil {
 		onSync()
 	}
+	if res.changed {
+		go v.checkFresh()
+	}
 	if res.profile && onProfile != nil {
 		onProfile()
 	}

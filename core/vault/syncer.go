@@ -41,6 +41,7 @@ func (v *Vault) kick() {
 	n := v.net
 	v.mu.Unlock()
 	n.kick()
+	go v.checkFresh()
 	if s == nil {
 		return
 	}

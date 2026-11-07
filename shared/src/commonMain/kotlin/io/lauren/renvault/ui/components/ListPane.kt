@@ -8,6 +8,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.RvWebItem
 import io.lauren.renvault.lib.RvWifiItem
+import io.lauren.renvault.lib.RvSecurityIssue
+import io.lauren.renvault.lib.securityIssue
+import io.lauren.renvault.lib.securityIssueLabel
 import kotlinx.coroutines.launch
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -60,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.painter.Painter
@@ -183,7 +187,7 @@ fun RvListPane(
                                     }
                                 }
                             }
-                            SortMenu(sortField, sortAscending, strings, onSort)
+                            SortMenu(sortField, sortAscending, zone.kind == RvZoneKind.Security, strings, onSort)
                             val deletable = zone.kind != RvZoneKind.Networks
                             if (items.isNotEmpty() && deletable) {
                                 IconButton(onClick = { onSelecting(true) }, shapes = IconButtonDefaults.shapes()) {
@@ -317,7 +321,7 @@ private fun ItemRow(
     }
     val view = remember(entry, strings, names) { viewOf(entry, strings).masked(names) }
     val icon = view.icon
-    val compromised = zone == RvZoneKind.Security
+    val issue = if (zone == RvZoneKind.Security) (entry as? RvWebItem)?.securityIssue else null
     val code = if (zone == RvZoneKind.Codes && view.hasTotp) {
         remember(entry.id, secrets) { suspend { secrets.totp(entry.id) } }
     } else {
@@ -380,8 +384,13 @@ private fun ItemRow(
                 }
             },
             supporting = when {
-                compromised -> {
-                    { Text(strings.itemCompromised, color = MaterialTheme.colorScheme.error) }
+                issue != null -> {
+                    {
+                        Text(
+                            text = strings.securityIssueLabel(issue),
+                            color = if (issue == RvSecurityIssue.Compromised) MaterialTheme.colorScheme.error else Color.Unspecified,
+                        )
+                    }
                 }
                 view.subtitle.isNotEmpty() -> {
                     { Text(view.subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
@@ -502,6 +511,7 @@ private fun EmptyList(zone: RvHomeZone, title: String, description: String) {
 private fun SortMenu(
     field: RvSortField,
     ascending: Boolean,
+    priority: Boolean,
     strings: RvStrings,
     onSort: (RvSortField, Boolean) -> Unit,
 ) {
@@ -513,7 +523,8 @@ private fun SortMenu(
         }
 
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, shape = MaterialTheme.shapes.large) {
-            listOf(
+            listOfNotNull(
+                (RvSortField.Priority to strings.sortPriority).takeIf { priority },
                 RvSortField.Title to strings.sortTitle,
                 RvSortField.Website to strings.sortWebsite,
                 RvSortField.Modified to strings.sortModified,

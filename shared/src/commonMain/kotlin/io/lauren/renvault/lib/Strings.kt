@@ -54,6 +54,10 @@ interface RvStrings {
     val fieldCopied: String
     val itemWifiNetwork: String
     val itemCompromised: String
+    val itemReused: String
+    val itemWeak: String
+    val itemReusedWith: String
+    val securityShow: String
 
     val editNoWebsite: String
     val editSaveForCode: String
@@ -137,6 +141,7 @@ interface RvStrings {
     val sortCreated: String
     val sortWebsite: String
     val sortTitle: String
+    val sortPriority: String
     val settingsTitle: String
     val settingsClose: String
     val settingsGeneralTitle: String
@@ -449,6 +454,10 @@ interface RvStrings {
     fun searchPlaceholderIn(zone: String): String
     fun searchEmpty(query: String): String
     fun securityChangeDesc(domain: String): String
+    fun securityReusedDesc(domain: String, sites: String): String
+    fun securityChangeReusedDesc(domain: String, sites: String): String
+    fun securitySitesMore(sites: String, more: Int): String
+    fun securityWeakDesc(domain: String): String
     fun settingsAutoLockMinutes(count: Int): String
     fun settingsPending(count: Int): String
     fun namesFound(count: Int): String

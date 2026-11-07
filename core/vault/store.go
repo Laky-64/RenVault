@@ -61,6 +61,8 @@ type payload struct {
 
 	Pwned   []string  `cbor:"pwned,omitempty"`
 	PwnedAt time.Time `cbor:"pwned_at,omitempty"`
+	Leaked  []string  `cbor:"pwned_marks,omitempty"`
+	Clean   []string  `cbor:"pwned_clean,omitempty"`
 
 	ProfileName      string `cbor:"profile_name,omitempty"`
 	ProfilePhoto     []byte `cbor:"profile_photo,omitempty"`

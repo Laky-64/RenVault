@@ -374,6 +374,9 @@ import io.lauren.renvault.resources.field_website
 import io.lauren.renvault.resources.field_app
 import io.lauren.renvault.resources.field_website_more
 import io.lauren.renvault.resources.item_compromised
+import io.lauren.renvault.resources.item_reused
+import io.lauren.renvault.resources.item_weak
+import io.lauren.renvault.resources.item_reused_with
 import io.lauren.renvault.resources.item_wifi_network
 import io.lauren.renvault.resources.list_selected_count
 import io.lauren.renvault.resources.nav_back
@@ -385,6 +388,11 @@ import io.lauren.renvault.resources.search_placeholder
 import io.lauren.renvault.resources.search_placeholder_in
 import io.lauren.renvault.resources.security_change_action
 import io.lauren.renvault.resources.security_change_desc
+import io.lauren.renvault.resources.security_reused_desc
+import io.lauren.renvault.resources.security_change_reused_desc
+import io.lauren.renvault.resources.security_show
+import io.lauren.renvault.resources.security_sites_more
+import io.lauren.renvault.resources.security_weak_desc
 import io.lauren.renvault.resources.security_change_title
 import io.lauren.renvault.resources.zone_all_desc
 import io.lauren.renvault.resources.zone_all_empty
@@ -494,6 +502,7 @@ import io.lauren.renvault.resources.sort_descending
 import io.lauren.renvault.resources.sort_modified
 import io.lauren.renvault.resources.sort_created
 import io.lauren.renvault.resources.sort_website
+import io.lauren.renvault.resources.sort_priority
 import io.lauren.renvault.resources.sort_title
 import org.jetbrains.compose.resources.PluralStringResource
 import org.jetbrains.compose.resources.ResourceEnvironment
@@ -801,6 +810,9 @@ private val TextResources = listOf(
     Res.string.field_website,
     Res.string.field_app,
     Res.string.item_compromised,
+    Res.string.item_reused,
+    Res.string.item_weak,
+    Res.string.item_reused_with,
     Res.string.item_wifi_network,
     Res.string.nav_back,
     Res.string.list_select,
@@ -822,6 +834,7 @@ private val TextResources = listOf(
     Res.string.sort_created,
     Res.string.sort_website,
     Res.string.sort_title,
+    Res.string.sort_priority,
     Res.string.search_empty,
     Res.string.search_empty_desc,
     Res.string.search_placeholder,
@@ -849,6 +862,10 @@ private val TextResources = listOf(
     Res.string.relative_now,
     Res.string.security_change_action,
     Res.string.security_change_desc,
+    Res.string.security_reused_desc,
+    Res.string.security_change_reused_desc,
+    Res.string.security_show,
+    Res.string.security_weak_desc,
     Res.string.security_change_title,
     Res.string.passkey_learn_more,
     Res.string.passkey_note_desc,
@@ -996,6 +1013,7 @@ private val PluralResources = listOf(
     Res.plurals.field_website_more,
     Res.plurals.list_selected_count,
     Res.plurals.zone_item_count,
+    Res.plurals.security_sites_more,
     Res.plurals.devices_count,
 )
 
@@ -1056,6 +1074,10 @@ private class ResourceStrings(
     override val fieldCopied: String get() = text(Res.string.field_copied)
     override val itemWifiNetwork: String get() = text(Res.string.item_wifi_network)
     override val itemCompromised: String get() = text(Res.string.item_compromised)
+    override val itemReused: String get() = text(Res.string.item_reused)
+    override val itemWeak: String get() = text(Res.string.item_weak)
+    override val itemReusedWith: String get() = text(Res.string.item_reused_with)
+    override val securityShow: String get() = text(Res.string.security_show)
 
     override val editNoWebsite: String get() = text(Res.string.edit_no_website)
     override val editSaveForCode: String get() = text(Res.string.edit_save_for_code)
@@ -1139,6 +1161,7 @@ private class ResourceStrings(
     override val sortCreated: String get() = text(Res.string.sort_created)
     override val sortWebsite: String get() = text(Res.string.sort_website)
     override val sortTitle: String get() = text(Res.string.sort_title)
+    override val sortPriority: String get() = text(Res.string.sort_priority)
     override val settingsTitle: String get() = text(Res.string.settings_title)
     override val settingsClose: String get() = text(Res.string.settings_close)
     override val settingsGeneralTitle: String get() = text(Res.string.settings_general_title)
@@ -1516,6 +1539,18 @@ private class ResourceStrings(
 
     override fun securityChangeDesc(domain: String): String =
         text(Res.string.security_change_desc, domain)
+
+    override fun securityReusedDesc(domain: String, sites: String): String =
+        text(Res.string.security_reused_desc, domain, sites)
+
+    override fun securityChangeReusedDesc(domain: String, sites: String): String =
+        text(Res.string.security_change_reused_desc, domain, sites)
+
+    override fun securitySitesMore(sites: String, more: Int): String =
+        many(Res.plurals.security_sites_more, more, sites, more)
+
+    override fun securityWeakDesc(domain: String): String =
+        text(Res.string.security_weak_desc, domain)
 
     override fun settingsAutoLockMinutes(count: Int): String =
         many(Res.plurals.settings_auto_lock_minutes, count, count)

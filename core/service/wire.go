@@ -454,6 +454,8 @@ type webEntry struct {
 	Groups      []groupEntry `cbor:"groups"`
 	Shared      bool         `cbor:"shared"`
 	Pwned       bool         `cbor:"pwned"`
+	ReusedWith  []string     `cbor:"reused_with"`
+	Weak        bool         `cbor:"weak"`
 	HasPassword bool         `cbor:"has_password"`
 	Created     int64        `cbor:"created"`
 	Modified    int64        `cbor:"modified"`
@@ -523,6 +525,8 @@ func webEntriesOf(items []vault.WebMeta) []webEntry {
 			Groups:      groupsOf(item.Groups),
 			Shared:      item.Shared,
 			Pwned:       item.Pwned,
+			ReusedWith:  item.ReusedWith,
+			Weak:        item.Weak,
 			HasPassword: item.HasPassword,
 			Created:     millis(item.Created),
 			Modified:    millis(item.Modified),

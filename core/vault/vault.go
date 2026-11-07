@@ -37,6 +37,7 @@ type Vault struct {
 	base string
 
 	mu        sync.Mutex
+	freshMu   sync.Mutex
 	vf        *vaultFile
 	k         []byte
 	p         *payload
@@ -134,6 +135,7 @@ func (v *Vault) adoptLocked(vf vaultFile, k []byte, p payload) {
 	v.vf = &vf
 	v.k = k
 	v.p = &p
+	prunePwned(v.p)
 	v.applyAutoLockLocked()
 	v.resetTimerLocked()
 	v.attachLocked()
@@ -170,6 +172,7 @@ func (v *Vault) notify() {
 	if fn != nil {
 		fn()
 	}
+	go v.checkFresh()
 }
 
 func (v *Vault) resetTimerLocked() {
@@ -307,7 +310,7 @@ func (v *Vault) PwnedInfo() PwnedReport {
 			checked++
 		}
 	}
-	return PwnedReport{Checked: checked, Pwned: len(v.p.Pwned), CheckedAt: v.p.PwnedAt}
+	return PwnedReport{Checked: checked, Pwned: leakedCount(v.p), CheckedAt: v.p.PwnedAt}
 }
 
 func (v *Vault) CheckPwned() (PwnedReport, error) {
@@ -318,17 +321,11 @@ func (v *Vault) CheckPwned() (PwnedReport, error) {
 	}
 	origP := v.p
 	v.resetTimerLocked()
-	byKey := make(map[string]string, len(v.p.Web))
-	for _, w := range v.p.Web {
-		if w.IsDeleted || w.Password == "" {
-			continue
-		}
-		byKey[webKey(w)] = pwnedHash(w.Password)
-	}
+	checked := livePasswords(v.p)
 	v.mu.Unlock()
 
-	hashes := make([]string, 0, len(byKey))
-	for _, h := range byKey {
+	hashes := make([]string, 0, len(checked))
+	for _, h := range checked {
 		hashes = append(hashes, h)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), pwnedTimeout)
@@ -338,26 +335,18 @@ func (v *Vault) CheckPwned() (PwnedReport, error) {
 		return PwnedReport{}, err
 	}
 
-	pwned := make([]string, 0, len(hit))
-	for key, h := range byKey {
-		if _, ok := hit[h]; ok {
-			pwned = append(pwned, key)
-		}
-	}
-	slices.Sort(pwned)
-
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.p == nil || v.p != origP {
 		return PwnedReport{}, errLocked
 	}
 	v.resetTimerLocked()
-	v.p.Pwned = pwned
+	recordPwned(v.p, checked, hit)
 	v.p.PwnedAt = time.Now().UTC()
 	if err := v.saveLocked(); err != nil {
 		return PwnedReport{}, err
 	}
-	return PwnedReport{Checked: len(byKey), Pwned: len(pwned), CheckedAt: v.p.PwnedAt}, nil
+	return PwnedReport{Checked: len(checked), Pwned: leakedCount(v.p), CheckedAt: v.p.PwnedAt}, nil
 }
 
 const (
@@ -594,6 +583,7 @@ func (v *Vault) install(masterPassword string, p *payload, fresh bool) error {
 	v.vf = &vf
 	v.k = k
 	v.p = p
+	prunePwned(v.p)
 	v.applyAutoLockLocked()
 	v.resetTimerLocked()
 	if v.sh != nil {
@@ -796,22 +786,12 @@ func passkeyEntries(items []keychain.Item) []passkeyEntry {
 }
 
 func prunePwned(p *payload) {
-	if len(p.Pwned) == 0 {
+	if len(p.Web) == 0 {
 		return
 	}
-	if slices.ContainsFunc(p.Pwned, func(s string) bool { return strings.HasPrefix(s, string(KindWeb)+":") }) {
-		p.Pwned = nil
-		p.PwnedAt = time.Time{}
-		return
-	}
-	live := make([]string, 0, len(p.Pwned))
-	for _, w := range p.Web {
-		if key := webKey(w); slices.Contains(p.Pwned, key) {
-			live = append(live, key)
-		}
-	}
-	slices.Sort(live)
-	p.Pwned = live
+	p.Pwned = nil
+	live := livePasswords(p)
+	p.Clean = slices.DeleteFunc(p.Clean, func(c string) bool { _, ok := live[c]; return !ok })
 }
 
 func copyCaches(dst, src *payload) {

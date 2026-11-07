@@ -15,6 +15,7 @@ require (
 	github.com/jezek/xgb v1.3.1
 	golang.org/x/crypto v0.58.0
 	golang.org/x/image v0.47.0
+	golang.org/x/net v0.60.0
 	golang.org/x/sys v0.49.0
 	rsc.io/qr v0.2.0
 )
@@ -25,6 +26,5 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gtank/ristretto255 v0.2.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
-	golang.org/x/net v0.60.0 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 // indirect
 )

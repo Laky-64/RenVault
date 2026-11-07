@@ -11,6 +11,9 @@
     <string name="field_copied">Copiato</string>
     <string name="item_wifi_network">Rete Wi-Fi</string>
     <string name="item_compromised">Password compromessa</string>
+    <string name="item_reused">Password riutilizzata</string>
+    <string name="item_weak">Password debole</string>
+    <string name="item_reused_with">Riutilizzata in</string>
     <string name="edit_no_website">Nessuno</string>
     <string name="edit_save_for_code">Salva per visualizzare il codice</string>
     <string name="edit_no_code">Nessuno</string>
@@ -28,6 +31,14 @@
     <string name="editor_website_hint">esempio.com</string>
     <string name="security_change_action">Cambia password</string>
     <string name="security_change_title">Cambia subito questa password</string>
+    <string name="security_reused_desc">La password di "%1$s" è usata anche per %2$s. Se uno di questi account viene violato, anche questo è a rischio. Cambiala con una password unica.</string>
+    <string name="security_change_reused_desc">La password di "%1$s" è comparsa in una fuga di dati ed è usata anche per %2$s. Cambiala ovunque per proteggere i tuoi account.</string>
+    <string name="security_show">Mostra</string>
+    <plurals name="security_sites_more">
+        <item quantity="one">%1$s e un altro account</item>
+        <item quantity="other">%1$s e altri %2$d account</item>
+    </plurals>
+    <string name="security_weak_desc">La password di "%1$s" è facile da indovinare. Cambiala con una password più sicura per proteggere il tuo account.</string>
     <string name="security_change_desc">La password di "%1$s" è comparsa in una fuga di dati e potrebbe essere compromessa. Cambiala sul sito web per proteggere il tuo account.</string>
     <string name="passkey_note_desc">Una passkey è un modo sicuro per accedere ai tuoi account. Le passkey offrono un livello di sicurezza superiore rispetto alle password tradizionali.</string>
     <string name="passkey_learn_more">Scopri di più…</string>
@@ -173,6 +184,7 @@
     <string name="sort_modified">Data di modifica</string>
     <string name="sort_created">Data di creazione</string>
     <string name="sort_website">Sito web</string>
+    <string name="sort_priority">Priorità</string>
     <string name="sort_title">Titolo</string>
     <string name="list_select_all">Seleziona tutto</string>
     <string name="list_deselect_all">Deseleziona tutto</string>

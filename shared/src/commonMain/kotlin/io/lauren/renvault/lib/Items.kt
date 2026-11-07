@@ -423,3 +423,33 @@ fun RvItemDetail.masked(names: RvNameMask): RvItemDetail {
         },
     )
 }
+
+enum class RvSecurityIssue { Compromised, Reused, Weak }
+
+val RvWebItem.securityIssue: RvSecurityIssue?
+    get() = when {
+        entry.pwned -> RvSecurityIssue.Compromised
+        entry.reusedWith.isNotEmpty() -> RvSecurityIssue.Reused
+        entry.weak -> RvSecurityIssue.Weak
+        else -> null
+    }
+
+fun RvStrings.securityIssueLabel(issue: RvSecurityIssue): String = when (issue) {
+    RvSecurityIssue.Compromised -> itemCompromised
+    RvSecurityIssue.Reused -> itemReused
+    RvSecurityIssue.Weak -> itemWeak
+}
+
+fun RvStrings.securityIssueDesc(issue: RvSecurityIssue, label: String, reused: List<String>): String {
+    val sites = when {
+        reused.size <= ShownSites -> reused.joinToString(", ")
+        else -> securitySitesMore(reused.take(ShownSites).joinToString(", "), reused.size - ShownSites)
+    }
+    return when (issue) {
+        RvSecurityIssue.Compromised -> if (sites.isEmpty()) securityChangeDesc(label) else securityChangeReusedDesc(label, sites)
+        RvSecurityIssue.Reused -> securityReusedDesc(label, sites)
+        RvSecurityIssue.Weak -> securityWeakDesc(label)
+    }
+}
+
+private const val ShownSites = 3

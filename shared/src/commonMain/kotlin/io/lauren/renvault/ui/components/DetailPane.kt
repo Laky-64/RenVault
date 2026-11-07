@@ -27,6 +27,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.toShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,6 +57,7 @@ import io.lauren.renvault.lib.RvDetailField
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvItem
 import io.lauren.renvault.lib.RvItemIcon
+import io.lauren.renvault.lib.RvItemView
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvStrings
@@ -79,6 +82,10 @@ import io.lauren.renvault.lib.raw
 import io.lauren.renvault.lib.masked
 import io.lauren.renvault.lib.hidesName
 import io.lauren.renvault.lib.RvNameMask
+import io.lauren.renvault.lib.RvSecurityIssue
+import io.lauren.renvault.lib.securityIssue
+import io.lauren.renvault.lib.securityIssueDesc
+import io.lauren.renvault.lib.securityIssueLabel
 import io.lauren.renvault.ui.LocalNameNotice
 
 @Composable
@@ -106,6 +113,9 @@ fun RvDetailPane(
     onRecover: () -> Unit,
     onPurge: () -> Unit,
     onRestorePassword: (String) -> Unit,
+    reusedWith: List<RvItem>,
+    rowFavicon: (String) -> Painter?,
+    onOpenItem: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (item == null) {
@@ -240,6 +250,9 @@ fun RvDetailPane(
                                 onRecover = onRecover,
                                 onPurge = onPurge,
                                 onRestorePassword = onRestorePassword,
+                                reusedWith = reusedWith,
+                                favicon = rowFavicon,
+                                onOpenItem = onOpenItem,
                             )
                         }
                     }
@@ -303,24 +316,38 @@ private fun ItemView(
     onRecover: () -> Unit,
     onPurge: () -> Unit,
     onRestorePassword: (String) -> Unit,
+    reusedWith: List<RvItem>,
+    favicon: (String) -> Painter?,
+    onOpenItem: (String) -> Unit,
 ) {
     val web = item as? RvWebItem
-    val pwned = web?.entry?.pwned == true
+    val issue = web?.securityIssue
     val hasPasskey = item is RvPasskeyItem || web?.passkey != null
     val discarded = if (item !is RvWifiItem && item.isDeleted) deletedAt(item) else null
     var purgeOpen by remember { mutableStateOf(false) }
     var historyOpen by remember(item.id) { mutableStateOf(false) }
+    var reusedOpen by remember(item.id) { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        if (pwned) {
+        if (web != null && issue != null) {
             val site = siteOf(web)
             NoticeCard(
                 icon = RvWarningIcon,
                 tone = RvTone(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer),
-                title = if (zone == RvZoneKind.Security) strings.securityChangeTitle else strings.itemCompromised,
-                description = strings.securityChangeDesc(names.mask(labelOf(web))),
+                title = if (issue == RvSecurityIssue.Compromised && zone == RvZoneKind.Security) {
+                    strings.securityChangeTitle
+                } else {
+                    strings.securityIssueLabel(issue)
+                },
+                description = strings.securityIssueDesc(
+                    issue = issue,
+                    label = names.mask(labelOf(web)),
+                    reused = accountLabels(viewOf(item, strings).masked(names).title, reusedWith.map { viewOf(it, strings).masked(names) }),
+                ),
                 action = if (site.isNotEmpty()) strings.securityChangeAction else null,
                 onAction = { onChangePassword(site) },
+                secondary = if (reusedWith.isNotEmpty()) strings.securityShow else null,
+                onSecondary = { reusedOpen = true },
             )
         }
 
@@ -356,6 +383,16 @@ private fun ItemView(
                 }
             }
         }
+
+        RvReusedSheet(
+            open = reusedOpen,
+            onOpenChange = { reusedOpen = it },
+            items = reusedWith,
+            strings = strings,
+            names = names,
+            favicon = favicon,
+            onOpenItem = onOpenItem,
+        )
 
         RvPasswordHistorySheet(
             open = historyOpen,
@@ -497,6 +534,8 @@ fun NoticeCard(
     description: String,
     action: String?,
     onAction: () -> Unit,
+    secondary: String? = null,
+    onSecondary: () -> Unit = {},
 ) {
     Surface(
         shape = MaterialTheme.shapes.extraLarge,
@@ -510,14 +549,26 @@ fun NoticeCard(
                 Text(title, style = MaterialTheme.typography.titleMediumEmphasized)
             }
             Text(description, style = MaterialTheme.typography.bodyMedium)
-            if (action != null) {
-                TextButton(
-                    onClick = onAction,
-                    shapes = ButtonDefaults.shapes(),
-                    colors = ButtonDefaults.textButtonColors(contentColor = tone.content),
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(action)
+            if (action != null || secondary != null) {
+                Row(modifier = Modifier.align(Alignment.End)) {
+                    if (secondary != null) {
+                        TextButton(
+                            onClick = onSecondary,
+                            shapes = ButtonDefaults.shapes(),
+                            colors = ButtonDefaults.textButtonColors(contentColor = tone.content),
+                        ) {
+                            Text(secondary)
+                        }
+                    }
+                    if (action != null) {
+                        TextButton(
+                            onClick = onAction,
+                            shapes = ButtonDefaults.shapes(),
+                            colors = ButtonDefaults.textButtonColors(contentColor = tone.content),
+                        ) {
+                            Text(action)
+                        }
+                    }
                 }
             }
         }
@@ -563,4 +614,73 @@ private fun deletedAt(item: RvItem): Long = when (item) {
     is RvWebItem -> item.entry.deleted
     is RvPasskeyItem -> item.entry.deleted
     is RvWifiItem -> 0L
+}
+
+@Composable
+private fun RvReusedSheet(
+    open: Boolean,
+    onOpenChange: (Boolean) -> Unit,
+    items: List<RvItem>,
+    strings: RvStrings,
+    names: RvNameMask,
+    favicon: (String) -> Painter?,
+    onOpenItem: (String) -> Unit,
+) {
+    if (!open) return
+    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+
+    ModalBottomSheet(
+        onDismissRequest = { onOpenChange(false) },
+        sheetState = sheet,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = strings.itemReusedWith,
+                style = MaterialTheme.typography.titleLargeEmphasized,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            RvSection {
+                items.forEachIndexed { index, other ->
+                    val view = remember(other, strings, names) { viewOf(other, strings).masked(names) }
+                    RvSegment(
+                        index = index,
+                        count = items.size,
+                        onClick = {
+                            scope.launch { sheet.hide() }.invokeOnCompletion {
+                                onOpenChange(false)
+                                onOpenItem(other.id)
+                            }
+                        },
+                        leading = {
+                            RvSiteIcon(
+                                fallback = view.title,
+                                favicon = (view.icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
+                            )
+                        },
+                        supporting = view.subtitle.takeIf { it.isNotEmpty() }?.let { text -> { Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis) } },
+                    ) {
+                        Text(view.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun accountLabels(own: String, others: List<RvItemView>): List<String> {
+    val counts = others.groupingBy { it.title }.eachCount()
+    return others.map { other ->
+        val ambiguous = other.title == own || (counts[other.title] ?: 0) > 1
+        if (ambiguous && other.subtitle.isNotEmpty()) "${other.title} (${other.subtitle})" else other.title
+    }.distinct()
 }

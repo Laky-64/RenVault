@@ -67,6 +67,9 @@
     <string name="field_copied">Copied</string>
     <string name="item_wifi_network">Wi-Fi Network</string>
     <string name="item_compromised">Compromised Password</string>
+    <string name="item_reused">Reused Password</string>
+    <string name="item_weak">Weak Password</string>
+    <string name="item_reused_with">Reused In</string>
     <string name="edit_no_website">None</string>
     <string name="edit_save_for_code">Save to View Code</string>
     <string name="edit_no_code">None</string>
@@ -84,6 +87,14 @@
     <string name="editor_website_hint">example.com</string>
     <string name="security_change_action">Change Password</string>
     <string name="security_change_title">Change This Password Now</string>
+    <string name="security_reused_desc">The password for "%1$s" is also used for %2$s. If one of these accounts is breached, this one is at risk too. Change it to a unique password.</string>
+    <string name="security_change_reused_desc">The password for "%1$s" was found in a data leak and is also used for %2$s. Change it everywhere to help protect your accounts.</string>
+    <string name="security_show">Show</string>
+    <plurals name="security_sites_more">
+        <item quantity="one">%1$s and 1 more account</item>
+        <item quantity="other">%1$s and %2$d more accounts</item>
+    </plurals>
+    <string name="security_weak_desc">The password for "%1$s" is easy to guess. Change it to a stronger password to help protect your account.</string>
     <string name="security_change_desc">The password for "%1$s" was found in a data leak and may be compromised. Change it on the website to help protect your account.</string>
     <string name="passkey_note_desc">A passkey is a secure way to sign in to your accounts. Passkeys provide more security than traditional passwords.</string>
     <string name="passkey_learn_more">Learn More…</string>
@@ -229,6 +240,7 @@
     <string name="sort_modified">Date Modified</string>
     <string name="sort_created">Date Created</string>
     <string name="sort_website">Website</string>
+    <string name="sort_priority">Priority</string>
     <string name="sort_title">Title</string>
     <string name="list_select_all">Select All</string>
     <string name="list_deselect_all">Deselect All</string>

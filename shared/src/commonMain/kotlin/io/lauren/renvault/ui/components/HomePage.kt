@@ -48,6 +48,7 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.RvWebItem
 import io.lauren.renvault.lib.RvWifiItem
 import io.lauren.renvault.lib.RvZoneKind
+import io.lauren.renvault.lib.securityIssue
 import io.lauren.renvault.lib.canSave
 import io.lauren.renvault.lib.draftOf
 import io.lauren.renvault.lib.editableOf
@@ -101,7 +102,7 @@ fun homeZones(
             RvHomeZone(RvZoneKind.Passkeys, ZoneGlyph.Passkey, accents.green, passkeys.filter { !it.entry.isDeleted }),
             RvHomeZone(RvZoneKind.Codes, ZoneGlyph.Codes, accents.yellow, live.filter { it.entry.hasTotp }),
             RvHomeZone(RvZoneKind.Networks, ZoneGlyph.Wifi, accents.teal, wifi),
-            RvHomeZone(RvZoneKind.Security, ZoneGlyph.Security, accents.red, live.filter { it.entry.pwned }),
+            RvHomeZone(RvZoneKind.Security, ZoneGlyph.Security, accents.red, live.filter { it.securityIssue != null }),
             RvHomeZone(
                 kind = RvZoneKind.Deleted,
                 icon = ZoneGlyph.Deleted,
@@ -198,8 +199,9 @@ fun RvHomePage(
     val found = remember(active, query, names) {
         if (query.isBlank()) active.items else active.items.filter { matchesQuery(it, query, names) }
     }
-    val items = remember(found, sortField, sortAscending, strings) {
-        sortItems(found, sortField, sortAscending, strings)
+    val shownSort = if (sortField == RvSortField.Priority && active.kind != RvZoneKind.Security) RvSortField.Title else sortField
+    val items = remember(found, shownSort, sortAscending, strings) {
+        sortItems(found, shownSort, sortAscending, strings)
     }
 
     val everything = remember(zones) { zones.flatMap { it.items }.distinctBy { it.id } }
@@ -372,7 +374,7 @@ fun RvHomePage(
             picked = picked,
             onPicked = { picked = it },
             openId = if (compact) null else itemId,
-            sortField = sortField,
+            sortField = shownSort,
             sortAscending = sortAscending,
             onSort = onSort,
             onBack = { zoneKind = null },
@@ -429,6 +431,9 @@ fun RvHomePage(
                     scope.launch { runCatching { onDeleteMany(withLinked(item), true) }.onSuccess { itemId = null } }
                 }
             },
+            reusedWith = (current as? RvWebItem)?.entry?.reusedWith.orEmpty().mapNotNull { id -> everything.firstOrNull { it.id == id } },
+            rowFavicon = favicon,
+            onOpenItem = { itemId = it },
             onRestorePassword = { password ->
                 (current as? RvWebItem)?.let { item ->
                     scope.launch {

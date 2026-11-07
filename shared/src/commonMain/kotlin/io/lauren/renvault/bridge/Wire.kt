@@ -363,6 +363,8 @@ data class WebEntry(
     @SerialName("groups") val groups: List<Group> = emptyList(),
     @SerialName("shared") val shared: Boolean = false,
     @SerialName("pwned") val pwned: Boolean = false,
+    @SerialName("reused_with") val reusedWith: List<String> = emptyList(),
+    @SerialName("weak") val weak: Boolean = false,
     @SerialName("has_password") val hasPassword: Boolean = false,
     @SerialName("created") val created: Long = 0,
     @SerialName("modified") val modified: Long = 0,

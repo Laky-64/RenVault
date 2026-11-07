@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/Laky-64/renvault-core/app"
+	"golang.org/x/net/publicsuffix"
 )
 
 const (
@@ -64,6 +65,18 @@ func ChangeURL(host string) string {
 func SharedSite(domain string) (string, bool) {
 	group, ok := share.get(false)[strings.ToLower(domain)]
 	return group, ok
+}
+
+func Site(domain string) string {
+	domain = strings.ToLower(strings.TrimSuffix(strings.TrimSpace(domain), "."))
+	root, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	if err != nil {
+		return domain
+	}
+	if group, ok := SharedSite(root); ok {
+		return group
+	}
+	return root
 }
 
 func lookup(table map[string]string, host string) (string, bool) {

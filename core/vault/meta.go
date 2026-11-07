@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/Laky-64/appleservices/keychain"
+	"github.com/Laky-64/renvault-core/passgen"
+	"github.com/Laky-64/renvault-core/quirks"
 )
 
 type Kind string
@@ -35,6 +37,8 @@ type WebMeta struct {
 	Groups      []keychain.Group `json:"groups"`
 	Shared      bool             `json:"shared"`
 	Pwned       bool             `json:"pwned"`
+	ReusedWith  []string         `json:"reusedWith"`
+	Weak        bool             `json:"weak"`
 	HasPassword bool             `json:"hasPassword"`
 	Created     time.Time        `json:"created"`
 	Modified    time.Time        `json:"modified"`
@@ -196,8 +200,28 @@ func passkeyID(p passkeyEntry) string {
 }
 
 func webMetas(p payload) []WebMeta {
+	type use struct {
+		id      string
+		account string
+	}
+	uses := map[string][]use{}
+	for _, w := range p.Web {
+		if audited(w) {
+			uses[w.Password] = append(uses[w.Password], use{webID(w), accountOf(w)})
+		}
+	}
 	out := make([]WebMeta, 0, len(p.Web))
 	for _, w := range p.Web {
+		checked := audited(w)
+		var reused []string
+		if checked {
+			account := accountOf(w)
+			for _, other := range uses[w.Password] {
+				if other.account != account {
+					reused = append(reused, other.id)
+				}
+			}
+		}
 		out = append(out, WebMeta{
 			ID:          webID(w),
 			Title:       w.Name,
@@ -210,7 +234,9 @@ func webMetas(p payload) []WebMeta {
 			IsDeleted:   w.IsDeleted,
 			Groups:      w.Groups,
 			Shared:      w.Shared,
-			Pwned:       slices.Contains(p.Pwned, webKey(w)),
+			Pwned:       isLeaked(&p, w.Password),
+			ReusedWith:  reused,
+			Weak:        checked && passgen.StrengthOf(w.Password).Weak(),
 			HasPassword: len(w.Password) > 0,
 			Created:     w.Created,
 			Modified:    w.Modified,
@@ -218,6 +244,14 @@ func webMetas(p payload) []WebMeta {
 		})
 	}
 	return out
+}
+
+func accountOf(w keychain.WebPassword) string {
+	return quirks.Site(w.Domain) + "\x00" + strings.ToLower(strings.TrimSpace(w.Username))
+}
+
+func audited(w keychain.WebPassword) bool {
+	return !w.IsDeleted && !w.Shared && w.Password != ""
 }
 
 func wifiMetas(p payload) []WiFiMeta {

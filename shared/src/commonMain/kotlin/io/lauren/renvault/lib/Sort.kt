@@ -1,6 +1,6 @@
 package io.lauren.renvault.lib
 
-enum class RvSortField { Title, Website, Modified, Created }
+enum class RvSortField { Priority, Title, Website, Modified, Created }
 
 private fun websiteOf(item: RvItem): String = when (item) {
     is RvWebItem -> item.entry.domain
@@ -9,6 +9,8 @@ private fun websiteOf(item: RvItem): String = when (item) {
 }
 
 private fun compare(a: RvItem, b: RvItem, field: RvSortField, strings: RvStrings): Int = when (field) {
+    RvSortField.Priority -> compareValuesBy(a, b) { (it as? RvWebItem)?.securityIssue?.ordinal ?: Int.MAX_VALUE }
+        .takeIf { it != 0 } ?: compare(a, b, RvSortField.Title, strings)
     RvSortField.Title -> viewOf(a, strings).title.compareTo(viewOf(b, strings).title, ignoreCase = true)
     RvSortField.Website -> websiteOf(a).compareTo(websiteOf(b), ignoreCase = true)
     RvSortField.Modified -> a.modified.compareTo(b.modified)
