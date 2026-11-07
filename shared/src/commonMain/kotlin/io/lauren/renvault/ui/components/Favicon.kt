@@ -73,6 +73,7 @@ private const val MaxZoom = 1.14f
 private const val MinZoom = 0.6f
 private const val SafeReach = 0.74f
 private const val FrameReach = 0.95f
+private const val FrameBand = 16
 private const val HoleReach = 0.92f
 private const val InkAlpha = 250
 
@@ -92,17 +93,20 @@ private class Ground(val color: Int, val even: Boolean)
 private fun plateOf(pixels: IntArray, width: Int, height: Int): Ground? {
     if (width < 8 || height < 8) return null
     val inset = max(1, min(width, height) / 24)
-    val sides = listOf(
+    val edges = listOf(
         pixels[inset * width + width / 2],
         pixels[(height - 1 - inset) * width + width / 2],
         pixels[(height / 2) * width + inset],
         pixels[(height / 2) * width + width - 1 - inset],
     )
-    if (sides.any { (it ushr 24) <= 230 }) return null
-    val mean = (sides.sumOf { (it shr 16) and 0xFF } / sides.size shl 16) or
-        (sides.sumOf { (it shr 8) and 0xFF } / sides.size shl 8) or
-        (sides.sumOf { it and 0xFF } / sides.size)
-    if (!sides.all { near(it, mean) }) return null
+    val corners = listOf(
+        pixels[inset * width + inset],
+        pixels[inset * width + width - 1 - inset],
+        pixels[(height - 1 - inset) * width + inset],
+        pixels[(height - 1 - inset) * width + width - 1 - inset],
+    )
+    val sides = listOf(edges, corners).firstOrNull { uniform(it) } ?: return null
+    val mean = meanOf(sides)
     for (y in 0 until height) {
         for (x in 0 until width) {
             if ((pixels[y * width + x] ushr 24) < 128 && reachOf(x, y, width, height) < HoleReach) return null
@@ -111,14 +115,27 @@ private fun plateOf(pixels: IntArray, width: Int, height: Int): Ground? {
     return Ground(mean or (0xFF shl 24), sides.all { near(it, mean, BandTolerance / 2) })
 }
 
+private fun meanOf(samples: List<Int>): Int =
+    (samples.sumOf { (it shr 16) and 0xFF } / samples.size shl 16) or
+        (samples.sumOf { (it shr 8) and 0xFF } / samples.size shl 8) or
+        (samples.sumOf { it and 0xFF } / samples.size)
+
+private fun uniform(samples: List<Int>): Boolean {
+    if (samples.any { (it ushr 24) <= 230 }) return false
+    val mean = meanOf(samples)
+    return samples.all { near(it, mean) }
+}
+
 private fun plateZoom(pixels: IntArray, width: Int, height: Int, plate: Int): Float {
+    val band = max(1, min(width, height) / FrameBand)
     var reach = 0f
     for (y in 0 until height) {
         for (x in 0 until width) {
             val pixel = pixels[y * width + x]
             if ((pixel ushr 24) < InkAlpha || near(pixel, plate)) continue
             val r = reachOf(x, y, width, height)
-            if (r < FrameReach) reach = max(reach, r)
+            val edge = min(min(x, width - 1 - x), min(y, height - 1 - y)) < band
+            if (r < FrameReach || !edge) reach = max(reach, r)
         }
     }
     if (reach <= 0f) return MaxZoom
