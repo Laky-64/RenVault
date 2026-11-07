@@ -209,13 +209,12 @@ func squarish(img image.Image) bool {
 func pick(found []image.Image) (image.Image, error) {
 	var chosen image.Image
 	for _, img := range found {
-		if transparent(img) && min(img.Bounds().Dx(), img.Bounds().Dy()) >= clearSide {
-			if chosen == nil || !transparent(chosen) || img.Bounds().Dx() > chosen.Bounds().Dx() {
-				chosen = img
-			}
+		if chosen == nil {
+			chosen = img
 			continue
 		}
-		if chosen == nil || (!transparent(chosen) && img.Bounds().Dx() > chosen.Bounds().Dx()) {
+		clear, held := cutout(img), cutout(chosen)
+		if (clear && !held) || (clear == held && img.Bounds().Dx() > chosen.Bounds().Dx()) {
 			chosen = img
 		}
 	}
@@ -223,6 +222,10 @@ func pick(found []image.Image) (image.Image, error) {
 		return nil, errNoSiteIcon
 	}
 	return chosen, nil
+}
+
+func cutout(img image.Image) bool {
+	return transparent(img) && min(img.Bounds().Dx(), img.Bounds().Dy()) >= clearSide
 }
 
 func transparent(img image.Image) bool {
