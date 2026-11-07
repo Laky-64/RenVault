@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	filippo.io/cpace v0.0.0-20210101143347-24d601e2e469
-	github.com/Laky-64/appleservices v1.0.21
+	github.com/Laky-64/appleservices v1.0.22
 	github.com/Laky-64/http v1.0.8
 	github.com/ProtonMail/go-crypto v1.5.2
 	github.com/adrg/xdg v0.5.3
