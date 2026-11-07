@@ -20,8 +20,11 @@ internal class Form(
     val inline: Parcelable? = null,
     val texts: List<AutofillId> = emptyList(),
     val focused: AutofillId? = null,
+    val fresh: List<AutofillId> = emptyList(),
+    val rules: String? = null,
 ) {
-    val ids: List<AutofillId> get() = listOfNotNull(username, password)
+    val ids: List<AutofillId> get() = (listOfNotNull(username, password) + fresh).distinct()
+    val signup: Boolean get() = fresh.isNotEmpty()
 }
 
 private val UserWords = listOf("user", "email", "e-mail", "login", "account", "utente", "mail")
@@ -33,6 +36,10 @@ internal fun parseForm(structure: AssistStructure): Form {
     var lastText: AutofillId? = null
     var domain: String? = null
     var focused: AutofillId? = null
+    val passwords = mutableListOf<AutofillId>()
+    var identities = 0
+    val marked = mutableListOf<AutofillId>()
+    var rules: String? = null
     val texts = mutableListOf<AutofillId>()
 
     fun visit(node: AssistStructure.ViewNode) {
@@ -43,6 +50,12 @@ internal fun parseForm(structure: AssistStructure): Form {
             if (kind == FieldKind.Username || kind == FieldKind.Text) {
                 texts += id
                 if (node.isFocused) focused = id
+            }
+            if (kind == FieldKind.Username && visibleField(node)) identities++
+            if (kind == FieldKind.Password) {
+                passwords += id
+                if (signupField(node)) marked += id
+                if (rules == null) rules = rulesOf(node)
             }
             when (kind) {
                 FieldKind.Password -> if (password == null) {
@@ -58,8 +71,47 @@ internal fun parseForm(structure: AssistStructure): Form {
     }
 
     for (i in 0 until structure.windowNodeCount) visit(structure.getWindowNodeAt(i).rootViewNode)
-    return Form(username, password, domain, structure.activityComponent.packageName, texts = texts, focused = focused)
+    return Form(
+        username,
+        password,
+        domain,
+        structure.activityComponent.packageName,
+        texts = texts,
+        focused = focused,
+        fresh = when {
+            marked.isNotEmpty() -> marked.take(2)
+            passwords.size >= 2 -> passwords.takeLast(2)
+            passwords.size == 1 && identities >= 2 -> passwords
+            else -> emptyList()
+        },
+        rules = rules,
+    )
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun htmlAttributes(node: AssistStructure.ViewNode): Map<String, String> =
+    node.htmlInfo?.attributes.orEmpty().associate { it.first.lowercase() to it.second.orEmpty() }
+
+private val SignupHints = setOf("new_password", "account_creation_password", "confirmation_password")
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun signupField(node: AssistStructure.ViewNode): Boolean {
+    val hints = node.autofillHints.orEmpty().map { it.lowercase() }
+    if (hints.any { it == "newpassword" || it == "new-password" }) return true
+    val attrs = htmlAttributes(node).mapValues { it.value.lowercase() }
+    if ("new-password" in attrs["autocomplete"].orEmpty()) return true
+    val predicted = listOfNotNull(attrs["computed-autofill-hints"], attrs["crowdsourcing-autofill-hints"], attrs["ua-autofill-hints"])
+        .flatMap { it.split(',', ' ') }
+    return predicted.any { it in SignupHints }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun visibleField(node: AssistStructure.ViewNode): Boolean =
+    htmlAttributes(node)["visibility"]?.lowercase() != "invisible" && node.visibility == View.VISIBLE
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun rulesOf(node: AssistStructure.ViewNode): String? =
+    htmlAttributes(node)["passwordrules"]?.takeIf { it.isNotBlank() }
 
 private enum class FieldKind { Username, Password, Text, None }
 

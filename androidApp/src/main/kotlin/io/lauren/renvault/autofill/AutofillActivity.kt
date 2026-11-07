@@ -70,6 +70,8 @@ class AutofillActivity : FragmentActivity() {
             webDomain = intent.getStringExtra(ExtraDomain),
             packageName = intent.getStringExtra(ExtraPackage).orEmpty(),
             inline = intent.parcelable<Parcelable>(ExtraInline),
+            fresh = intent.parcelables(ExtraFresh),
+            rules = intent.getStringExtra(ExtraRules),
         )
         val pick = intent.getBooleanExtra(ExtraPick, false)
 
@@ -88,7 +90,7 @@ class AutofillActivity : FragmentActivity() {
                     if (!unlocked) return@LaunchedEffect
                     val all = runCatching { Vault.web() }.getOrDefault(emptyList()).filter { !it.isDeleted }
                     val found = matchEntries(all, form)
-                    if (!pick && found.isNotEmpty()) {
+                    if (!pick && (found.isNotEmpty() || form.signup)) {
                         finishWith(unlockedResponse(this@AutofillActivity, form, found))
                     } else {
                         entries = all.sortedBy { it.title.ifEmpty { it.domain }.lowercase() }
@@ -182,6 +184,9 @@ class AutofillActivity : FragmentActivity() {
         finish()
     }
 }
+
+internal inline fun <reified T : Parcelable> Intent.parcelables(key: String): List<T> =
+    IntentCompat.getParcelableArrayListExtra(this, key, T::class.java).orEmpty()
 
 internal inline fun <reified T : Parcelable> Intent.parcelable(key: String): T? =
     IntentCompat.getParcelableExtra(this, key, T::class.java)

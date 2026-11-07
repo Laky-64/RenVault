@@ -34,7 +34,15 @@ class RvAutofillService : AutofillService() {
     override fun onFillRequest(request: FillRequest, cancellation: CancellationSignal, callback: FillCallback) {
         val parsed = parseForm(request.fillContexts.last().structure)
         val inline = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && autofillInline()) request.inlineSuggestionsRequest else null
-        val form = Form(parsed.username, parsed.password, parsed.webDomain, parsed.packageName, inline)
+        val form = Form(
+            parsed.username,
+            parsed.password,
+            parsed.webDomain,
+            parsed.packageName,
+            inline,
+            fresh = parsed.fresh,
+            rules = parsed.rules,
+        )
         if (form.packageName == packageName || form.password == null && form.username == null) {
             callback.onSuccess(null)
             return

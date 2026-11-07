@@ -37,6 +37,8 @@ internal const val ExtraPackage = "$RvAppId.autofill.PACKAGE"
 internal const val ExtraPick = "$RvAppId.autofill.PICK"
 internal const val ExtraInline = "$RvAppId.autofill.INLINE"
 internal const val ExtraEntry = "$RvAppId.autofill.ENTRY"
+internal const val ExtraFresh = "$RvAppId.autofill.FRESH"
+internal const val ExtraRules = "$RvAppId.autofill.RULES"
 
 internal fun presentation(context: Context, title: String, detail: String = ""): RemoteViews =
     RemoteViews(context.packageName, R.layout.autofill_item).apply {
@@ -54,6 +56,8 @@ internal fun authSender(context: Context, form: Form, pick: Boolean): IntentSend
         .putExtra(ExtraPackage, form.packageName)
         .putExtra(ExtraPick, pick)
         .putExtra(ExtraInline, form.inline)
+        .putParcelableArrayListExtra(ExtraFresh, ArrayList(form.fresh))
+        .putExtra(ExtraRules, form.rules)
     val flags = PendingIntent.FLAG_CANCEL_CURRENT or
         (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0)
     return PendingIntent.getActivity(context, if (pick) 2 else 1, intent, flags).intentSender
@@ -70,6 +74,41 @@ private fun totpSender(context: Context, form: Form, entry: String): IntentSende
     val flags = PendingIntent.FLAG_CANCEL_CURRENT or
         (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0)
     return PendingIntent.getActivity(context, 1000 + (entry.hashCode() and 0xFFFF), intent, flags).intentSender
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun generateSender(context: Context, form: Form): IntentSender {
+    val intent = Intent(context, AutofillGenerateActivity::class.java)
+        .putParcelableArrayListExtra(ExtraFresh, ArrayList(form.fresh))
+        .putExtra(ExtraDomain, form.webDomain)
+        .putExtra(ExtraPackage, form.packageName)
+        .putExtra(ExtraRules, form.rules)
+    val flags = PendingIntent.FLAG_CANCEL_CURRENT or
+        (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0)
+    return PendingIntent.getActivity(context, 4, intent, flags).intentSender
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun generateDataset(context: Context, form: Form, slot: Int): Dataset {
+    val title = context.getString(R.string.autofill_generate)
+    val detail = context.getString(R.string.autofill_generate_detail)
+    val views = presentation(context, title, detail)
+    val chip = inlineOf(context, form, slot, title, detail)
+    val builder = datasetBuilder(views, chip)
+    form.fresh.forEach { id -> builder.setField(id, null, views, chip) }
+    builder.setAuthentication(generateSender(context, form))
+    return builder.build()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+internal fun generatedDataset(context: Context, form: Form, password: String): Dataset {
+    val title = context.getString(R.string.autofill_generate)
+    val views = presentation(context, title)
+    val builder = datasetBuilder(views, null)
+    form.fresh.forEach { id ->
+        builder.setField(id, AutofillValue.forText(password), views, null, filtered = false)
+    }
+    return builder.build()
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -174,11 +213,14 @@ internal fun inlineOf(context: Context, form: Form, slot: Int, title: String, de
 @RequiresApi(Build.VERSION_CODES.O)
 internal suspend fun unlockedResponse(context: Context, form: Form, entries: List<WebEntry>): FillResponse {
     val response = FillResponse.Builder()
-    val shown = entries.take(MaxDatasets)
-    shown.forEachIndexed { slot, entry -> response.addDataset(datasetOf(context, form, entry, slot)) }
+    val offer = form.signup
+    if (offer) response.addDataset(generateDataset(context, form, 0))
+    val first = if (offer) 1 else 0
+    val shown = entries.take(MaxDatasets - first)
+    shown.forEachIndexed { index, entry -> response.addDataset(datasetOf(context, form, entry, first + index)) }
     val searchTitle = context.getString(R.string.autofill_search)
     val views = presentation(context, searchTitle)
-    val chip = inlineOf(context, form, shown.size, searchTitle)
+    val chip = inlineOf(context, form, first + shown.size, searchTitle)
     val search = datasetBuilder(views, chip)
     form.ids.forEach { id -> search.setField(id, null, views, chip) }
     search.setAuthentication(authSender(context, form, pick = true))

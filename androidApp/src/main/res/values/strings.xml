@@ -39,4 +39,6 @@
     <string name="hybrid_failed">The sign-in could not be completed</string>
     <string name="hybrid_retry">Try again</string>
     <string name="hybrid_close">Close</string>
+    <string name="autofill_generate">Use strong password</string>
+    <string name="autofill_generate_detail">Suggested by RenVault</string>
 </resources>

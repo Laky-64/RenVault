@@ -39,4 +39,6 @@
     <string name="hybrid_failed">Non è stato possibile completare l\'accesso</string>
     <string name="hybrid_retry">Riprova</string>
     <string name="hybrid_close">Chiudi</string>
+    <string name="autofill_generate">Usa password sicura</string>
+    <string name="autofill_generate_detail">Suggerita da RenVault</string>
 </resources>

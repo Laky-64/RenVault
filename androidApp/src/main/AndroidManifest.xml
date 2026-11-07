@@ -59,6 +59,12 @@
             android:theme="@style/Theme.RenVault.Autofill"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".autofill.AutofillGenerateActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:theme="@style/Theme.RenVault.Autofill" />
+        <activity
             android:name=".autofill.AutofillTotpActivity"
             android:excludeFromRecents="true"
             android:exported="false"
