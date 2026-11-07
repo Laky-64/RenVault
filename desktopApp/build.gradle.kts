@@ -25,6 +25,10 @@ val runtime = javaToolchains.launcherFor {
 
 val appId = providers.gradleProperty("renvault.id").get()
 val appName = providers.gradleProperty("renvault.name").get()
+val appSummary = providers.gradleProperty("renvault.summary").get()
+val appVendor = providers.gradleProperty("renvault.vendor").get()
+val appCopyright = "Copyright (C) $appVendor"
+val appPackageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
 
 compose.desktop {
     application {
@@ -36,7 +40,10 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = appName
-            packageVersion = providers.gradleProperty("renvault.package_version").getOrElse("1.0.0")
+            packageVersion = appPackageVersion
+            description = appSummary
+            vendor = appVendor
+            copyright = appCopyright
             macOS {
                 bundleID = appId
                 iconFile.set(project.file("icons/renvault.icns"))
