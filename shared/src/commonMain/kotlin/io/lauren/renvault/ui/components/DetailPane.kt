@@ -59,6 +59,7 @@ import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.RvWebItem
+import io.lauren.renvault.lib.relativeOf
 import io.lauren.renvault.lib.RvWifiItem
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.code
@@ -104,6 +105,7 @@ fun RvDetailPane(
     onDeletePasskey: () -> Unit,
     onRecover: () -> Unit,
     onPurge: () -> Unit,
+    onRestorePassword: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (item == null) {
@@ -237,6 +239,7 @@ fun RvDetailPane(
                                 onLearnMore = onLearnMore,
                                 onRecover = onRecover,
                                 onPurge = onPurge,
+                                onRestorePassword = onRestorePassword,
                             )
                         }
                     }
@@ -299,12 +302,14 @@ private fun ItemView(
     onLearnMore: () -> Unit,
     onRecover: () -> Unit,
     onPurge: () -> Unit,
+    onRestorePassword: (String) -> Unit,
 ) {
     val web = item as? RvWebItem
     val pwned = web?.entry?.pwned == true
     val hasPasskey = item is RvPasskeyItem || web?.passkey != null
     val discarded = if (item !is RvWifiItem && item.isDeleted) deletedAt(item) else null
     var purgeOpen by remember { mutableStateOf(false) }
+    var historyOpen by remember(item.id) { mutableStateOf(false) }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (pwned) {
@@ -333,11 +338,32 @@ private fun ItemView(
         val shown = fields.filter { !it.bare }
         val notes = fields.filter { it.bare }
 
+        val versions = if (web != null && !web.isDeleted) rememberPasswordHistory(web.id, web.modified) else emptyList()
+        val rows = shown.size + if (versions.isNotEmpty()) 1 else 0
         RvSection {
             shown.forEachIndexed { index, field ->
-                FieldRow(field = field, index = index, count = shown.size, onCopy = onCopy)
+                FieldRow(field = field, index = index, count = rows, onCopy = onCopy)
+            }
+            if (versions.isNotEmpty()) {
+                RvSegment(
+                    index = rows - 1,
+                    count = rows,
+                    onClick = { historyOpen = true },
+                    leading = { Icon(RvHistoryIcon, contentDescription = null) },
+                    supporting = relativeOf(versions.first().until)?.let { ago -> { Text(strings.historyChanged(strings.relativeTime(ago))) } },
+                ) {
+                    Text(strings.historyTitle)
+                }
             }
         }
+
+        RvPasswordHistorySheet(
+            open = historyOpen,
+            onOpenChange = { historyOpen = it },
+            versions = versions,
+            strings = strings,
+            onRestore = onRestorePassword,
+        )
 
         notes.forEach { note ->
             RvSection(title = note.label) {

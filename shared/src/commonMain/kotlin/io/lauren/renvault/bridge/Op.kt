@@ -64,6 +64,11 @@ internal object Op {
     const val CREATE_PASSKEY = 0x1110
     const val SIGN_PASSKEY = 0x1111
     const val SAVE_LOGIN = 0x1112
+    const val PASSWORD_HISTORY = 0x1113
+    const val GENERATED_LIST = 0x1114
+    const val GENERATED_ADD = 0x1115
+    const val GENERATED_CLEAR = 0x1116
+    const val GENERATED_REMOVE = 0x1117
     const val HYBRID_START = 0x1301
     const val HYBRID_DECIDE = 0x1302
     const val HYBRID_CANCEL = 0x1303

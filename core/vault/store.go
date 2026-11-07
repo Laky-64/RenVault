@@ -71,6 +71,9 @@ type payload struct {
 	Names []NameSwap `cbor:"names,omitempty"`
 
 	Local *localKeys `cbor:"local,omitempty"`
+
+	History   map[string][]passwordVersion `cbor:"history,omitempty"`
+	Generated []generatedEntry             `cbor:"generated,omitempty"`
 }
 
 type vaultFile struct {

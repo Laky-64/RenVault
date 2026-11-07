@@ -429,6 +429,15 @@ fun RvHomePage(
                     scope.launch { runCatching { onDeleteMany(withLinked(item), true) }.onSuccess { itemId = null } }
                 }
             },
+            onRestorePassword = { password ->
+                (current as? RvWebItem)?.let { item ->
+                    scope.launch {
+                        val next = runCatching { onSave(item, draftOf(item).copy(password = password)) }.getOrNull() ?: item.id
+                        awaiting = next.takeIf { it != item.id }
+                        itemId = next
+                    }
+                }
+            },
         )
     }
 

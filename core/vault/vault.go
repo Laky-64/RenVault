@@ -685,8 +685,10 @@ func (v *Vault) refreshWeb(src *appleservices.KeychainVault) error {
 	for i := range v.p.Passkey {
 		zero(v.p.Passkey[i].PrivateKeyD)
 	}
+	before := v.p.Web
 	v.p.Web = web
 	v.p.Passkey = passkey
+	trackHistory(v.p, before)
 	prunePwned(v.p)
 	if sess, ok := v.store.take(); ok {
 		v.p.Session = sess

@@ -246,6 +246,8 @@ func (v *Vault) EditPassword(id, title, website, username, password, note, totpU
 		}
 		e.Modified = time.Now().UTC()
 		repointPwned(p, webKey(w), webKey(e))
+		moveHistory(p, webKey(w), webKey(e))
+		rememberPassword(p, webKey(e), w.Password, e.Password)
 		next = webID(e)
 		if v.sh != nil {
 			rec := v.recordOfLocked(id)

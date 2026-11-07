@@ -1,6 +1,24 @@
 package io.lauren.renvault.lib
 
 interface RvStrings {
+    val generatedClearTitle: String
+    val generatedClearDesc: String
+    val generatedRemoveTitle: String
+    val generatedRemoveDesc: String
+    val generatedRemoveConfirm: String
+    val generatedUseHint: String
+    fun historyChanged(time: String): String
+    val historyRestoreTitle: String
+    val historyRestoreDesc: String
+    val historyRestoreConfirm: String
+    val historyTitle: String
+    fun historyUntil(date: String): String
+    val generatedTitle: String
+    val generatedSaved: String
+    val generatedUnsaved: String
+    val generatedEmpty: String
+    val generatedClear: String
+    val generatedNote: String
     val strengthVeryStrong: String
     val fieldUsername: String
     val fieldPassword: String

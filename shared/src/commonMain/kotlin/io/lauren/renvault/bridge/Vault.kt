@@ -282,6 +282,17 @@ object Vault {
     suspend fun changePasswordUrl(domain: String): String =
         exchange<DomainRequest, SecretResponse>(Op.CHANGE_PASSWORD_AT, DomainRequest(domain)).secret
 
+    suspend fun passwordHistory(id: String): List<RvPasswordVersion> =
+        exchange<IdentifierRequest, HistoryResponse>(Op.PASSWORD_HISTORY, IdentifierRequest(id)).items
+
+    suspend fun generatedPasswords(): List<RvGeneratedPassword> = receive<GeneratedResponse>(Op.GENERATED_LIST).items
+
+    suspend fun recordGenerated(password: String, domain: String) = send(Op.GENERATED_ADD, GeneratedRequest(password, domain))
+
+    suspend fun clearGenerated() = send(Op.GENERATED_CLEAR)
+
+    suspend fun removeGenerated(password: String) = send(Op.GENERATED_REMOVE, GeneratedRequest(password, ""))
+
     suspend fun icon(domain: String): ByteArray =
         exchange<DomainRequest, BytesResponse>(Op.ICON_TILE, DomainRequest(domain)).data
 

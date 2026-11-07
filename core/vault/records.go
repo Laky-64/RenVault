@@ -23,6 +23,7 @@ const (
 	fieldCreated  = "created"
 	fieldPasskey  = "passkey"
 	fieldSites    = "sites"
+	fieldHistory  = "history"
 )
 
 type sealedField struct {
@@ -269,6 +270,22 @@ func openRecord(key []byte, r sealedRecord) (keychain.WebPassword, bool) {
 		}
 	}
 	return w, found && w.Domain != ""
+}
+
+func openHistory(key []byte, r sealedRecord) []passwordVersion {
+	f, ok := r.Fields[fieldHistory]
+	if !ok || r.Purge != nil {
+		return nil
+	}
+	p, err := openField(key, r.ID, fieldHistory, f)
+	if err != nil {
+		return nil
+	}
+	var list []passwordVersion
+	if cborDec.Unmarshal(p.Value, &list) != nil {
+		return nil
+	}
+	return list
 }
 
 func openPasskeyRecord(key []byte, r sealedRecord) (passkeyEntry, bool) {

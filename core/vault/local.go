@@ -372,11 +372,19 @@ func (v *Vault) rebuildShareLocked() {
 		if !ok {
 			continue
 		}
+		if list := openHistory(key, r); len(list) > 0 {
+			if v.p.History == nil {
+				v.p.History = map[string][]passwordVersion{}
+			}
+			v.p.History[webKey(w)] = list
+		}
 		web = append(web, w)
 		ids = append(ids, r.ID)
 	}
+	before := v.p.Web
 	v.p.Web = web
 	v.recIDs = ids
+	trackHistory(v.p, before)
 	prunePwned(v.p)
 
 	for i := range v.p.Passkey {
@@ -407,7 +415,11 @@ func (v *Vault) rebuildShareLocked() {
 }
 
 func (v *Vault) localPut(id string, w keychain.WebPassword) error {
-	if err := v.sh.putWeb(v.sharedKeyLocked(), id, w); err != nil {
+	fields := webFields(w)
+	if list := v.p.History[webKey(w)]; len(list) > 0 {
+		fields[fieldHistory] = list
+	}
+	if err := v.sh.putFields(v.sharedKeyLocked(), id, fields); err != nil {
 		return err
 	}
 	v.rebuildShareLocked()

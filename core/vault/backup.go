@@ -353,6 +353,7 @@ func (v *Vault) importWeb(entries []keychain.WebPassword) (ImportResult, error) 
 						TOTP:        next.TOTP,
 						DropTOTP:    next.TOTP == "" && cur.TOTP != "",
 					}, v.inflight)
+					rememberPassword(p, webKey(next), cur.Password, next.Password)
 					p.Web[i] = next
 				}
 				res.Updated++

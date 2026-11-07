@@ -590,6 +590,32 @@ internal data class ChangePasswordRequest(
 )
 
 @Serializable
+@Serializable
+data class RvPasswordVersion(
+    @SerialName("password") val password: String = "",
+    @SerialName("until") val until: Long = 0,
+)
+
+@Serializable
+internal data class HistoryResponse(@SerialName("items") val items: List<RvPasswordVersion> = emptyList())
+
+@Serializable
+data class RvGeneratedPassword(
+    @SerialName("password") val password: String = "",
+    @SerialName("domain") val domain: String = "",
+    @SerialName("at") val at: Long = 0,
+    @SerialName("saved") val saved: Boolean = false,
+)
+
+@Serializable
+internal data class GeneratedResponse(@SerialName("items") val items: List<RvGeneratedPassword> = emptyList())
+
+@Serializable
+internal data class GeneratedRequest(
+    @SerialName("password") val password: String,
+    @SerialName("domain") val domain: String,
+)
+
 internal data class IconsRequest(
     @SerialName("provider") val provider: String,
     @SerialName("plain") val plain: Boolean = false,

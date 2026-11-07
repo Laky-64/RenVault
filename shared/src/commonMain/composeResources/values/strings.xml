@@ -514,4 +514,22 @@
     <string name="icons_use">Use site icons</string>
     <string name="icons_provider">Provider</string>
     <string name="strength_very_strong">Very strong</string>
+    <string name="history_title">Previous passwords</string>
+    <string name="history_until">Used until %1$s</string>
+    <string name="generated_title">Generated passwords</string>
+    <string name="generated_saved">Saved</string>
+    <string name="generated_unsaved">Not saved</string>
+    <string name="generated_empty">Passwords you copy or use from the generator appear here for 30 days.</string>
+    <string name="generated_clear">Clear history</string>
+    <string name="generated_note">Generated passwords are deleted after 30 days.</string>
+    <string name="history_changed">Changed %1$s</string>
+    <string name="history_restore_title">Restore this password?</string>
+    <string name="history_restore_desc">It becomes the current password again, and the current one moves to the history.</string>
+    <string name="history_restore_confirm">Restore</string>
+    <string name="generated_use_hint">Tap a password to use it.</string>
+    <string name="generated_clear_title">Clear all generated passwords?</string>
+    <string name="generated_clear_desc">Passwords already saved in your vault aren\'t affected.</string>
+    <string name="generated_remove_title">Remove this generated password?</string>
+    <string name="generated_remove_desc">It\'s removed only from this list.</string>
+    <string name="generated_remove_confirm">Remove</string>
 </resources>

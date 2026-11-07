@@ -16,6 +16,24 @@ import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.unescape
 import io.lauren.renvault.lib.RvZoneKind
 import io.lauren.renvault.lib.RvZoneText
+import io.lauren.renvault.resources.generated_clear_title
+import io.lauren.renvault.resources.generated_clear_desc
+import io.lauren.renvault.resources.generated_remove_title
+import io.lauren.renvault.resources.generated_remove_desc
+import io.lauren.renvault.resources.generated_remove_confirm
+import io.lauren.renvault.resources.generated_use_hint
+import io.lauren.renvault.resources.history_changed
+import io.lauren.renvault.resources.history_restore_title
+import io.lauren.renvault.resources.history_restore_desc
+import io.lauren.renvault.resources.history_restore_confirm
+import io.lauren.renvault.resources.history_title
+import io.lauren.renvault.resources.history_until
+import io.lauren.renvault.resources.generated_title
+import io.lauren.renvault.resources.generated_saved
+import io.lauren.renvault.resources.generated_unsaved
+import io.lauren.renvault.resources.generated_empty
+import io.lauren.renvault.resources.generated_clear
+import io.lauren.renvault.resources.generated_note
 import io.lauren.renvault.resources.strength_very_strong
 import io.lauren.renvault.resources.tray_open
 import io.lauren.renvault.resources.tray_quit
@@ -601,6 +619,24 @@ private val TextResources = listOf(
     Res.string.totp_setup_desc,
     Res.string.totp_key_placeholder,
     Res.string.totp_key_confirm,
+    Res.string.generated_clear_title,
+    Res.string.generated_clear_desc,
+    Res.string.generated_remove_title,
+    Res.string.generated_remove_desc,
+    Res.string.generated_remove_confirm,
+    Res.string.generated_use_hint,
+    Res.string.history_changed,
+    Res.string.history_restore_title,
+    Res.string.history_restore_desc,
+    Res.string.history_restore_confirm,
+    Res.string.history_title,
+    Res.string.history_until,
+    Res.string.generated_title,
+    Res.string.generated_saved,
+    Res.string.generated_unsaved,
+    Res.string.generated_empty,
+    Res.string.generated_clear,
+    Res.string.generated_note,
     Res.string.strength_very_strong,
     Res.string.totp_scan_invalid,
     Res.string.totp_scan_found,
@@ -1236,6 +1272,24 @@ private class ResourceStrings(
     override val websitesAdd: String get() = text(Res.string.websites_add)
     override val totpKeyPlaceholder: String get() = text(Res.string.totp_key_placeholder)
     override val totpKeyConfirm: String get() = text(Res.string.totp_key_confirm)
+    override val generatedClearTitle: String get() = text(Res.string.generated_clear_title)
+    override val generatedClearDesc: String get() = text(Res.string.generated_clear_desc)
+    override val generatedRemoveTitle: String get() = text(Res.string.generated_remove_title)
+    override val generatedRemoveDesc: String get() = text(Res.string.generated_remove_desc)
+    override val generatedRemoveConfirm: String get() = text(Res.string.generated_remove_confirm)
+    override val generatedUseHint: String get() = text(Res.string.generated_use_hint)
+    override fun historyChanged(time: String): String = text(Res.string.history_changed, time)
+    override val historyRestoreTitle: String get() = text(Res.string.history_restore_title)
+    override val historyRestoreDesc: String get() = text(Res.string.history_restore_desc)
+    override val historyRestoreConfirm: String get() = text(Res.string.history_restore_confirm)
+    override val historyTitle: String get() = text(Res.string.history_title)
+    override fun historyUntil(date: String): String = text(Res.string.history_until, date)
+    override val generatedTitle: String get() = text(Res.string.generated_title)
+    override val generatedSaved: String get() = text(Res.string.generated_saved)
+    override val generatedUnsaved: String get() = text(Res.string.generated_unsaved)
+    override val generatedEmpty: String get() = text(Res.string.generated_empty)
+    override val generatedClear: String get() = text(Res.string.generated_clear)
+    override val generatedNote: String get() = text(Res.string.generated_note)
     override val strengthVeryStrong: String get() = text(Res.string.strength_very_strong)
     override val totpScanInvalid: String get() = text(Res.string.totp_scan_invalid)
     override val totpScanFound: String get() = text(Res.string.totp_scan_found)
