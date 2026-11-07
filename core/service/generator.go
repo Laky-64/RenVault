@@ -17,6 +17,10 @@ func installGenerator() {
 		}, nil
 	})
 
+	handle(bridge.OpPasswordStrength, func(_ context.Context, request strengthRequest) (strengthResponse, error) {
+		return strengthResponse{Level: int(passgen.StrengthOf(request.Password))}, nil
+	})
+
 	handle(bridge.OpGeneratePassword, func(_ context.Context, request generateRequest) (generateResponse, error) {
 		rules := passgen.RulesFor(request.Domain)
 		if request.Rules != "" {

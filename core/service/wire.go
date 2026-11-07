@@ -53,6 +53,14 @@ type checkRequest struct {
 	Password string `cbor:"password"`
 }
 
+type strengthRequest struct {
+	Password string `cbor:"password"`
+}
+
+type strengthResponse struct {
+	Level int `cbor:"level"`
+}
+
 type checkResponse struct {
 	Problems  []string `cbor:"problems"`
 	MinLength int      `cbor:"min_length"`

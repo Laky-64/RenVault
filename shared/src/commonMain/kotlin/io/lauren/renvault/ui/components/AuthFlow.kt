@@ -76,7 +76,7 @@ import io.lauren.renvault.lib.RvBiometricGone
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.strengthLabel
-import io.lauren.renvault.lib.strengthOf
+import io.lauren.renvault.lib.rememberStrength
 import io.lauren.renvault.ui.LocalStrings
 import io.lauren.renvault.ui.theme.RenVault
 import androidx.compose.ui.graphics.decodeToImageBitmap
@@ -864,7 +864,7 @@ fun RvAuthFlow(
                                 focusRequester = masterFocus,
                             )
 
-                            val level = strengthOf(master)
+                            val level = rememberStrength(master)
                             AnimatedVisibility(visible = master.isNotEmpty()) {
                                 RvStrengthMeter(
                                     strength = level,

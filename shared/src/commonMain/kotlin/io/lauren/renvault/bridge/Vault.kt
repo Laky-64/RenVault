@@ -282,6 +282,9 @@ object Vault {
     suspend fun changePasswordUrl(domain: String): String =
         exchange<DomainRequest, SecretResponse>(Op.CHANGE_PASSWORD_AT, DomainRequest(domain)).secret
 
+    suspend fun passwordStrength(password: String): Int =
+        exchange<StrengthRequest, StrengthResponse>(Op.PASSWORD_STRENGTH, StrengthRequest(password)).level
+
     suspend fun checkPassword(domain: String, password: String): RvRuleCheck =
         exchange(Op.CHECK_PASSWORD, CheckRequest(domain, password))
 

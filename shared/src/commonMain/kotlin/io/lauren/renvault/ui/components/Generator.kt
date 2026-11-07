@@ -60,7 +60,7 @@ import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.readPreference
 import io.lauren.renvault.lib.strengthLabel
-import io.lauren.renvault.lib.strengthOf
+import io.lauren.renvault.lib.rememberStrength
 import io.lauren.renvault.lib.writePreference
 import io.lauren.renvault.ui.theme.RenVault
 import kotlinx.coroutines.delay
@@ -249,7 +249,7 @@ fun RvGeneratorSheet(
                     }
                 }
 
-                val strength = strengthOf(password)
+                val strength = rememberStrength(password)
                 RvStrengthMeter(strength = strength, label = strings.strengthLabel(strength))
 
                 Row(

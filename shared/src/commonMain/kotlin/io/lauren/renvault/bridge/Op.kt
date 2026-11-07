@@ -109,6 +109,7 @@ internal object Op {
     const val CLIPBOARD_SET = 0x300C
     const val GENERATE_PASSWORD = 0x300D
     const val CHECK_PASSWORD = 0x300E
+    const val PASSWORD_STRENGTH = 0x300F
 }
 
 internal object FailureKind {

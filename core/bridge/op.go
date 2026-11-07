@@ -103,6 +103,7 @@ const (
 	OpClipboardSet     uint32 = 0x300C
 	OpGeneratePassword uint32 = 0x300D
 	OpCheckPassword    uint32 = 0x300E
+	OpPasswordStrength uint32 = 0x300F
 )
 
 const (

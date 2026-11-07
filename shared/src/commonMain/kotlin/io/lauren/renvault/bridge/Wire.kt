@@ -596,6 +596,16 @@ internal data class CheckRequest(
 )
 
 @Serializable
+data class StrengthRequest(
+    @SerialName("password") val password: String,
+)
+
+@Serializable
+data class StrengthResponse(
+    @SerialName("level") val level: Int = 0,
+)
+
+@Serializable
 data class RvRuleCheck(
     @SerialName("problems") val problems: List<String> = emptyList(),
     @SerialName("min_length") val minLength: Int = 0,

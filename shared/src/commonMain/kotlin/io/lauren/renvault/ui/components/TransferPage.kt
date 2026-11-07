@@ -58,7 +58,7 @@ import io.lauren.renvault.bridge.FileFilter
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.strengthLabel
-import io.lauren.renvault.lib.strengthOf
+import io.lauren.renvault.lib.rememberStrength
 import io.lauren.renvault.ui.theme.RenVault
 import io.lauren.renvault.ui.theme.RvTone
 import kotlinx.coroutines.launch
@@ -694,7 +694,7 @@ private fun BackupPasswordFields(
 ) {
     val short = password.isNotEmpty() && password.length < MinBackupPassword
     val mismatch = again.isNotEmpty() && again != password
-    val level = strengthOf(password)
+    val level = rememberStrength(password)
     RvTextField(
         value = password,
         onValueChange = onPassword,
