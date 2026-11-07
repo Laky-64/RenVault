@@ -299,9 +299,9 @@ fun RvTotpDialog(
                                 title = result.issuer.ifEmpty { strings.totpScanFound },
                                 warning = when {
                                     !siteMatches(result.issuer, site) ->
-                                        ScanWarning(strings.totpScanOtherSiteTitle, strings.totpScanOtherSite(result.issuer, site))
+                                        ScanWarning(strings.totpScanOtherSiteTitle, strings.totpScanOtherSite(site))
                                     !accountMatches(result.account, username) ->
-                                        ScanWarning(strings.totpScanOtherAccountTitle, strings.totpScanOtherAccount(result.account, username))
+                                        ScanWarning(strings.totpScanOtherAccountTitle, strings.totpScanOtherAccount(username))
                                     else -> null
                                 },
                                 rescan = strings.pairScan,

@@ -192,8 +192,8 @@
     <string name="totp_scan_detail">Inquadra il codice mostrato sul sito</string>
     <string name="totp_enter_key">Inserisci chiave di configurazione</string>
     <string name="totp_enter_key_detail">Copiala dalle impostazioni di sicurezza del sito</string>
-    <string name="totp_scan_other_site">Questo codice è per %1$s, non per %2$s.</string>
-    <string name="totp_scan_other_account">Questo codice è per %1$s, non per %2$s.</string>
+    <string name="totp_scan_other_site">Questa password è per %1$s.</string>
+    <string name="totp_scan_other_account">Questa password usa %1$s.</string>
     <string name="totp_scan_other_site_title">Sito diverso</string>
     <string name="totp_scan_other_account_title">Account diverso</string>
     <string name="settings_based_on">Basato su %1$s</string>

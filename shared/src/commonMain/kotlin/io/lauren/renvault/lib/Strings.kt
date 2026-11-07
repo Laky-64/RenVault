@@ -281,8 +281,8 @@ interface RvStrings {
     val totpScanDetail: String
     val totpEnterKey: String
     val totpEnterKeyDetail: String
-    fun totpScanOtherSite(issuer: String, site: String): String
-    fun totpScanOtherAccount(account: String, username: String): String
+    fun totpScanOtherSite(site: String): String
+    fun totpScanOtherAccount(username: String): String
     val totpScanOtherSiteTitle: String
     val totpScanOtherAccountTitle: String
 

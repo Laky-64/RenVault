@@ -1244,8 +1244,8 @@ private class ResourceStrings(
     override val totpScanDetail: String get() = text(Res.string.totp_scan_detail)
     override val totpEnterKey: String get() = text(Res.string.totp_enter_key)
     override val totpEnterKeyDetail: String get() = text(Res.string.totp_enter_key_detail)
-    override fun totpScanOtherSite(issuer: String, site: String): String = text(Res.string.totp_scan_other_site, issuer, site)
-    override fun totpScanOtherAccount(account: String, username: String): String = text(Res.string.totp_scan_other_account, account, username)
+    override fun totpScanOtherSite(site: String): String = text(Res.string.totp_scan_other_site, site)
+    override fun totpScanOtherAccount(username: String): String = text(Res.string.totp_scan_other_account, username)
     override val totpScanOtherSiteTitle: String get() = text(Res.string.totp_scan_other_site_title)
     override val totpScanOtherAccountTitle: String get() = text(Res.string.totp_scan_other_account_title)
 
