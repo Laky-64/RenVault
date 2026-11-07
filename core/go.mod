@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	filippo.io/cpace v0.0.0-20210101143347-24d601e2e469
-	github.com/Laky-64/appleservices v1.0.20
+	github.com/Laky-64/appleservices v1.0.21
 	github.com/Laky-64/http v1.0.8
 	github.com/ProtonMail/go-crypto v1.5.2
 	github.com/adrg/xdg v0.5.3
@@ -25,5 +25,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gtank/ristretto255 v0.2.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	howett.net/plist v1.0.2-0.20250314012144-ee69052608d9 // indirect
 )

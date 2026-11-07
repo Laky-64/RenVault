@@ -99,12 +99,23 @@ func (v *Vault) PasswordHistory(id string) ([]PasswordVersion, error) {
 	if i < 0 {
 		return nil, errNotFound
 	}
-	list := v.p.History[webKey(v.p.Web[i])]
-	out := make([]PasswordVersion, 0, len(list))
-	for _, version := range list {
+	w := v.p.Web[i]
+	out := make([]PasswordVersion, 0, len(v.p.History[webKey(w)])+len(w.History))
+	for _, version := range v.p.History[webKey(w)] {
 		out = append(out, PasswordVersion{Password: version.Password, Until: version.Until})
 	}
-	return out, nil
+	for _, change := range w.History {
+		out = append(out, PasswordVersion{Password: change.Password, Until: change.At})
+	}
+	slices.SortStableFunc(out, func(a, b PasswordVersion) int { return b.Until.Compare(a.Until) })
+	seen := map[string]bool{w.Password: true}
+	return slices.DeleteFunc(out, func(version PasswordVersion) bool {
+		if seen[version.Password] {
+			return true
+		}
+		seen[version.Password] = true
+		return false
+	}), nil
 }
 
 func (v *Vault) RecordGenerated(password, domain string) error {
