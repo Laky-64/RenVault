@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=__NAME__
+Comment=__SUMMARY__
+Exec=/opt/__ID__/bin/__NAME__
+Icon=__ID__
+Terminal=false
+Categories=Utility;Security;
+Keywords=password;passkey;keychain;2FA;
+StartupWMClass=__ID__-__NAME__

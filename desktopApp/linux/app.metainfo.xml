@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>__ID__</id>
+  <name>__NAME__</name>
+  <summary>__SUMMARY__</summary>
+  <developer id="__ID__">
+    <name>__VENDOR__</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>__LICENSE__</project_license>
+  <description>
+    <p>An open-source password and passkey manager for Android, Windows, Linux and macOS.</p>
+    <p xml:lang="it">Un gestore di password e passkey open source per Android, Windows, Linux e macOS.</p>
+    <p>Sign in with your Apple Account to use the same passwords and passkeys you have on iPhone, iPad and Mac, or keep a local vault that syncs directly between your devices, with no account and no server.</p>
+    <p xml:lang="it">Accedi con il tuo Account Apple per usare le stesse password e passkey che hai su iPhone, iPad e Mac, oppure tieni un archivio locale che si sincronizza direttamente tra i tuoi dispositivi, senza account e senza server.</p>
+    <ul>
+      <li>Passwords, Wi-Fi networks and passkeys, with search and notes</li>
+      <li xml:lang="it">Password, reti Wi-Fi e passkey, con ricerca e note</li>
+      <li>A virtual security key that Chrome and Firefox see as a plugged-in USB key</li>
+      <li xml:lang="it">Una chiave di sicurezza virtuale che Chrome e Firefox vedono come una chiavetta USB</li>
+      <li>Password generator with site rules and password history</li>
+      <li xml:lang="it">Generatore di password con le regole dei siti e cronologia delle password</li>
+      <li>Two-factor codes, encrypted backups and data breach checks</li>
+      <li xml:lang="it">Codici a due fattori, backup cifrati e controllo delle violazioni di dati</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">__ID__.desktop</launchable>
+  <icon type="stock">__ID__</icon>
+  <url type="homepage">__HOMEPAGE__</url>
+  <url type="bugtracker">__HOMEPAGE__/issues</url>
+  <url type="vcs-browser">__HOMEPAGE__</url>
+  <categories>
+    <category>Utility</category>
+    <category>Security</category>
+  </categories>
+  <keywords>
+    <keyword>password</keyword>
+    <keyword>passkey</keyword>
+    <keyword>keychain</keyword>
+    <keyword>iCloud</keyword>
+    <keyword>2FA</keyword>
+  </keywords>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="__VERSION__" date="__DATE__"/>
+  </releases>
+</component>
