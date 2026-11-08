@@ -198,6 +198,8 @@ fun RvGeneratorSheet(
         },
     )
 
+    if (result == null) return
+
     ModalBottomSheet(
         onDismissRequest = { onOpenChange(false) },
         sheetState = sheet,
