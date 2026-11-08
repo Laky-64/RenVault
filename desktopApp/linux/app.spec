@@ -96,4 +96,12 @@ LAUNCHER_AS_SERVICE_SCRIPTS
 DESKTOP_COMMANDS_UNINSTALL
 LAUNCHER_AS_SERVICE_COMMANDS_UNINSTALL
 
+%posttrans
+for dir in /var/lib/flatpak/exports/share/applications /usr/local/share/applications /usr/share/applications; do
+  rm -f "$dir/__ID__-__NAME__.desktop"
+done
+if command -v update-desktop-database > /dev/null; then
+  update-desktop-database -q /usr/share/applications || :
+fi
+
 %clean
