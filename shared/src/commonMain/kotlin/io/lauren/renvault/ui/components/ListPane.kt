@@ -111,6 +111,7 @@ fun RvListPane(
     onDeleteItem: (RvItem) -> Unit = {},
 ) {
     if (zone.kind == RvZoneKind.Codes) RvSecureScreen()
+    val copy = rememberClipboardCopy()
     val text = strings.zoneText(zone.kind, zone.items.isEmpty())
     val past by listState.scrolledPast()
     val scrolled = past || items.isEmpty()
@@ -224,6 +225,7 @@ fun RvListPane(
                     itemsIndexed(items, key = { _, item -> item.id }) { index, entry ->
                         ItemRow(
                             entry = entry,
+                            copy = copy,
                             index = index,
                             count = items.size,
                             zone = zone.kind,
@@ -290,6 +292,7 @@ fun RvListPane(
 @Composable
 private fun ItemRow(
     entry: RvItem,
+    copy: (text: String, sensitive: Boolean) -> Unit,
     index: Int,
     count: Int,
     zone: RvZoneKind,
@@ -305,9 +308,9 @@ private fun ItemRow(
     onSelect: (() -> Unit)?,
 ) {
     val names = LocalNameMask.current
-    val copy = rememberClipboardCopy()
     val scope = rememberCoroutineScope()
     var menu by remember { mutableStateOf(false) }
+    var menuUsed by remember { mutableStateOf(false) }
     var anchor by remember { mutableStateOf(IntOffset.Zero) }
     val username = when (entry) {
         is RvWebItem -> entry.entry.username
@@ -341,6 +344,7 @@ private fun ItemRow(
                         if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed && !selecting) {
                             val at = event.changes.first().position
                             anchor = IntOffset(at.x.roundToInt(), at.y.roundToInt())
+                            menuUsed = true
                             menu = true
                             event.changes.forEach { it.consume() }
                         }
@@ -363,7 +367,8 @@ private fun ItemRow(
                         favicon = (icon as? RvItemIcon.Favicon)?.let { favicon(it.domain) },
                     )
                 }
-                pick.AnimatedContent(
+                val armed = selecting || pick.currentState || pick.targetState || pick.isRunning
+                if (!armed) siteIcon() else pick.AnimatedContent(
                     transitionSpec = {
                         (scaleIn(motion.fastSpatialSpec(), initialScale = 0.6f) + fadeIn()) togetherWith
                             (scaleOut(motion.fastSpatialSpec(), targetScale = 0.6f) + fadeOut())
@@ -412,7 +417,7 @@ private fun ItemRow(
             Text(view.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
 
-        Box(modifier = Modifier.offset { anchor }.size(0.dp)) {
+        if (menuUsed) Box(modifier = Modifier.offset { anchor }.size(0.dp)) {
         DropdownMenu(
             expanded = menu,
             onDismissRequest = { menu = false },
