@@ -883,12 +883,12 @@ private suspend fun savePasskey(item: RvPasskeyItem, draft: RvDraft): String? = 
     val title = draft.title.trim().ifEmpty { item.entry.customTitle }
     val id = Vault.editPasskey(item.id, title, draft.username.trim(), draft.note, tidyWebsites(draft.websites).filter { it != item.entry.relyingParty })
     if (draft.password.isNotEmpty()) {
-        Vault.addPassword(
+        Vault.saveLogin(
             title = "",
             website = item.entry.relyingParty,
+            app = "",
             username = draft.username.trim(),
             password = draft.password,
-            note = "",
         )
     }
     id
