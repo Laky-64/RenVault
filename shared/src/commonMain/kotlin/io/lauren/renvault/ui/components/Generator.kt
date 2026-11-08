@@ -479,12 +479,14 @@ private fun ScrambleText(target: String, style: TextStyle, modifier: Modifier = 
 @Composable
 fun rememberRuleProblem(domain: String, password: String, strings: RvStrings): String? {
     var problem by remember { mutableStateOf<String?>(null) }
+    var checked by remember(domain) { mutableStateOf(false) }
     LaunchedEffect(domain, password, strings) {
         if (domain.isEmpty() || password.isEmpty()) {
             problem = null
             return@LaunchedEffect
         }
-        delay(RuleCheckDelay)
+        if (checked) delay(RuleCheckDelay)
+        checked = true
         val check = runCatching { Vault.checkPassword(domain, password) }.getOrNull()
         problem = if (check?.problems.isNullOrEmpty()) null else strings.rulesInvalid(domain)
     }
