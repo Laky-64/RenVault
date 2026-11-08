@@ -10,12 +10,12 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/coder/websocket v1.8.15
 	github.com/flynn/noise v1.1.0
-	github.com/fxamacker/cbor/v2 v2.9.6
+	github.com/fxamacker/cbor/v2 v2.10.0
 	github.com/godbus/dbus/v5 v5.2.4
 	github.com/jezek/xgb v1.3.1
 	golang.org/x/crypto v0.58.0
 	golang.org/x/image v0.47.0
-	golang.org/x/net v0.60.0
+	golang.org/x/net v0.62.0
 	golang.org/x/sys v0.49.0
 	rsc.io/qr v0.2.0
 )
