@@ -1,5 +1,7 @@
 package io.lauren.renvault.lib
 
+import androidx.compose.runtime.Composable
+
 import io.lauren.renvault.RvAppName
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
@@ -88,3 +90,6 @@ internal actual object RvLan {
             .filter { it is Inet4Address && it.isSiteLocalAddress }
     }.getOrDefault(emptyList())
 }
+
+@Composable
+internal actual fun rememberLocalNetworkAccess(needed: Boolean): Boolean = true

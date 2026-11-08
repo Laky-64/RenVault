@@ -33,6 +33,7 @@ import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.RvHideFromRecents
 import io.lauren.renvault.lib.RvLan
+import io.lauren.renvault.lib.rememberLocalNetworkAccess
 import io.lauren.renvault.lib.RvLeaveSignal
 import io.lauren.renvault.lib.RvLockGuard
 import io.lauren.renvault.lib.quickCredential
@@ -462,13 +463,17 @@ fun RvVaultApp(
         }.isSuccess
     }
 
-    LaunchedEffect(ready, unlocked, lanOpen) {
+    var lanNeeded by remember { mutableStateOf(false) }
+    val lanAllowed = rememberLocalNetworkAccess(lanNeeded)
+
+    LaunchedEffect(ready, unlocked, lanOpen, lanAllowed) {
         if (!ready) return@LaunchedEffect
         var announced = NetInfo()
         try {
             while (true) {
                 withContext(Dispatchers.Default) {
                     val info = runCatching { Vault.netInfo() }.getOrDefault(NetInfo())
+                    lanNeeded = info.port > 0
                     if (info.port > 0) runCatching { Vault.setAddresses(RvLan.addresses()) }
                     if (info.port == 0 && announced.port > 0) {
                         announced = info

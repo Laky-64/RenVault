@@ -1,5 +1,7 @@
 package io.lauren.renvault.lib
 
+import androidx.compose.runtime.Composable
+
 internal expect object RvLan {
     fun addresses(): List<String>
     fun deviceName(): String
@@ -7,6 +9,9 @@ internal expect object RvLan {
     fun stop()
     fun schedule(enabled: Boolean)
 }
+
+@Composable
+internal expect fun rememberLocalNetworkAccess(needed: Boolean): Boolean
 
 internal const val LanService = "_renvault._tcp"
 internal const val LanNodeKey = "n"

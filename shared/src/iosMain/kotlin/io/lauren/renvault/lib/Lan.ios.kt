@@ -1,5 +1,7 @@
 package io.lauren.renvault.lib
 
+import androidx.compose.runtime.Composable
+
 import platform.UIKit.UIDevice
 
 internal actual object RvLan {
@@ -13,3 +15,6 @@ internal actual object RvLan {
 
     actual fun schedule(enabled: Boolean) = Unit
 }
+
+@Composable
+internal actual fun rememberLocalNetworkAccess(needed: Boolean): Boolean = true
