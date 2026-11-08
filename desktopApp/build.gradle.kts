@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.compose.desktop.application.tasks.AbstractCreateDistributableTask
 import org.jetbrains.compose.desktop.application.tasks.AbstractJPackageTask
 import java.time.LocalDate
 
@@ -70,9 +71,10 @@ compose.desktop {
 }
 
 tasks.withType<AbstractJPackageTask>().matching { it.targetFormat == TargetFormat.Msi }.configureEach {
-    val distributable = tasks.named<AbstractJPackageTask>("createDistributable")
+    val distributable = tasks.named<AbstractCreateDistributableTask>("createDistributable")
+    val name = appName
     dependsOn(distributable)
-    appImage.set(distributable.flatMap { task -> task.destinationDir.zip(task.packageName) { dir, name -> dir.dir(name) } })
+    appImage.set(distributable.flatMap { task -> task.destinationDir.dir(name) })
 }
 
 tasks.withType<AbstractJPackageTask>().matching { it.targetFormat == TargetFormat.Dmg }.configureEach {
@@ -129,9 +131,10 @@ val prepareLinuxResources = tasks.register<Sync>("prepareLinuxResources") {
 }
 
 fun linuxPackage(type: String) = tasks.register<Exec>("packageLinux${type.replaceFirstChar { it.uppercase() }}") {
-    val distributable = tasks.named<AbstractJPackageTask>("createDistributable")
+    val distributable = tasks.named<AbstractCreateDistributableTask>("createDistributable")
+    val name = appName
     dependsOn(distributable, prepareLinuxShare, prepareLinuxResources)
-    val image = distributable.flatMap { task -> task.destinationDir.zip(task.packageName) { dir, name -> dir.dir(name) } }
+    val image = distributable.flatMap { task -> task.destinationDir.dir(name) }
     val output = layout.buildDirectory.dir("compose/binaries/main/$type")
     val share = linuxShare
     val resources = linuxResources
