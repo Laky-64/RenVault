@@ -1,6 +1,5 @@
 package io.lauren.renvault.ui.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,7 +58,7 @@ actual fun RvAlertDialog(
                     color = AlertDialogDefaults.containerColor,
                     tonalElevation = AlertDialogDefaults.TonalElevation,
                 ) {
-                    Column(modifier = Modifier.animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec()).padding(DialogPadding)) {
+                    Column(modifier = Modifier.padding(DialogPadding)) {
                         icon?.let {
                             CompositionLocalProvider(LocalContentColor provides iconContentColor.takeOrElse { AlertDialogDefaults.iconContentColor }) {
                                 Box(Modifier.padding(bottom = HeaderGap).align(Alignment.CenterHorizontally)) { it() }

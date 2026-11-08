@@ -667,7 +667,12 @@ fun RvAnisetteDialog(
                             onClick = { picked = "" },
                         )
                         val loaded = servers
-                        if (loaded == null) {
+                        val motion = MaterialTheme.motionScheme
+                        AnimatedVisibility(
+                            visible = loaded == null,
+                            enter = fadeIn(motion.defaultEffectsSpec()),
+                            exit = shrinkVertically(motion.fastSpatialSpec()) + fadeOut(motion.fastEffectsSpec()),
+                        ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -676,23 +681,31 @@ fun RvAnisetteDialog(
                                 ContainedLoadingIndicator(modifier = Modifier.size(32.dp))
                                 Text(strings.anisetteChecking, style = MaterialTheme.typography.bodyMedium)
                             }
-                        } else {
-                            val best = loaded.filter { it.reachable && it.address.startsWith("https://") }.maxOfOrNull { it.kind }
-                            loaded.forEach { server ->
-                                AnisetteRow(
-                                    title = server.name,
-                                    detail = server.address.substringAfter("://"),
-                                    selected = picked == server.address,
-                                    enabled = !busy && server.reachable,
-                                    status = when {
-                                        !server.reachable -> strings.anisetteUnreachable
-                                        server.address.startsWith("http://") -> strings.anisetteInsecure
-                                        server.kind == best -> strings.anisetteRecommended(server.latencyMs.toString())
-                                        else -> strings.anisetteLatency(server.latencyMs.toString())
-                                    },
-                                    good = server.reachable && server.address.startsWith("https://"),
-                                    onClick = { picked = server.address },
-                                )
+                        }
+                        AnimatedVisibility(
+                            visible = loaded != null,
+                            enter = expandVertically(motion.defaultSpatialSpec()) + fadeIn(motion.defaultEffectsSpec()),
+                            exit = shrinkVertically(motion.fastSpatialSpec()) + fadeOut(motion.fastEffectsSpec()),
+                        ) {
+                            Column {
+                                val list = loaded.orEmpty()
+                                val best = list.filter { it.reachable && it.address.startsWith("https://") }.maxOfOrNull { it.kind }
+                                list.forEach { server ->
+                                    AnisetteRow(
+                                        title = server.name,
+                                        detail = server.address.substringAfter("://"),
+                                        selected = picked == server.address,
+                                        enabled = !busy && server.reachable,
+                                        status = when {
+                                            !server.reachable -> strings.anisetteUnreachable
+                                            server.address.startsWith("http://") -> strings.anisetteInsecure
+                                            server.kind == best -> strings.anisetteRecommended(server.latencyMs.toString())
+                                            else -> strings.anisetteLatency(server.latencyMs.toString())
+                                        },
+                                        good = server.reachable && server.address.startsWith("https://"),
+                                        onClick = { picked = server.address },
+                                    )
+                                }
                             }
                         }
                         AnisetteRow(
