@@ -533,7 +533,7 @@ func runPasskeyOp(src *appleservices.KeychainVault, items []keychain.Item, op ou
 		}
 		return src.AddPasskey(pk)
 	}
-	pk, ok := matchPasskey(keychain.Passkeys(items), op.CredentialID, op.Kind != opPasskeyDelete)
+	pk, ok := matchPasskey(keychain.Passkeys(items), op.CredentialID, op.Kind == opPasskeyRestore || op.Kind == opPasskeyPurge)
 	if !ok {
 		return nil
 	}
