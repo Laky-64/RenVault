@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -84,7 +86,6 @@ internal fun NamesPage(
                 top = padding.calculateTopPadding(),
                 bottom = padding.calculateBottomPadding() + 32.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item { RvPageTitle(strings.namesTitle) }
 
@@ -93,45 +94,49 @@ internal fun NamesPage(
                     text = strings.namesIntro,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 4.dp),
+                    modifier = Modifier.padding(top = SectionGap).padding(horizontal = 4.dp),
                 )
             }
 
-            item {
-                RvSection(footer = strings.namesNote) {
-                    names.forEachIndexed { index, swap ->
-                        RvSegment(
-                            index = index,
-                            count = names.size + 1,
-                            onClick = { editing = NameEdit(index, swap) },
-                            leading = { SettingBadge(RvBadgeIcon, accents.forIndex(index)) },
-                            supporting = { Text(strings.namesEntry) },
-                            trailing = {
-                                IconButton(
-                                    onClick = { store(names.filterIndexed { at, _ -> at != index }) },
-                                    shapes = IconButtonDefaults.shapes(),
-                                ) {
-                                    Icon(RvDeleteIcon, contentDescription = strings.namesRemove)
-                                }
-                            },
+            itemsIndexed(names) { index, swap ->
+                RvSegment(
+                    index = index,
+                    count = names.size + 1,
+                    modifier = Modifier.padding(top = if (index == 0) SectionGap else RowGap),
+                    onClick = { editing = NameEdit(index, swap) },
+                    leading = { SettingBadge(RvBadgeIcon, accents.forIndex(index)) },
+                    supporting = { Text(strings.namesEntry) },
+                    trailing = {
+                        IconButton(
+                            onClick = { store(names.filterIndexed { at, _ -> at != index }) },
+                            shapes = IconButtonDefaults.shapes(),
                         ) {
-                            Text(swap.to.ifEmpty { "—" }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Icon(RvDeleteIcon, contentDescription = strings.namesRemove)
                         }
-                    }
+                    },
+                ) {
+                    Text(swap.to.ifEmpty { "—" }, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+
+            item {
+                Column {
                     RvSegment(
                         index = names.size,
                         count = names.size + 1,
+                        modifier = Modifier.padding(top = if (names.isEmpty()) SectionGap else RowGap),
                         onClick = { editing = NameEdit(null, RvNameSwap("", "")) },
                         leading = { SettingBadge(RvAddIcon, accents.blue) },
                     ) {
                         Text(strings.namesAdd)
                     }
+                    RvSectionFooter(strings.namesNote)
                 }
             }
 
             if (names.isNotEmpty()) {
                 item {
-                    RvSection {
+                    RvSection(modifier = Modifier.padding(top = SectionGap)) {
                         RvSegment(
                             index = 0,
                             count = 1,
@@ -144,32 +149,32 @@ internal fun NamesPage(
                     }
                 }
 
-                item {
-                    if (matches.isEmpty()) {
-                        RvSection(title = strings.namesWhereTitle) {
-                            RvSegment(index = 0, count = 1) {
-                                Text(
-                                    text = strings.namesWhereEmpty,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    } else {
-                        RvSection(title = strings.namesWhereTitle, footer = strings.namesWhereFooter) {
-                            matches.forEachIndexed { index, match ->
-                                RvSegment(
-                                    index = index,
-                                    count = matches.size,
-                                    onClick = { onOpenItem(match.id) },
-                                    supporting = match.subtitle.takeIf { it.isNotEmpty() }?.let { subtitle ->
-                                        { Text(subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                                    },
-                                ) {
-                                    Text(match.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                }
-                            }
+                item { RvSectionTitle(strings.namesWhereTitle, Modifier.padding(top = SectionGap)) }
+
+                if (matches.isEmpty()) {
+                    item {
+                        RvSegment(index = 0, count = 1) {
+                            Text(
+                                text = strings.namesWhereEmpty,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
+                } else {
+                    itemsIndexed(matches, key = { _, match -> match.id }) { index, match ->
+                        RvSegment(
+                            index = index,
+                            count = matches.size,
+                            modifier = Modifier.padding(top = if (index == 0) 0.dp else RowGap),
+                            onClick = { onOpenItem(match.id) },
+                            supporting = match.subtitle.takeIf { it.isNotEmpty() }?.let { subtitle ->
+                                { Text(subtitle, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                            },
+                        ) {
+                            Text(match.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                    item { RvSectionFooter(strings.namesWhereFooter) }
                 }
             }
         }
@@ -232,3 +237,6 @@ private fun NameDialog(
         },
     )
 }
+
+private val SectionGap = 24.dp
+private val RowGap = ListItemDefaults.SegmentedGap
