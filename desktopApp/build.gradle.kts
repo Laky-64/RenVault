@@ -45,6 +45,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi)
+            modules("jdk.localedata")
             packageName = appName
             packageVersion = appPackageVersion
             description = appSummary
