@@ -128,8 +128,8 @@ fun RvPasswordSuggestion(
                     Icon(RvShieldIcon, contentDescription = null, modifier = Modifier.size(18.dp))
                     Text(strings.generatorSuggested, style = MaterialTheme.typography.labelLarge)
                 }
-                ScrambleText(
-                    target = suggested,
+                Text(
+                    text = suggested.ifEmpty { " " },
                     style = MaterialTheme.typography.titleMedium.copy(fontFamily = FontFamily.Monospace),
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
@@ -437,8 +437,8 @@ private fun Toggle(
 
 @Composable
 private fun colored(password: String): AnnotatedString {
-    val digit = RenVault.accents.blue.content
-    val symbol = RenVault.accents.orange.content
+    val digit = MaterialTheme.colorScheme.primary
+    val symbol = RenVault.accents.fair
     return buildAnnotatedString {
         password.forEach { c ->
             val tint: Color? = when {
