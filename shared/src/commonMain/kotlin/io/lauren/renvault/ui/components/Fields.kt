@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,8 +38,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.ui.theme.RenVault
@@ -59,6 +56,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material3.OutlinedSecureTextField
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.KeyboardActionHandler
 
 private val FieldHeight = 68.dp
 
@@ -88,51 +89,67 @@ fun RvTextField(
     val reveal: (Boolean) -> Unit = onShownChange ?: { ownShown = it }
     val note = error ?: supporting
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = if (lines == 1) FieldHeight else 0.dp)
-                .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
-            enabled = enabled,
-            label = { Text(label) },
-            leadingIcon = leading?.let { icon -> { Icon(icon, contentDescription = null) } },
-            trailingIcon = when {
-                trailing != null -> trailing
-                secret -> {
-                    {
-                        IconButton(
-                            onClick = { reveal(!visible) },
-                            shapes = IconButtonDefaults.shapes(),
-                        ) {
-                            Icon(
-                                imageVector = if (visible) RvVisibilityOffIcon else RvVisibilityIcon,
-                                contentDescription = null,
-                            )
-                        }
-                    }
+    val state = rememberSyncedTextState(value, onValueChange)
+    val fieldModifier = Modifier
+        .fillMaxWidth()
+        .heightIn(min = if (lines == 1) FieldHeight else 0.dp)
+        .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier)
+    val leadingIcon: (@Composable () -> Unit)? = leading?.let { icon -> { Icon(icon, contentDescription = null) } }
+    val trailingIcon: (@Composable () -> Unit)? = when {
+        trailing != null -> trailing
+        secret -> {
+            {
+                IconButton(
+                    onClick = { reveal(!visible) },
+                    shapes = IconButtonDefaults.shapes(),
+                ) {
+                    Icon(
+                        imageVector = if (visible) RvVisibilityOffIcon else RvVisibilityIcon,
+                        contentDescription = null,
+                    )
                 }
-                else -> null
-            },
-            isError = error != null,
-            visualTransformation = if (secret && !visible) {
-                PasswordVisualTransformation()
-            } else {
-                VisualTransformation.None
-            },
-            keyboardOptions = KeyboardOptions(
-                capitalization = capitalization,
-                autoCorrectEnabled = !secret && keyboard == KeyboardType.Text && lines > 1,
-                keyboardType = if (secret) KeyboardType.Password else keyboard,
-                imeAction = if (onDone != null) ImeAction.Done else imeAction,
-            ),
-            keyboardActions = KeyboardActions(onDone = { onDone?.invoke() }),
-            singleLine = lines == 1,
-            minLines = lines,
-            shape = MaterialTheme.shapes.large,
-        )
+            }
+        }
+        else -> null
+    }
+    val keyboardOptions = KeyboardOptions(
+        capitalization = capitalization,
+        autoCorrectEnabled = !secret && keyboard == KeyboardType.Text && lines > 1,
+        keyboardType = if (secret) KeyboardType.Password else keyboard,
+        imeAction = if (onDone != null) ImeAction.Done else imeAction,
+    )
+    val keyboardAction = KeyboardActionHandler { performDefault -> onDone?.invoke() ?: performDefault() }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        if (secret) {
+            OutlinedSecureTextField(
+                state = state,
+                modifier = fieldModifier,
+                enabled = enabled,
+                label = { Text(label) },
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = error != null,
+                textObfuscationMode = if (visible) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
+                keyboardOptions = keyboardOptions,
+                onKeyboardAction = keyboardAction,
+                shape = MaterialTheme.shapes.large,
+            )
+        } else {
+            OutlinedTextField(
+                state = state,
+                modifier = fieldModifier,
+                enabled = enabled,
+                label = { Text(label) },
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = error != null,
+                keyboardOptions = keyboardOptions,
+                onKeyboardAction = keyboardAction,
+                lineLimits = if (lines == 1) TextFieldLineLimits.SingleLine else TextFieldLineLimits.MultiLine(minHeightInLines = lines),
+                shape = MaterialTheme.shapes.large,
+            )
+        }
         if (note != null) {
             Text(
                 text = note,
@@ -321,20 +338,16 @@ fun RvSegment(
         return
     }
 
-    Surface(
+    ListItem(
         modifier = modifier.fillMaxWidth(),
-        shape = shapes.shape,
-        color = colors.containerColor,
-    ) {
-        ListItem(
-            headlineContent = content,
-            leadingContent = leading,
-            trailingContent = trailing,
-            overlineContent = overline,
-            supportingContent = supporting,
-            colors = ListItemDefaults.colors(containerColor = colors.containerColor),
-        )
-    }
+        leadingContent = leading,
+        trailingContent = trailing,
+        overlineContent = overline,
+        supportingContent = supporting,
+        shapes = shapes,
+        colors = colors,
+        content = content,
+    )
 }
 
 @Composable
@@ -367,9 +380,8 @@ fun RvSearchInput(
                 )
             }
             BasicTextField(
-                value = query,
-                onValueChange = onQuery,
-                singleLine = true,
+                state = rememberSyncedTextState(query, onQuery),
+                lineLimits = TextFieldLineLimits.SingleLine,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search, autoCorrectEnabled = false),

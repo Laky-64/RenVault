@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,7 +88,7 @@ fun RvPasswordHistorySheet(
     val snackbar = remember { SnackbarHostState() }
     val copy = rememberSheetCopy(snackbar, strings)
 
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberRvSheetState()
     val scope = rememberCoroutineScope()
     var restoring by remember { mutableStateOf<String?>(null) }
     val tone = RenVault.accents.orange
@@ -160,7 +159,7 @@ fun RvGeneratedSheet(
     if (!open) return
     RvSecureScreen()
 
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberRvSheetState()
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     val copy = rememberSheetCopy(snackbar, strings)

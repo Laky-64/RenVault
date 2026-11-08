@@ -1,6 +1,7 @@
 [versions]
 agp = "9.5.1"
 android-compileSdk = "37"
+android-compileSdkMinor = "2"
 android-minSdk = "24"
 android-targetSdk = "37"
 androidx-activity = "1.13.0"
@@ -16,7 +17,7 @@ androidx-core = "1.19.1"
 androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.11.0"
 androidx-testExt = "1.3.0"
-composeMultiplatform = "1.12.2"
+composeMultiplatform = "1.13.0-beta02"
 junit = "4.13.2"
 jmdns = "3.6.5"
 playServicesCodeScanner = "16.1.0"
@@ -24,7 +25,7 @@ workRuntime = "2.12.0"
 kotlin = "2.4.21"
 kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.12.0"
-material3 = "1.12.0-alpha03"
+material3 = "1.13.0-beta02"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

@@ -29,7 +29,6 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.toShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -629,7 +628,7 @@ private fun RvReusedSheet(
     onOpenItem: (String) -> Unit,
 ) {
     if (!open) return
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberRvSheetState()
     val scope = rememberCoroutineScope()
 
     ModalBottomSheet(

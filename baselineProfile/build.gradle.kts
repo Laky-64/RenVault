@@ -13,7 +13,11 @@ kotlin {
 
 android {
     namespace = providers.gradleProperty("renvault.id").get() + ".baseline"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

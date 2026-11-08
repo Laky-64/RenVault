@@ -17,6 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.placeCursorAtEnd
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,9 +37,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 private val Gap = 8.dp
@@ -160,11 +161,18 @@ fun RvCodeInput(
             }
         }
 
+        val digits = remember(length) {
+            InputTransformation {
+                val cleaned = asCharSequence().filter { it.isDigit() }.take(length).toString()
+                if (cleaned != asCharSequence().toString()) replace(0, this.length, cleaned)
+                placeCursorAtEnd()
+            }
+        }
         BasicTextField(
-            value = TextFieldValue(text = value, selection = TextRange(value.length)),
-            onValueChange = { field -> onValueChange(field.text.filter { it.isDigit() }.take(length)) },
+            state = rememberSyncedTextState(value, onValueChange),
+            inputTransformation = digits,
             enabled = enabled,
-            singleLine = true,
+            lineLimits = TextFieldLineLimits.SingleLine,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             cursorBrush = SolidColor(Color.Transparent),
             interactionSource = interactionSource,

@@ -30,12 +30,12 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -163,7 +163,7 @@ fun RvGeneratorSheet(
     if (!open) return
     RvSecureScreen()
 
-    val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val sheet = rememberRvSheetState()
     val scope = rememberCoroutineScope()
     val copy = rememberClipboardCopy()
     val prefs = remember { GeneratorPrefs() }
@@ -408,11 +408,10 @@ private fun Counter(label: String, value: Int, range: IntRange, onValue: (Int) -
             Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             Text(value.toString(), style = MaterialTheme.typography.titleMediumEmphasized)
         }
-        Slider(
-            value = value.toFloat(),
-            onValueChange = { onValue(it.roundToInt()) },
-            valueRange = range.first.toFloat()..range.last.toFloat(),
-        )
+        val bounds = range.first.toFloat()..range.last.toFloat()
+        val state = remember(bounds) { SliderState(value = value.toFloat(), trackRange = bounds) }
+        state.value = value.toFloat()
+        Slider(state = state, onValueChange = { onValue(it.roundToInt()) })
     }
 }
 
