@@ -2,7 +2,6 @@ package io.lauren.renvault.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -54,7 +53,7 @@ fun RvMasterPasswordDialog(
         }
     }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { if (!busy) onDismiss() },
         icon = { Icon(RvKeyIcon, contentDescription = null) },
         title = { Text(strings.masterChangeTitle) },

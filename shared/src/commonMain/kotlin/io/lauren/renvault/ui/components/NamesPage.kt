@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -206,7 +205,7 @@ private fun NameDialog(
     val ready = hidden.isNotBlank()
     val save = { if (ready) onSave(RvNameSwap(hidden.trim(), shown.trim())) }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(RvBadgeIcon, contentDescription = null) },
         title = { Text(strings.namesDialogTitle) },

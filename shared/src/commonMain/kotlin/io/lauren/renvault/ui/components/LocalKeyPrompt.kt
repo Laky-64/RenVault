@@ -2,7 +2,6 @@ package io.lauren.renvault.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -54,7 +53,7 @@ fun RvLocalKeyPrompt(strings: RvStrings, onChange: (HybridPrompt?) -> Unit = {})
         scope.launch { runCatching { Vault.hybridDecide(current.id, account >= 0, account) } }
     }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { answer(-1) },
         icon = {
             RvSiteIcon(

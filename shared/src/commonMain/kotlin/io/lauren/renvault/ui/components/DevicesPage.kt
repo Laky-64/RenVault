@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -318,7 +317,7 @@ private fun PairHostDialog(actions: RvDeviceActions, strings: RvStrings, onDismi
         }
     }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(RvQrCodeIcon, contentDescription = null) },
         title = { Text(strings.devicesAdd) },
@@ -397,7 +396,7 @@ private fun PairJoinDialog(actions: RvDeviceActions, strings: RvStrings, onDismi
     }
     val scan = rememberQrScanner(onScanned = join)
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(if (scan != null) RvQrScanIcon else RvKeyIcon, contentDescription = null) },
         title = { Text(strings.devicesJoin) },
@@ -545,7 +544,7 @@ internal fun ProfileDialog(
         }
     }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(strings.profileEditTitle) },
         text = {

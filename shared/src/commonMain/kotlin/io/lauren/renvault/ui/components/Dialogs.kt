@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -85,7 +84,7 @@ fun RvConfirmDialog(
 
     val colors = MaterialTheme.colorScheme
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { onOpenChange(false) },
         icon = icon?.let { glyph -> { Icon(glyph, contentDescription = null) } },
         iconContentColor = if (danger) colors.error else colors.secondary,
@@ -140,7 +139,7 @@ fun <T> RvChoiceDialog(
 ) {
     if (!open) return
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { onOpenChange(false) },
         title = { Text(title) },
         text = {
@@ -235,7 +234,7 @@ fun RvTotpDialog(
     }
     val motion = MaterialTheme.motionScheme
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { onOpenChange(false) },
         icon = { Icon(RvCodesIcon, contentDescription = null) },
         title = { Text(strings.editSetUpCode) },
@@ -512,7 +511,7 @@ fun RvWebsitesDialog(
     val values = rows.map { it.value }
     val canApply = websitesOk(values)
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { onOpenChange(false) },
         icon = { Icon(RvGlobeIcon, contentDescription = null) },
         title = { Text(heading) },
@@ -648,7 +647,7 @@ fun RvAnisetteDialog(
         }
     }
 
-    AlertDialog(
+    RvAlertDialog(
         onDismissRequest = { onOpenChange(false) },
         icon = { Icon(RvServerIcon, contentDescription = null) },
         title = { Text(strings.anisetteTitle) },
