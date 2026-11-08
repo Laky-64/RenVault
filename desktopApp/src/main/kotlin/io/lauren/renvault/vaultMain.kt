@@ -29,6 +29,7 @@ import androidx.compose.ui.window.Tray
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.TrayItem
 import io.lauren.renvault.bridge.Vault
+import io.lauren.renvault.lib.RvBackgroundArg
 import io.lauren.renvault.lib.currentLocaleTag
 import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
@@ -60,11 +61,12 @@ private val AuthSize = DpSize(480.dp, 740.dp)
 
 private const val DesktopEntry = "$RvAppId-$RvAppName"
 
-fun main() {
+fun main(args: Array<String>) {
+    val background = RvBackgroundArg in args
     nameWindowClass()
-    if (!RvInstance.claim()) return
+    if (!RvInstance.claim(wake = !background)) return
     if (runBlocking { runCatching { Vault.winPasskeyHandOff().quit }.getOrDefault(false) }) return
-    vaultApplication()
+    vaultApplication(background)
 }
 
 private fun nameWindowClass() {
@@ -78,7 +80,7 @@ private fun nameWindowClass() {
     }
 }
 
-private fun vaultApplication() = application {
+private fun vaultApplication(background: Boolean) = application {
     val appName = stringResource(Res.string.app_name)
     val state = rememberWindowState(size = AuthSize, position = WindowPosition(Alignment.Center))
     var expanded by remember { mutableStateOf(false) }
@@ -86,7 +88,7 @@ private fun vaultApplication() = application {
     val awtTray = remember { runCatching { SystemTray.isSupported() }.getOrDefault(false) }
     var nativeTray by remember { mutableStateOf<Boolean?>(if (mac) false else null) }
     val tray = nativeTray == true || awtTray
-    var visible by remember { mutableStateOf(true) }
+    var visible by remember { mutableStateOf(!background) }
     var raises by remember { mutableIntStateOf(0) }
     var activation by remember { mutableStateOf("") }
     var notice by remember { mutableStateOf<Long?>(null) }
@@ -116,6 +118,10 @@ private fun vaultApplication() = application {
         }
     }
     val trayIcon = rememberTrayIcon()
+
+    LaunchedEffect(nativeTray) {
+        if (background && nativeTray != null && !tray) visible = true
+    }
 
     LaunchedEffect(Unit) {
         RvWinPasskeys.onQuit = quit

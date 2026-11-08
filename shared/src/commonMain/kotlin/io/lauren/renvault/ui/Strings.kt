@@ -423,6 +423,8 @@ import io.lauren.renvault.resources.settings_title
 import io.lauren.renvault.resources.settings_close
 import io.lauren.renvault.resources.settings_general_title
 import io.lauren.renvault.resources.settings_language
+import io.lauren.renvault.resources.settings_launch_at_login
+import io.lauren.renvault.resources.settings_launch_at_login_desc
 import io.lauren.renvault.resources.settings_security_title
 import io.lauren.renvault.resources.settings_auto_lock
 import io.lauren.renvault.resources.settings_auto_lock_never
@@ -843,6 +845,8 @@ private val TextResources = listOf(
     Res.string.settings_close,
     Res.string.settings_general_title,
     Res.string.settings_language,
+    Res.string.settings_launch_at_login,
+    Res.string.settings_launch_at_login_desc,
     Res.string.settings_security_title,
     Res.string.settings_auto_lock,
     Res.string.settings_auto_lock_never,
@@ -1166,6 +1170,8 @@ private class ResourceStrings(
     override val settingsClose: String get() = text(Res.string.settings_close)
     override val settingsGeneralTitle: String get() = text(Res.string.settings_general_title)
     override val settingsLanguage: String get() = text(Res.string.settings_language)
+    override val settingsLaunchAtLogin: String get() = text(Res.string.settings_launch_at_login)
+    override val settingsLaunchAtLoginDesc: String get() = text(Res.string.settings_launch_at_login_desc)
     override val settingsSecurityTitle: String get() = text(Res.string.settings_security_title)
     override val settingsAutoLock: String get() = text(Res.string.settings_auto_lock)
     override val settingsAutoLockNever: String get() = text(Res.string.settings_auto_lock_never)

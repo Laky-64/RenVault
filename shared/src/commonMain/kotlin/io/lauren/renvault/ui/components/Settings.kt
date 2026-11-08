@@ -82,6 +82,7 @@ import io.lauren.renvault.lib.clipboardClearSeconds
 import io.lauren.renvault.lib.autofillCopyTotp
 import io.lauren.renvault.lib.autofillInline
 import io.lauren.renvault.lib.rememberAutofillSetup
+import io.lauren.renvault.lib.rememberLaunchAtLogin
 import io.lauren.renvault.lib.setAutofillCopyTotp
 import io.lauren.renvault.lib.setAutofillInline
 import io.lauren.renvault.lib.setClipboardClearSeconds
@@ -316,6 +317,7 @@ private fun RootPage(
     val editable = state.local && devices != null
     val copy = rememberClipboardCopy()
     val autofill = rememberAutofillSetup()
+    val launchAtLogin = rememberLaunchAtLogin()
 
     var now by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
     LaunchedEffect(Unit) {
@@ -442,7 +444,8 @@ private fun RootPage(
                 RvSection(title = strings.settingsGeneralTitle) {
                     val active = autofill != null && autofill.enabled
                     val styled = active && autofill.inlineSupported
-                    val fill = (if (autofill != null) 1 else 0) + (if (styled) 1 else 0) + (if (active) 1 else 0)
+                    val login = if (launchAtLogin != null) 1 else 0
+                    val fill = login + (if (autofill != null) 1 else 0) + (if (styled) 1 else 0) + (if (active) 1 else 0)
                     RvSegment(
                         index = 0,
                         count = 3 + fill,
@@ -452,9 +455,21 @@ private fun RootPage(
                     ) {
                         Text(strings.settingsLanguage)
                     }
-                    autofill?.let { setup ->
+                    launchAtLogin?.let { setup ->
                         RvSegment(
                             index = 1,
+                            count = 3 + fill,
+                            onClick = { setup.set(!setup.enabled) },
+                            leading = { SettingBadge(RvPowerIcon, accents.green) },
+                            supporting = { Text(strings.settingsLaunchAtLoginDesc) },
+                            trailing = { Switch(checked = setup.enabled, onCheckedChange = null) },
+                        ) {
+                            Text(strings.settingsLaunchAtLogin)
+                        }
+                    }
+                    autofill?.let { setup ->
+                        RvSegment(
+                            index = 1 + login,
                             count = 3 + fill,
                             onClick = { setup.set(!setup.enabled) },
                             leading = { SettingBadge(RvAutofillIcon, accents.green) },
@@ -466,7 +481,7 @@ private fun RootPage(
                     }
                     if (styled) {
                         RvSegment(
-                            index = 2,
+                            index = 2 + login,
                             count = 3 + fill,
                             onClick = { autofillStyleOpen = true },
                             leading = { SettingBadge(RvAutofillIcon, accents.teal) },
@@ -477,7 +492,7 @@ private fun RootPage(
                     }
                     if (active) {
                         RvSegment(
-                            index = if (styled) 3 else 2,
+                            index = login + if (styled) 3 else 2,
                             count = 3 + fill,
                             onClick = {
                                 copyTotp = !copyTotp

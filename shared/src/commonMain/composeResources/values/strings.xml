@@ -179,6 +179,8 @@
     <string name="settings_close">Close</string>
     <string name="settings_general_title">General</string>
     <string name="settings_language">Language</string>
+    <string name="settings_launch_at_login">Open at login</string>
+    <string name="settings_launch_at_login_desc">Starts in the background when you sign in to your computer</string>
     <string name="settings_security_title">Security</string>
     <string name="settings_auto_lock">Auto-Lock</string>
     <string name="settings_auto_lock_never">Never</string>

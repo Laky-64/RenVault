@@ -146,6 +146,8 @@ interface RvStrings {
     val settingsClose: String
     val settingsGeneralTitle: String
     val settingsLanguage: String
+    val settingsLaunchAtLogin: String
+    val settingsLaunchAtLoginDesc: String
     val settingsSecurityTitle: String
     val settingsAutoLock: String
     val settingsAutoLockNever: String

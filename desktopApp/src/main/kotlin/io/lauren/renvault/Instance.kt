@@ -17,7 +17,7 @@ internal object RvInstance {
     @Volatile
     private var onShow: (token: String) -> Unit = {}
 
-    fun claim(): Boolean {
+    fun claim(wake: Boolean): Boolean {
         folder.mkdirs()
         val channel = FileChannel.open(
             File(folder, "instance.lock").toPath(),
@@ -27,7 +27,7 @@ internal object RvInstance {
         val held = runCatching { channel.tryLock() }.getOrNull()
         if (held == null) {
             channel.close()
-            wakeRunning()
+            if (wake) wakeRunning()
             return false
         }
         lock = held

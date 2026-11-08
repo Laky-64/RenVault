@@ -123,6 +123,8 @@
     <string name="settings_close">Chiudi</string>
     <string name="settings_general_title">Generale</string>
     <string name="settings_language">Lingua</string>
+    <string name="settings_launch_at_login">Apri all\'accesso</string>
+    <string name="settings_launch_at_login_desc">Si avvia in background quando accedi al computer</string>
     <string name="settings_security_title">Sicurezza</string>
     <string name="settings_auto_lock">Blocco automatico</string>
     <string name="settings_auto_lock_never">Mai</string>
