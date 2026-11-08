@@ -1,6 +1,7 @@
 package io.lauren.renvault.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -210,7 +211,8 @@ fun RvDetailPane(
                 AnimatedContent(
                     targetState = editing,
                     transitionSpec = {
-                        fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec())
+                        fadeIn(motion.fastEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) using
+                            SizeTransform(clip = false) { _, _ -> motion.fastSpatialSpec() }
                     },
                     label = "detailMode",
                 ) { edit ->
