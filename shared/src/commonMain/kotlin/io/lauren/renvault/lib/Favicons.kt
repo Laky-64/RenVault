@@ -17,11 +17,13 @@ object RvFavicons {
     private const val EnabledKey = "site_icons"
     private const val OffKey = "off"
     private const val EnhanceKey = "icon_enhance"
+    private const val AppsKey = "prefer_app_icons"
 
     private var loaded = false
     private var chosen by mutableStateOf(RvIconProvider.Site)
     private var on by mutableStateOf(true)
     private var sharp by mutableStateOf(true)
+    private var apps by mutableStateOf(false)
 
     private fun load() {
         if (loaded) return
@@ -30,6 +32,7 @@ object RvFavicons {
         chosen = RvIconProvider.entries.firstOrNull { it.key == saved } ?: RvIconProvider.Site
         on = readPreference(EnabledKey) != OffKey && saved != OffKey
         sharp = readPreference(EnhanceKey) != OffKey
+        apps = readPreference(AppsKey) == "on"
     }
 
     val provider: RvIconProvider
@@ -49,6 +52,18 @@ object RvFavicons {
             load()
             return sharp
         }
+
+    val preferApps: Boolean
+        get() {
+            load()
+            return apps
+        }
+
+    fun setPreferApps(value: Boolean) {
+        load()
+        apps = value
+        writePreference(AppsKey, if (value) "on" else OffKey)
+    }
 
     val key: String get() = if (enabled) provider.key else OffKey
 

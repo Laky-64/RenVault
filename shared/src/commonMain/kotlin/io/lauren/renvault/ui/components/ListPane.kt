@@ -72,6 +72,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvItem
+import io.lauren.renvault.lib.RvFavicons
 import io.lauren.renvault.lib.RvItemIcon
 import io.lauren.renvault.lib.RvSecretSource
 import io.lauren.renvault.lib.RvSortField
@@ -322,7 +323,7 @@ private fun ItemRow(
         is RvWifiItem -> true
         is RvPasskeyItem -> false
     }
-    val view = remember(entry, strings, names) { viewOf(entry, strings).masked(names) }
+    val view = remember(entry, strings, names, RvFavicons.enabled, RvFavicons.preferApps) { viewOf(entry, strings).masked(names) }
     val icon = view.icon
     val issue = if (zone == RvZoneKind.Security) (entry as? RvWebItem)?.securityIssue else null
     val code = if (zone == RvZoneKind.Codes && view.hasTotp) {

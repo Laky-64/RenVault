@@ -511,6 +511,8 @@ import io.lauren.renvault.resources.list_deselect_all
 import io.lauren.renvault.resources.list_select
 import io.lauren.renvault.resources.icons_enhance
 import io.lauren.renvault.resources.icons_enhance_desc
+import io.lauren.renvault.resources.icons_apps
+import io.lauren.renvault.resources.icons_apps_desc
 import io.lauren.renvault.resources.list_open
 import io.lauren.renvault.resources.list_copy_username
 import io.lauren.renvault.resources.list_copy_password
@@ -861,6 +863,8 @@ private val TextResources = listOf(
     Res.string.list_select,
     Res.string.icons_enhance,
     Res.string.icons_enhance_desc,
+    Res.string.icons_apps,
+    Res.string.icons_apps_desc,
     Res.string.list_open,
     Res.string.list_copy_username,
     Res.string.list_copy_password,
@@ -1191,6 +1195,8 @@ private class ResourceStrings(
     override val listSelect: String get() = text(Res.string.list_select)
     override val iconsEnhance: String get() = text(Res.string.icons_enhance)
     override val iconsEnhanceDesc: String get() = text(Res.string.icons_enhance_desc)
+    override val iconsApps: String get() = text(Res.string.icons_apps)
+    override val iconsAppsDesc: String get() = text(Res.string.icons_apps_desc)
     override val listOpen: String get() = text(Res.string.list_open)
     override val listCopyUsername: String get() = text(Res.string.list_copy_username)
     override val listCopyPassword: String get() = text(Res.string.list_copy_password)

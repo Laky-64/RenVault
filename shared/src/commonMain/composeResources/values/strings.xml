@@ -229,6 +229,8 @@
     <string name="list_select">Select</string>
     <string name="icons_enhance">Enhance icons</string>
     <string name="icons_enhance_desc">Sharpens small icons and fits them to the shape</string>
+    <string name="icons_apps">Prefer app icons</string>
+    <string name="icons_apps_desc">When an app is linked, shows its icon instead of the website\'s</string>
     <string name="list_open">Open</string>
     <string name="list_copy_username">Copy User Name</string>
     <string name="list_copy_password">Copy Password</string>

@@ -141,6 +141,9 @@ fun siteOf(item: RvWebItem): String = when {
     else -> item.entry.domains.firstOrNull(::isAppLink).orEmpty()
 }
 
+fun iconOf(item: RvWebItem): String =
+    item.entry.domains.firstOrNull(::isAppLink)?.takeIf { RvFavicons.enabled && RvFavicons.preferApps } ?: siteOf(item)
+
 private fun appsOf(item: RvWebItem): List<String> =
     item.entry.domains.filter(::isAppLink).map { appPackageOf(it) }.distinct()
 
@@ -172,7 +175,7 @@ fun viewOf(item: RvItem, strings: RvStrings): RvItemView = when (item) {
         RvItemView(
             title = label,
             subtitle = if (label == item.entry.username) "" else item.entry.username,
-            icon = RvItemIcon.Favicon(domain = siteOf(item), fallback = label),
+            icon = RvItemIcon.Favicon(domain = iconOf(item), fallback = label),
             hasTotp = item.entry.hasTotp,
         )
     }

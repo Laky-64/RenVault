@@ -1323,12 +1323,21 @@ private fun IconsPage(strings: RvStrings, dialog: Boolean, onBack: () -> Unit) {
                     RvSection {
                         RvSegment(
                             index = 0,
-                            count = 1,
+                            count = 2,
                             onClick = { RvFavicons.setEnhance(!RvFavicons.enhance) },
                             supporting = { Text(strings.iconsEnhanceDesc) },
                             trailing = { Switch(checked = RvFavicons.enhance, onCheckedChange = null) },
                         ) {
                             Text(strings.iconsEnhance)
+                        }
+                        RvSegment(
+                            index = 1,
+                            count = 2,
+                            onClick = { RvFavicons.setPreferApps(!RvFavicons.preferApps) },
+                            supporting = { Text(strings.iconsAppsDesc) },
+                            trailing = { Switch(checked = RvFavicons.preferApps, onCheckedChange = null) },
+                        ) {
+                            Text(strings.iconsApps)
                         }
                     }
                 }

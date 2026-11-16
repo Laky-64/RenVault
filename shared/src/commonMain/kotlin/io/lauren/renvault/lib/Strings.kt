@@ -125,6 +125,8 @@ interface RvStrings {
     val listSelect: String
     val iconsEnhance: String
     val iconsEnhanceDesc: String
+    val iconsApps: String
+    val iconsAppsDesc: String
     val listOpen: String
     val listCopyUsername: String
     val listCopyPassword: String

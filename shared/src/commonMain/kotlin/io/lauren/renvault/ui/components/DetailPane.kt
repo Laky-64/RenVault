@@ -56,6 +56,7 @@ import io.lauren.renvault.lib.DeletedDays
 import io.lauren.renvault.lib.RvDetailField
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvItem
+import io.lauren.renvault.lib.RvFavicons
 import io.lauren.renvault.lib.RvItemIcon
 import io.lauren.renvault.lib.RvItemView
 import io.lauren.renvault.lib.RvPasskeyItem
@@ -128,7 +129,7 @@ fun RvDetailPane(
     val hidden = remember(item, names) { hidesName(item, names) } && LocalNameNotice.current
     var original by remember(item.id) { mutableStateOf(false) }
     val shownNames = if (original) RvNameMask.None else names
-    val view = remember(item, strings, shownNames) { viewOf(item, strings).masked(shownNames) }
+    val view = remember(item, strings, shownNames, RvFavicons.enabled, RvFavicons.preferApps) { viewOf(item, strings).masked(shownNames) }
     val detail = remember(item, secrets, strings, shownNames) {
         detailOf(item, secrets, strings).masked(shownNames)
     }
@@ -668,7 +669,7 @@ private fun RvReusedSheet(
             )
             RvSection {
                 items.forEachIndexed { index, other ->
-                    val view = remember(other, strings, names) { viewOf(other, strings).masked(names) }
+                    val view = remember(other, strings, names, RvFavicons.enabled, RvFavicons.preferApps) { viewOf(other, strings).masked(names) }
                     RvSegment(
                         index = index,
                         count = items.size,
