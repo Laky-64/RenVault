@@ -97,7 +97,7 @@ import io.lauren.renvault.ui.components.RvFavicon
 import io.lauren.renvault.ui.components.RvHomePage
 import io.lauren.renvault.ui.components.RvSettingsState
 import io.lauren.renvault.ui.components.RvVaultShell
-import io.lauren.renvault.ui.components.fitted
+import io.lauren.renvault.ui.components.halvedToward
 import io.lauren.renvault.ui.components.homeZones
 import io.lauren.renvault.ui.components.rememberClipboardCopy
 import kotlinx.coroutines.Dispatchers
@@ -376,7 +376,7 @@ fun RvVaultApp(
                         }
                         bytes?.let {
                             withContext(Dispatchers.Default) {
-                                runCatching { RvFavicon(it.decodeToImageBitmap().fitted(tile), RvFavicons.enhance) }.getOrNull()
+                                runCatching { it.decodeToImageBitmap().let { image -> RvFavicon(image, RvFavicons.enhance, drawn = image.halvedToward(tile)) } }.getOrNull()
                             }
                         }
                     }

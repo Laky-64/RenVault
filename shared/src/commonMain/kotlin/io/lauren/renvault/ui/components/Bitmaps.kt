@@ -50,6 +50,12 @@ fun ImageBitmap.fitted(target: Int): ImageBitmap {
     return if (maxOf(source.width, source.height) == target) source else source.resized(target)
 }
 
+fun ImageBitmap.halvedToward(target: Int): ImageBitmap {
+    var source = this
+    while (target > 0 && maxOf(source.width, source.height) / 2 >= target) source = source.halved()
+    return source
+}
+
 private fun ImageBitmap.halved(): ImageBitmap = redraw(width / 2, height / 2)
 
 private fun ImageBitmap.resized(target: Int): ImageBitmap {

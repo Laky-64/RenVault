@@ -10,8 +10,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-class RvFavicon(image: ImageBitmap, fit: Boolean = true) : Painter() {
-    private val painter = BitmapPainter(image, filterQuality = FilterQuality.High)
+class RvFavicon(image: ImageBitmap, fit: Boolean = true, drawn: ImageBitmap = image) : Painter() {
+    private val painter = BitmapPainter(drawn, filterQuality = FilterQuality.High)
 
     val bleed: Boolean
     val plate: Color?
