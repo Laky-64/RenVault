@@ -30,3 +30,6 @@ androidApp/src/main/jniLibs/
 
 # Python
 __pycache__/
+
+# Release notes for the next tag
+RELEASE_NOTES.md

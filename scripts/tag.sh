@@ -37,37 +37,61 @@ git rev-parse -q --verify "refs/tags/$tag" > /dev/null && fail "$tag already exi
 if [ "$kind" = stable ] && [[ "$tag" == *-* ]]; then fail "A stable tag can't contain a suffix like -beta."; fi
 if [ "$kind" = beta ] && [[ "$tag" != *-* ]]; then fail "A beta tag needs a suffix like -beta.1."; fi
 
-draft=$(mktemp)
-trap 'rm -f "$draft"' EXIT
-{
-  python3 .github/scripts/telegram_upload.py draft HEAD "$kind"
-  say
-  say "# Write the notes testers will see for $tag."
-  say "# Lines starting with # are ignored. Leave the file empty to abort."
-} > "$draft"
+saved=RELEASE_NOTES.md
+edit() {
+  local ide
+  ide=$(command -v studio idea goland clion pycharm webstorm 2> /dev/null | head -1 || true)
+  if [ -n "${RENVAULT_EDITOR:-}" ]; then
+    $RENVAULT_EDITOR "$saved"
+  elif [ -n "$ide" ]; then
+    "$ide" --wait "$PWD/$saved" > /dev/null 2>&1
+  elif command -v code > /dev/null; then
+    code --wait --new-window "$saved"
+  elif command -v gnome-text-editor > /dev/null; then
+    gnome-text-editor --standalone "$saved" 2> /dev/null
+  else
+    "${VISUAL:-${EDITOR:-nano}}" "$saved"
+  fi
+  notes=$(grep -v '^# ' "$saved" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+}
 
-"${VISUAL:-${EDITOR:-nano}}" "$draft"
-notes=$(grep -v '^#' "$draft" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
-[ -n "$(printf '%s' "$notes" | tr -d '[:space:]')" ] || fail "Empty notes, nothing tagged."
-
-say
-say "${bold}Preview${reset}"
-say "${dim}────────────────────────────────────────${reset}"
-if [ "$kind" = stable ]; then
-  say "🚀 RenVault ${tag#v} #stable ($(git rev-parse --short HEAD))"
-else
-  say "🥚 Beta ${tag#v} #beta ($(git rev-parse --short HEAD))"
+if [ ! -s "$saved" ]; then
+  {
+    python3 .github/scripts/telegram_upload.py draft HEAD "$kind"
+    say
+    say "# Write the notes testers will see, then close this tab."
+    say "# Lines starting with \"# \" are ignored."
+  } > "$saved"
 fi
-say
-say "$notes"
-say "${dim}────────────────────────────────────────${reset}"
-say
-read -r -p "Create and push $tag? [y/N] " answer
-[[ "$answer" =~ ^[YySs]$ ]] || fail "Aborted, nothing tagged."
+say "${dim}Opening $saved, close its tab to continue…${reset}"
+edit
+
+while true; do
+  [ -n "$(printf '%s' "$notes" | tr -d '[:space:]')" ] || fail "Empty notes, nothing tagged."
+  say
+  say "${bold}Preview${reset}"
+  say "${dim}────────────────────────────────────────${reset}"
+  if [ "$kind" = stable ]; then
+    say "🚀 RenVault ${tag#v} #stable ($(git rev-parse --short HEAD))"
+  else
+    say "🥚 Beta ${tag#v} #beta ($(git rev-parse --short HEAD))"
+  fi
+  say
+  say "$notes"
+  say "${dim}────────────────────────────────────────${reset}"
+  say
+  read -r -p "Create and push $tag? [y]es / [e]dit / [N]o " answer
+  case "$answer" in
+    [YySs]) break ;;
+    [Ee]) edit ;;
+    *) fail "Aborted, nothing tagged." ;;
+  esac
+done
 
 git tag -a "$tag" -F <(printf '%s\n' "$notes")
 [ "$ahead" = 0 ] || git push --quiet origin "$branch"
 git push --quiet origin "$tag"
+rm -f "$saved"
 
 repo=$(git remote get-url origin | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')
 say "${green}✓ $tag pushed, the build is starting${reset}"
