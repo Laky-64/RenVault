@@ -3,6 +3,8 @@ package io.lauren.renvault
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +27,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.skia.Image
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.window.Tray
 import io.lauren.renvault.bridge.EventKind
 import io.lauren.renvault.bridge.TrayItem
 import io.lauren.renvault.bridge.Vault
@@ -35,7 +36,14 @@ import io.lauren.renvault.resources.Res
 import io.lauren.renvault.resources.app_name
 import org.jetbrains.compose.resources.stringResource
 import io.lauren.renvault.ui.rememberStrings
+import java.awt.MenuItem
+import java.awt.PopupMenu
 import java.awt.SystemTray
+import java.awt.TrayIcon
+import java.awt.desktop.AppReopenedListener
+import javax.imageio.ImageIO
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import io.lauren.renvault.ui.theme.RenVaultTheme
 import java.awt.Desktop
 import java.awt.Dimension
@@ -117,27 +125,32 @@ private fun vaultApplication(background: Boolean) = application {
             exitApplication()
         }
     }
-    val trayIcon = rememberTrayIcon()
-
-    LaunchedEffect(nativeTray) {
-        if (background && nativeTray != null && !tray) visible = true
-    }
 
     LaunchedEffect(Unit) {
         RvWinPasskeys.onQuit = quit
         RvInstance.listen(open)
     }
 
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) { runCatching { Vault.listen() } }
+    }
+
     if (!mac) {
         LaunchedEffect(appName, strings.trayOpen, strings.trayQuit) {
             val items = listOf(TrayItem(TrayOpen, strings.trayOpen), TrayItem(TrayQuit, strings.trayQuit))
-            val shown = try {
-                Vault.showTray(appName, trayIcons("light"), trayIcons("dark"), items)
-                true
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (_: Throwable) {
-                false
+            var attempts = if (background && nativeTray == null) TrayAttempts else 1
+            var shown: Boolean
+            while (true) {
+                shown = try {
+                    Vault.showTray(appName, trayIcons("light"), trayIcons("dark"), items)
+                    true
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (_: Throwable) {
+                    false
+                }
+                if (shown || --attempts <= 0) break
+                delay(TrayRetry)
             }
             if (nativeTray != true) nativeTray = shown
         }
@@ -155,15 +168,24 @@ private fun vaultApplication(background: Boolean) = application {
     }
 
     if (awtTray && nativeTray == false) {
-        Tray(
-            icon = trayIcon,
+        AwtTray(
             tooltip = appName,
-            onAction = { open("") },
-            menu = {
-                Item(strings.trayOpen, onClick = { open("") })
-                Item(strings.trayQuit, onClick = ::exitApplication)
-            },
+            openLabel = strings.trayOpen,
+            quitLabel = strings.trayQuit,
+            onOpen = { open("") },
+            onQuit = quit,
         )
+    }
+
+    if (mac) {
+        val reopen by rememberUpdatedState(open)
+        DisposableEffect(Unit) {
+            val desktop = Desktop.getDesktop()
+            val listener = AppReopenedListener { reopen("") }
+            val supported = desktop.isSupported(Desktop.Action.APP_EVENT_REOPENED)
+            if (supported) desktop.addAppEventListener(listener)
+            onDispose { if (supported) desktop.removeAppEventListener(listener) }
+        }
     }
 
     Window(
@@ -250,10 +272,23 @@ private fun vaultApplication(background: Boolean) = application {
 }
 
 @Composable
-private fun rememberTrayIcon(): Painter {
+private fun AwtTray(tooltip: String, openLabel: String, quitLabel: String, onOpen: () -> Unit, onQuit: () -> Unit) {
     val variant = if (isSystemInDarkTheme()) "light" else "dark"
-    return remember(variant) {
-        BitmapPainter(Image.makeFromEncoded(trayIcons(variant).last()).toComposeImageBitmap())
+    val open by rememberUpdatedState(onOpen)
+    val quit by rememberUpdatedState(onQuit)
+    DisposableEffect(variant, tooltip, openLabel, quitLabel) {
+        val menu = PopupMenu().apply {
+            add(MenuItem(openLabel).apply { addActionListener { open() } })
+            add(MenuItem(quitLabel).apply { addActionListener { quit() } })
+        }
+        val image = ImageIO.read(trayIcons(variant).last().inputStream())
+        val icon = TrayIcon(image, tooltip, menu).apply {
+            isImageAutoSize = true
+            addActionListener { open() }
+        }
+        val tray = SystemTray.getSystemTray()
+        val added = runCatching { tray.add(icon) }.isSuccess
+        onDispose { if (added) tray.remove(icon) }
     }
 }
 
@@ -269,6 +304,10 @@ private fun trayIcons(variant: String): List<ByteArray> = TraySizes.map { size -
 }
 
 private const val TrayOpen = "open"
+
+private const val TrayAttempts = 30
+
+private val TrayRetry = 2.seconds
 
 private const val TrayQuit = "quit"
 

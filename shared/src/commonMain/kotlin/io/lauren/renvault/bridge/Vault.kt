@@ -2,6 +2,8 @@
 
 package io.lauren.renvault.bridge
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -331,9 +333,13 @@ object Vault {
 
     suspend fun anisetteServers(): List<AnisetteEntry> = receive(Op.ANISETTE_SERVERS)
 
+    private val pumping = Mutex()
+
     suspend fun listen() {
-        while (currentCoroutineContext().isActive) {
-            pump()
+        pumping.withLock {
+            while (currentCoroutineContext().isActive) {
+                pump()
+            }
         }
     }
 
