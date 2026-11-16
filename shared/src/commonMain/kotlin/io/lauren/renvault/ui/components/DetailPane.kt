@@ -328,6 +328,7 @@ private fun ItemView(
     var purgeOpen by remember { mutableStateOf(false) }
     var historyOpen by remember(item.id) { mutableStateOf(false) }
     var reusedOpen by remember(item.id) { mutableStateOf(false) }
+    var appsShown by remember(item.id) { mutableStateOf<List<String>>(emptyList()) }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (web != null && issue != null) {
@@ -370,7 +371,7 @@ private fun ItemView(
         val rows = shown.size + if (versions.isNotEmpty()) 1 else 0
         RvSection {
             shown.forEachIndexed { index, field ->
-                FieldRow(field = field, index = index, count = rows, onCopy = onCopy)
+                FieldRow(field = field, index = index, count = rows, onCopy = onCopy, onApps = { appsShown = it }, strings = strings)
             }
             if (versions.isNotEmpty()) {
                 RvSegment(
@@ -384,6 +385,13 @@ private fun ItemView(
                 }
             }
         }
+
+        RvAppsSheet(
+            open = appsShown.isNotEmpty(),
+            onOpenChange = { if (!it) appsShown = emptyList() },
+            apps = appsShown,
+            strings = strings,
+        )
 
         RvReusedSheet(
             open = reusedOpen,
@@ -470,6 +478,8 @@ private fun FieldRow(
     index: Int,
     count: Int,
     onCopy: (text: String, sensitive: Boolean) -> Unit,
+    onApps: (List<String>) -> Unit,
+    strings: RvStrings,
 ) {
     val scope = rememberCoroutineScope()
     val secret = field.secret
@@ -486,6 +496,11 @@ private fun FieldRow(
     RvSegment(
         index = index,
         count = count,
+        onClick = if (field.apps.size > 1) {
+            { onApps(field.apps) }
+        } else {
+            null
+        },
         overline = { Text(field.label) },
         trailing = {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -522,6 +537,7 @@ private fun FieldRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            field.apps.isNotEmpty() -> Text(rememberAppsSummary(field.apps, strings), maxLines = 2, overflow = TextOverflow.Ellipsis)
             else -> Text(field.plain.orEmpty(), maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }

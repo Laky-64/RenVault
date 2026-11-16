@@ -204,6 +204,7 @@ data class RvDetailField(
     val copyable: Boolean = false,
     val wrap: Boolean = false,
     val bare: Boolean = false,
+    val apps: List<String> = emptyList(),
 )
 
 val RvDetailField.secret: (suspend () -> String)?
@@ -295,9 +296,11 @@ fun detailOf(
         }
         val apps = appsOf(item)
         if (apps.isNotEmpty()) {
+            val first = appLabel(apps[0]) ?: apps[0]
             fields += RvDetailField(
                 label = strings.fieldApp,
-                value = RvFieldValue.Shown(apps.joinToString(", ") { appLabel(it) ?: it }),
+                value = RvFieldValue.Shown(if (apps.size == 1) first else strings.fieldAppMore(first, apps.size - 1)),
+                apps = apps,
             )
         }
         if (item.entry.hasTotp) {

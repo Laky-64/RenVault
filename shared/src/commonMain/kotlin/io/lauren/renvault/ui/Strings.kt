@@ -142,6 +142,12 @@ import io.lauren.renvault.resources.totp_scan_other_account_title
 import io.lauren.renvault.resources.totp_key_placeholder
 import io.lauren.renvault.resources.totp_setup_desc
 import io.lauren.renvault.resources.websites_add
+import io.lauren.renvault.resources.apps_title
+import io.lauren.renvault.resources.apps_desc
+import io.lauren.renvault.resources.apps_add
+import io.lauren.renvault.resources.apps_search
+import io.lauren.renvault.resources.apps_empty
+import io.lauren.renvault.resources.edit_no_app
 import io.lauren.renvault.resources.websites_placeholder
 import io.lauren.renvault.resources.websites_desc
 import io.lauren.renvault.resources.websites_desc_passkey
@@ -373,6 +379,7 @@ import io.lauren.renvault.resources.field_verification_code
 import io.lauren.renvault.resources.field_website
 import io.lauren.renvault.resources.field_app
 import io.lauren.renvault.resources.field_website_more
+import io.lauren.renvault.resources.field_app_more
 import io.lauren.renvault.resources.item_compromised
 import io.lauren.renvault.resources.item_reused
 import io.lauren.renvault.resources.item_weak
@@ -649,6 +656,12 @@ private val TextResources = listOf(
     Res.string.websites_desc_passkey,
     Res.string.websites_placeholder,
     Res.string.websites_add,
+    Res.string.apps_title,
+    Res.string.apps_desc,
+    Res.string.apps_add,
+    Res.string.apps_search,
+    Res.string.apps_empty,
+    Res.string.edit_no_app,
     Res.string.totp_setup_desc,
     Res.string.totp_key_placeholder,
     Res.string.totp_key_confirm,
@@ -1015,6 +1028,7 @@ private val PluralResources = listOf(
     Res.plurals.delete_passkey_hard_desc,
     Res.plurals.deleted_countdown,
     Res.plurals.field_website_more,
+    Res.plurals.field_app_more,
     Res.plurals.list_selected_count,
     Res.plurals.zone_item_count,
     Res.plurals.security_sites_more,
@@ -1343,6 +1357,12 @@ private class ResourceStrings(
     override val websitesTitle: String get() = text(Res.string.websites_title)
     override val websitesPlaceholder: String get() = text(Res.string.websites_placeholder)
     override val websitesAdd: String get() = text(Res.string.websites_add)
+    override val apps: String get() = text(Res.string.apps_title)
+    override val appsDesc: String get() = text(Res.string.apps_desc)
+    override val appsAdd: String get() = text(Res.string.apps_add)
+    override val appsSearch: String get() = text(Res.string.apps_search)
+    override val appsEmpty: String get() = text(Res.string.apps_empty)
+    override val editNoApp: String get() = text(Res.string.edit_no_app)
     override val totpKeyPlaceholder: String get() = text(Res.string.totp_key_placeholder)
     override val totpKeyConfirm: String get() = text(Res.string.totp_key_confirm)
     override val generatedClearTitle: String get() = text(Res.string.generated_clear_title)
@@ -1517,6 +1537,9 @@ private class ResourceStrings(
 
     override fun fieldWebsiteMore(domain: String, count: Int): String =
         many(Res.plurals.field_website_more, count, domain, count)
+
+    override fun fieldAppMore(app: String, count: Int): String =
+        many(Res.plurals.field_app_more, count, app, count)
 
     override fun fieldPasskeyCreationDate(date: String): String =
         text(Res.string.field_passkey_creation_date, date)

@@ -568,4 +568,14 @@
     <string name="generated_remove_title">Remove this generated password?</string>
     <string name="generated_remove_desc">It\'s removed only from this list.</string>
     <string name="generated_remove_confirm">Remove</string>
+    <string name="apps_title">Linked apps</string>
+    <string name="apps_desc">RenVault suggests this password when you sign in to these apps.</string>
+    <string name="apps_add">Add app</string>
+    <string name="apps_search">Search apps</string>
+    <string name="apps_empty">No apps found</string>
+    <string name="edit_no_app">No linked apps</string>
+    <plurals name="field_app_more">
+        <item quantity="one">%1$s and %2$d other</item>
+        <item quantity="other">%1$s and %2$d others</item>
+    </plurals>
 </resources>

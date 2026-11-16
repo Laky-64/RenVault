@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
@@ -40,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import io.lauren.renvault.lib.RvSecureScreen
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.tidyWebsites
+import io.lauren.renvault.lib.appLink
+import io.lauren.renvault.lib.appPackageOf
 import io.lauren.renvault.lib.RvPasswordStrength
 import io.lauren.renvault.lib.RvStrings
 import io.lauren.renvault.lib.domainOf
@@ -62,6 +65,7 @@ fun RvItemEditor(
     hidesName: Boolean = false,
 ) {
     var websitesOpen by remember { mutableStateOf(false) }
+    var appsOpen by remember { mutableStateOf(false) }
     var totpOpen by remember { mutableStateOf(false) }
     var dropOpen by remember { mutableStateOf(false) }
     var generatorOpen by remember { mutableStateOf(false) }
@@ -78,6 +82,8 @@ fun RvItemEditor(
         draft.websites.size == 1 -> draft.websites[0]
         else -> strings.fieldWebsiteMore(draft.websites[0], draft.websites.size - 1)
     }
+    val appNames = draft.apps.map(::appPackageOf)
+    val appsLabel = rememberAppsSummary(appNames, strings).ifEmpty { strings.editNoApp }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (hidesName) {
@@ -148,7 +154,7 @@ fun RvItemEditor(
         RvSection {
             RvSegment(
                 index = 0,
-                count = 2,
+                count = 3,
                 onClick = { websitesOpen = true },
                 leading = { Icon(RvGlobeIcon, contentDescription = null) },
                 supporting = { Text(websiteLabel, maxLines = 1) },
@@ -157,7 +163,16 @@ fun RvItemEditor(
             }
             RvSegment(
                 index = 1,
-                count = 2,
+                count = 3,
+                onClick = { appsOpen = true },
+                leading = { Icon(RvPhoneIcon, contentDescription = null) },
+                supporting = { Text(appsLabel, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            ) {
+                Text(strings.fieldApp)
+            }
+            RvSegment(
+                index = 2,
+                count = 3,
                 onClick = {
                     if (holdsCode) {
                         onDraft(draft.copy(totpKey = null, totpRemoved = hasTotp))
@@ -213,6 +228,14 @@ fun RvItemEditor(
         description = strings.websitesDesc(titleOf(draft)),
         placeholder = strings.websitesPlaceholder,
         addLabel = strings.websitesAdd,
+    )
+
+    RvAppsDialog(
+        open = appsOpen,
+        onOpenChange = { appsOpen = it },
+        apps = appNames,
+        onApps = { picked -> onDraft(draft.copy(apps = picked.map(::appLink))) },
+        strings = strings,
     )
 
     RvGeneratorSheet(

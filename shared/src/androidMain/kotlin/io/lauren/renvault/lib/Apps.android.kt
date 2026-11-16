@@ -1,5 +1,6 @@
 package io.lauren.renvault.lib
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import io.lauren.renvault.bridge.PlatformStorage
@@ -24,4 +25,16 @@ actual fun appIcon(packageName: String): ByteArray? {
             out.toByteArray()
         }
     }.getOrNull()
+}
+
+actual fun installedApps(): List<String> {
+    val context = PlatformStorage.context ?: return emptyList()
+    val manager = context.packageManager
+    val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+    return runCatching {
+        manager.queryIntentActivities(launcher, 0)
+            .map { it.activityInfo.packageName }
+            .filter { it != context.packageName }
+            .distinct()
+    }.getOrDefault(emptyList())
 }

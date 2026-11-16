@@ -563,4 +563,14 @@
     <string name="generated_remove_title">Eliminare questa password generata?</string>
     <string name="generated_remove_desc">Viene tolta solo da questo elenco.</string>
     <string name="generated_remove_confirm">Elimina</string>
+    <string name="apps_title">App collegate</string>
+    <string name="apps_desc">RenVault propone questa password quando accedi a queste app.</string>
+    <string name="apps_add">Aggiungi app</string>
+    <string name="apps_search">Cerca app</string>
+    <string name="apps_empty">Nessuna app trovata</string>
+    <string name="edit_no_app">Nessuna app collegata</string>
+    <plurals name="field_app_more">
+        <item quantity="one">%1$s e un\'altra</item>
+        <item quantity="other">%1$s e altre %2$d</item>
+    </plurals>
 </resources>

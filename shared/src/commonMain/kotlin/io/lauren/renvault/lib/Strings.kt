@@ -319,6 +319,12 @@ interface RvStrings {
     val websitesTitle: String
     val websitesPlaceholder: String
     val websitesAdd: String
+    val apps: String
+    val appsDesc: String
+    val appsAdd: String
+    val appsSearch: String
+    val appsEmpty: String
+    val editNoApp: String
     val totpKeyPlaceholder: String
     val totpKeyConfirm: String
     val totpScanInvalid: String
@@ -442,6 +448,7 @@ interface RvStrings {
     fun totpSetupDesc(site: String): String
     fun authMasterTooShort(count: Int): String
     fun fieldWebsiteMore(domain: String, count: Int): String
+    fun fieldAppMore(app: String, count: Int): String
     fun fieldPasskeyCreationDate(date: String): String
     fun deleteTitle(count: Int): String
     fun deletePasskeyTitle(count: Int): String
