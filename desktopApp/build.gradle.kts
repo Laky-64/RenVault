@@ -139,6 +139,7 @@ fun linuxPackage(type: String) = tasks.register<Exec>("packageLinux${type.replac
     val output = layout.buildDirectory.dir("compose/binaries/main/$type")
     val share = linuxShare
     val resources = linuxResources
+    val legacyDesktop = "$appId-$appName.desktop"
     val common = listOf(
         "--type", type,
         "--name", appName,
@@ -168,6 +169,15 @@ fun linuxPackage(type: String) = tasks.register<Exec>("packageLinux${type.replac
             root.deleteRecursively()
             run("dpkg-deb", "-R", deb.absolutePath, root.absolutePath)
             share.get().asFile.copyRecursively(root.resolve("usr/share"), overwrite = true)
+            val postinst = root.resolve("DEBIAN/postinst")
+            val legacy = listOf("/usr/share/applications", "/usr/local/share/applications").joinToString(" ") { "$it/$legacyDesktop" }
+            postinst.writeText(
+                postinst.readLines()
+                    .filterNot { line -> "xdg-desktop-menu install" in line }
+                    .joinToString("\n", postfix = "\n") { line ->
+                        if (line.trim() == "configure)") "$line\n    rm -f $legacy" else line
+                    },
+            )
             run("dpkg-deb", "--root-owner-group", "-Zxz", "-b", root.absolutePath, deb.absolutePath)
             root.deleteRecursively()
         }

@@ -77,7 +77,6 @@ cp -r __SHARE__/. %{buildroot}/usr/share/
 %post
 package_type=rpm
 LAUNCHER_AS_SERVICE_SCRIPTS
-DESKTOP_COMMANDS_INSTALL
 LAUNCHER_AS_SERVICE_COMMANDS_INSTALL
 
 %pre
