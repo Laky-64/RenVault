@@ -330,6 +330,7 @@ private fun ItemView(
     var historyOpen by remember(item.id) { mutableStateOf(false) }
     var reusedOpen by remember(item.id) { mutableStateOf(false) }
     var appsShown by remember(item.id) { mutableStateOf<List<String>>(emptyList()) }
+    var sitesShown by remember(item.id) { mutableStateOf<List<String>>(emptyList()) }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (web != null && issue != null) {
@@ -372,7 +373,7 @@ private fun ItemView(
         val rows = shown.size + if (versions.isNotEmpty()) 1 else 0
         RvSection {
             shown.forEachIndexed { index, field ->
-                FieldRow(field = field, index = index, count = rows, onCopy = onCopy, onApps = { appsShown = it }, strings = strings)
+                FieldRow(field = field, index = index, count = rows, onCopy = onCopy, onApps = { appsShown = it }, onSites = { sitesShown = it }, strings = strings)
             }
             if (versions.isNotEmpty()) {
                 RvSegment(
@@ -392,6 +393,15 @@ private fun ItemView(
             onOpenChange = { if (!it) appsShown = emptyList() },
             apps = appsShown,
             strings = strings,
+        )
+
+        RvSitesSheet(
+            open = sitesShown.isNotEmpty(),
+            onOpenChange = { if (!it) sitesShown = emptyList() },
+            sites = sitesShown,
+            strings = strings,
+            names = names,
+            favicon = favicon,
         )
 
         RvReusedSheet(
@@ -480,6 +490,7 @@ private fun FieldRow(
     count: Int,
     onCopy: (text: String, sensitive: Boolean) -> Unit,
     onApps: (List<String>) -> Unit,
+    onSites: (List<String>) -> Unit,
     strings: RvStrings,
 ) {
     val scope = rememberCoroutineScope()
@@ -497,10 +508,14 @@ private fun FieldRow(
     RvSegment(
         index = index,
         count = count,
-        onClick = if (field.apps.size > 1) {
-            { onApps(field.apps) }
-        } else {
-            null
+        onClick = when {
+            field.apps.size > 1 -> {
+                { onApps(field.apps) }
+            }
+            field.sites.size > 1 -> {
+                { onSites(field.sites) }
+            }
+            else -> null
         },
         overline = { Text(field.label) },
         trailing = {
@@ -632,6 +647,51 @@ private fun deletedAt(item: RvItem): Long = when (item) {
     is RvWebItem -> item.entry.deleted
     is RvPasskeyItem -> item.entry.deleted
     is RvWifiItem -> 0L
+}
+
+@Composable
+private fun RvSitesSheet(
+    open: Boolean,
+    onOpenChange: (Boolean) -> Unit,
+    sites: List<String>,
+    strings: RvStrings,
+    names: RvNameMask,
+    favicon: (String) -> Painter?,
+) {
+    if (!open) return
+    ModalBottomSheet(
+        onDismissRequest = { onOpenChange(false) },
+        sheetState = rememberRvSheetState(),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = strings.websitesTitle,
+                style = MaterialTheme.typography.titleLargeEmphasized,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            RvSection {
+                sites.forEachIndexed { index, site ->
+                    val shown = names.mask(site)
+                    RvSegment(
+                        index = index,
+                        count = sites.size,
+                        leading = { RvSiteIcon(fallback = shown, favicon = favicon(site)) },
+                    ) {
+                        Text(shown, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable

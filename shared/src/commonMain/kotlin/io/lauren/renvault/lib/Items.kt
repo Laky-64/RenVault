@@ -208,6 +208,7 @@ data class RvDetailField(
     val wrap: Boolean = false,
     val bare: Boolean = false,
     val apps: List<String> = emptyList(),
+    val sites: List<String> = emptyList(),
 )
 
 val RvDetailField.secret: (suspend () -> String)?
@@ -228,6 +229,9 @@ interface RvSecretSource {
 }
 
 data class RvItemDetail(val title: String, val fields: List<RvDetailField>)
+
+private fun websitesOf(item: RvWebItem): List<String> =
+    (listOf(item.entry.domain) + item.entry.domains.filter { it.isNotEmpty() && !isAppLink(it) }).filter { it.isNotEmpty() }.distinct()
 
 private fun websiteLabel(item: RvWebItem, strings: RvStrings): String {
     val others = item.entry.domains.filter { it.isNotEmpty() && it != item.entry.domain && !isAppLink(it) }
@@ -295,6 +299,7 @@ fun detailOf(
             fields += RvDetailField(
                 label = strings.fieldWebsite,
                 value = RvFieldValue.Shown(websiteLabel(item, strings)),
+                sites = websitesOf(item),
             )
         }
         val apps = appsOf(item)
@@ -352,6 +357,7 @@ fun detailOf(
                 fields += RvDetailField(
                     label = strings.fieldWebsite,
                     value = RvFieldValue.Shown(websiteLabel(linked, strings)),
+                    sites = websitesOf(linked),
                 )
             }
             if (linked.entry.hasTotp) {
@@ -371,6 +377,7 @@ fun detailOf(
                     if (others.isEmpty()) item.entry.relyingParty
                     else strings.fieldWebsiteMore(item.entry.relyingParty, others.size),
                 ),
+                sites = (listOf(item.entry.relyingParty) + others).distinct(),
             )
             fields.pushModified(item.entry.modified, strings)
             fields.pushNote(item.entry.note, strings)
