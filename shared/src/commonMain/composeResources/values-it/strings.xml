@@ -574,4 +574,17 @@
         <item quantity="other">%1$s e altre %2$d</item>
     </plurals>
     <string name="settings_about_disclaimer">RenVault non è affiliato con Apple né approvato da Apple. iCloud e Account Apple sono marchi di Apple Inc.</string>
+    <string name="intro_welcome_title">Ti diamo il benvenuto in RenVault</string>
+    <string name="intro_welcome_body">Mai più password dimenticate. Password, passkey e codici di verifica in un unico posto, gratis e open source.</string>
+    <string name="intro_everywhere_title">Su tutti i tuoi dispositivi</string>
+    <string name="intro_everywhere_body">Android, Windows, Linux e macOS sempre allineati. Hai un iPhone? Collega il Portachiavi iCloud.</string>
+    <string name="intro_sign_in_title">Accedi con un tocco</string>
+    <string name="intro_sign_in_body">RenVault compila per te nomi utente, password e codici. Basta la tua impronta.</string>
+    <string name="intro_private_title">Al sicuro, e solo tuo</string>
+    <string name="intro_private_body">Ti avvisa se una password è debole, riutilizzata o finita in una fuga di dati. Nessun server, nessun tracciamento.</string>
+    <string name="intro_next">Avanti</string>
+    <string name="intro_start">Iniziamo</string>
+    <string name="intro_skip">Salta</string>
+    <string name="intro_passkey_title">Il futuro senza password</string>
+    <string name="intro_passkey_body">Crea e usa passkey su Android, Windows e Linux, e usa il telefono come chiave di sicurezza per il computer.</string>
 </resources>

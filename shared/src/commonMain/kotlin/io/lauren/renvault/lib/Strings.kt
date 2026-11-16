@@ -196,6 +196,19 @@ interface RvStrings {
     val settingsSourceCode: String
     val settingsAboutTagline: String
     val settingsAboutDisclaimer: String
+    val introWelcomeTitle: String
+    val introWelcomeBody: String
+    val introEverywhereTitle: String
+    val introEverywhereBody: String
+    val introSignInTitle: String
+    val introSignInBody: String
+    val introPasskeyTitle: String
+    val introPasskeyBody: String
+    val introPrivateTitle: String
+    val introPrivateBody: String
+    val introNext: String
+    val introStart: String
+    val introSkip: String
     val settingsReportIssue: String
     val settingsSyncedNever: String
     val settingsSignOut: String

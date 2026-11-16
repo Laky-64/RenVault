@@ -157,6 +157,19 @@ import io.lauren.renvault.resources.settings_made_by
 import io.lauren.renvault.resources.settings_source_code
 import io.lauren.renvault.resources.settings_about_tagline
 import io.lauren.renvault.resources.settings_about_disclaimer
+import io.lauren.renvault.resources.intro_welcome_title
+import io.lauren.renvault.resources.intro_welcome_body
+import io.lauren.renvault.resources.intro_everywhere_title
+import io.lauren.renvault.resources.intro_everywhere_body
+import io.lauren.renvault.resources.intro_sign_in_title
+import io.lauren.renvault.resources.intro_sign_in_body
+import io.lauren.renvault.resources.intro_passkey_title
+import io.lauren.renvault.resources.intro_passkey_body
+import io.lauren.renvault.resources.intro_private_title
+import io.lauren.renvault.resources.intro_private_body
+import io.lauren.renvault.resources.intro_next
+import io.lauren.renvault.resources.intro_start
+import io.lauren.renvault.resources.intro_skip
 import io.lauren.renvault.resources.settings_report_issue
 import io.lauren.renvault.resources.settings_channel_stable
 import io.lauren.renvault.resources.quick_credential
@@ -548,6 +561,19 @@ private val TextResources = listOf(
     Res.string.settings_source_code,
     Res.string.settings_about_tagline,
     Res.string.settings_about_disclaimer,
+    Res.string.intro_welcome_title,
+    Res.string.intro_welcome_body,
+    Res.string.intro_everywhere_title,
+    Res.string.intro_everywhere_body,
+    Res.string.intro_sign_in_title,
+    Res.string.intro_sign_in_body,
+    Res.string.intro_passkey_title,
+    Res.string.intro_passkey_body,
+    Res.string.intro_private_title,
+    Res.string.intro_private_body,
+    Res.string.intro_next,
+    Res.string.intro_start,
+    Res.string.intro_skip,
     Res.string.settings_report_issue,
     Res.string.settings_channel_stable,
     Res.string.quick_credential,
@@ -1236,6 +1262,19 @@ private class ResourceStrings(
     override val settingsSourceCode: String get() = text(Res.string.settings_source_code)
     override val settingsAboutTagline: String get() = text(Res.string.settings_about_tagline)
     override val settingsAboutDisclaimer: String get() = text(Res.string.settings_about_disclaimer)
+    override val introWelcomeTitle: String get() = text(Res.string.intro_welcome_title)
+    override val introWelcomeBody: String get() = text(Res.string.intro_welcome_body)
+    override val introEverywhereTitle: String get() = text(Res.string.intro_everywhere_title)
+    override val introEverywhereBody: String get() = text(Res.string.intro_everywhere_body)
+    override val introSignInTitle: String get() = text(Res.string.intro_sign_in_title)
+    override val introSignInBody: String get() = text(Res.string.intro_sign_in_body)
+    override val introPasskeyTitle: String get() = text(Res.string.intro_passkey_title)
+    override val introPasskeyBody: String get() = text(Res.string.intro_passkey_body)
+    override val introPrivateTitle: String get() = text(Res.string.intro_private_title)
+    override val introPrivateBody: String get() = text(Res.string.intro_private_body)
+    override val introNext: String get() = text(Res.string.intro_next)
+    override val introStart: String get() = text(Res.string.intro_start)
+    override val introSkip: String get() = text(Res.string.intro_skip)
     override val settingsReportIssue: String get() = text(Res.string.settings_report_issue)
     override val settingsSyncedNever: String get() = text(Res.string.settings_synced_never)
     override val settingsSignOut: String get() = text(Res.string.settings_sign_out)

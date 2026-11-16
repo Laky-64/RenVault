@@ -1,5 +1,6 @@
 package io.lauren.renvault.ui.components
 
+import androidx.compose.animation.scaleOut
 import kotlinx.coroutines.flow.first
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -139,6 +140,7 @@ fun RvAuthFlow(
     val steps = remember { mutableStateListOf<AuthStep>() }
 
     var entry by remember { mutableStateOf(AuthEntry.Deciding) }
+    var intro by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
@@ -496,6 +498,7 @@ fun RvAuthFlow(
         } finally {
             slow.cancel()
         }
+        if (entry == AuthEntry.Credentials) intro = true
         busy = false
     }
 
@@ -958,6 +961,18 @@ fun RvAuthFlow(
                     modifier = Modifier.padding(horizontal = 24.dp),
                 )
             }
+        }
+
+        AnimatedVisibility(
+            visible = intro,
+            enter = fadeIn(),
+            exit = fadeOut(MaterialTheme.motionScheme.defaultEffectsSpec()) +
+                scaleOut(MaterialTheme.motionScheme.defaultSpatialSpec(), targetScale = 1.08f),
+        ) {
+            RvIntro(
+                strings = strings,
+                onDone = { intro = false },
+            )
         }
     }
 
