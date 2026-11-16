@@ -77,7 +77,7 @@ import io.lauren.renvault.bridge.NameSwap
 import io.lauren.renvault.lib.RvDraft
 import io.lauren.renvault.lib.RvPasskeyItem
 import io.lauren.renvault.lib.tidyWebsites
-import io.lauren.renvault.lib.appIcon
+import io.lauren.renvault.lib.appDetails
 import io.lauren.renvault.lib.deviceModel
 import io.lauren.renvault.lib.devicePlatform
 import io.lauren.renvault.lib.appPackageOf
@@ -370,7 +370,7 @@ fun RvVaultApp(
                 launch {
                     val painter = gate.withPermit {
                         val bytes = if (isAppLink(domain)) {
-                            withContext(Dispatchers.Default) { appIcon(appPackageOf(domain)) }
+                            appDetails(appPackageOf(domain)).icon
                         } else {
                             runCatching { Vault.icon(domain) }.getOrNull()
                         }
@@ -395,7 +395,7 @@ fun RvVaultApp(
                 largeIcons[domain] = null
                 launch {
                     val bytes = if (isAppLink(domain)) {
-                        withContext(Dispatchers.Default) { appIcon(appPackageOf(domain)) }
+                        appDetails(appPackageOf(domain)).icon
                     } else {
                         runCatching { Vault.icon(domain) }.getOrNull()
                     }

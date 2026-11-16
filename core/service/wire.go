@@ -133,6 +133,16 @@ type startLoginRequest struct {
 	Password string `cbor:"password"`
 }
 
+type appRequest struct {
+	Package string `cbor:"package"`
+	Lang    string `cbor:"lang"`
+}
+
+type appResponse struct {
+	Name string `cbor:"name"`
+	Icon []byte `cbor:"icon"`
+}
+
 type urlRequest struct {
 	URL string `cbor:"url"`
 }

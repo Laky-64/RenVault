@@ -54,6 +54,11 @@ func installIcons() {
 		return nil
 	})
 
+	handle(bridge.OpAppInfo, func(_ context.Context, request appRequest) (appResponse, error) {
+		info, err := tiles.App(request.Package, request.Lang)
+		return appResponse{Name: info.Name, Icon: info.Icon}, err
+	})
+
 	handle(bridge.OpIconImage, func(_ context.Context, request urlRequest) (bytesResponse, error) {
 		png, err := tiles.Image(request.URL)
 		return bytesResponse{Data: png}, err

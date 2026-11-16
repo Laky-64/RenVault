@@ -55,6 +55,20 @@ internal data class StartLoginRequest(
 internal data class UrlRequest(@SerialName("url") val url: String)
 
 @Serializable
+internal data class AppRequest(@SerialName("package") val packageName: String, @SerialName("lang") val lang: String)
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+data class AppInfo(
+    @SerialName("name") val name: String = "",
+    @ByteString @SerialName("icon") val icon: ByteArray = ByteArray(0),
+) {
+    override fun equals(other: Any?) = this === other
+
+    override fun hashCode() = name.hashCode()
+}
+
+@Serializable
 internal data class AnisetteRequest(@SerialName("url") val url: String)
 
 @Serializable

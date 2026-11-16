@@ -307,6 +307,9 @@ object Vault {
     suspend fun icon(domain: String): ByteArray =
         exchange<DomainRequest, BytesResponse>(Op.ICON_TILE, DomainRequest(domain)).data
 
+    suspend fun appInfo(packageName: String, lang: String): AppInfo =
+        exchange(Op.APP_INFO, AppRequest(packageName, lang))
+
     suspend fun image(url: String): ByteArray =
         exchange<UrlRequest, BytesResponse>(Op.ICON_IMAGE, UrlRequest(url)).data
 

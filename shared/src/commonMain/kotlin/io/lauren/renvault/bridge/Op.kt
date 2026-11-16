@@ -110,6 +110,7 @@ internal object Op {
     const val GENERATE_PASSWORD = 0x300D
     const val CHECK_PASSWORD = 0x300E
     const val PASSWORD_STRENGTH = 0x300F
+    const val APP_INFO = 0x3010
 }
 
 internal object FailureKind {

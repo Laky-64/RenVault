@@ -104,6 +104,7 @@ const (
 	OpGeneratePassword uint32 = 0x300D
 	OpCheckPassword    uint32 = 0x300E
 	OpPasswordStrength uint32 = 0x300F
+	OpAppInfo          uint32 = 0x3010
 )
 
 const (

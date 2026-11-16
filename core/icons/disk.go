@@ -19,6 +19,9 @@ func (s *IconService) Clear() {
 	dir := s.dir
 	s.cache = make(map[string]*entry)
 	s.mu.Unlock()
+	namesMu.Lock()
+	names = map[string]nameEntry{}
+	namesMu.Unlock()
 	if dir != "" {
 		_ = os.RemoveAll(dir)
 	}
