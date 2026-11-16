@@ -19,6 +19,7 @@ data class RvAccents(
     val orange: RvTone,
     val fair: Color,
     val strong: Color,
+    val urgent: Color,
 ) {
     fun forIndex(index: Int): RvTone = order[((index % order.size) + order.size) % order.size]
 
@@ -35,6 +36,7 @@ internal val lightAccents = RvAccents(
     orange = RvTone(Color(0xFFFFDCC2), Color(0xFF6E3900)),
     fair = Color(0xFF8F5A00),
     strong = Color(0xFF146C2E),
+    urgent = Color(0xFFBA1A1A),
 )
 
 internal val darkAccents = RvAccents(
@@ -46,6 +48,7 @@ internal val darkAccents = RvAccents(
     orange = RvTone(Color(0xFF713B00), Color(0xFFFFDCC2)),
     fair = Color(0xFFFFB95C),
     strong = Color(0xFF7FDA8C),
+    urgent = Color(0xFFFF897D),
 )
 
 internal val lightScheme: ColorScheme = lightColorScheme(

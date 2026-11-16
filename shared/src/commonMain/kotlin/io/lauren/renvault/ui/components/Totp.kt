@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
@@ -155,6 +156,8 @@ fun RvTotpRing(
     size: Dp = 20.dp,
     period: Int = 30,
     color: Color = RenVault.accents.strong,
+    warning: Color = RenVault.accents.fair,
+    danger: Color = RenVault.accents.urgent,
     track: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
 ) {
     var now by remember { mutableLongStateOf(nowMillis()) }
@@ -193,8 +196,14 @@ fun RvTotpRing(
 
         if (filled <= 0.0) return@Canvas
 
+        val tint = when {
+            left > 0.6 -> color
+            left > 0.35 -> lerp(warning, color, ((left - 0.35) / 0.25).toFloat())
+            left > 0.15 -> lerp(danger, warning, ((left - 0.15) / 0.2).toFloat())
+            else -> danger
+        }
         drawArc(
-            color = color,
+            color = tint,
             startAngle = -90f,
             sweepAngle = (filled * 360.0).toFloat(),
             useCenter = false,
