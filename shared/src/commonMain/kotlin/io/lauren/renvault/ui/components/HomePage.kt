@@ -116,6 +116,11 @@ fun homeZones(
 
 private enum class Screen { Zones, List, Item, Settings }
 
+private data class Nav(val screen: Screen, val item: String? = null, val depth: Int = 0)
+
+private fun navOf(screen: Screen, item: String?, depth: Int): Nav =
+    if (screen == Screen.Item) Nav(screen, item, depth) else Nav(screen)
+
 private fun screenOf(settings: Boolean, item: Boolean, zone: Boolean): Screen = when {
     settings -> Screen.Settings
     item -> Screen.Item
@@ -170,6 +175,7 @@ fun RvHomePage(
 
     var zoneKind by remember { mutableStateOf<RvZoneKind?>(null) }
     var itemId by remember { mutableStateOf<String?>(null) }
+    var trail by remember { mutableStateOf(emptyList<String>()) }
     var awaiting by remember { mutableStateOf<String?>(null) }
     var settingsOpen by remember { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
@@ -220,7 +226,10 @@ fun RvHomePage(
 
     LaunchedEffect(active.kind, zoneKind == null) { picked = emptySet() }
     LaunchedEffect(selecting) { if (!selecting) picked = emptySet() }
-    LaunchedEffect(itemId) { editing = false }
+    LaunchedEffect(itemId) {
+        editing = false
+        if (itemId == null) trail = emptyList()
+    }
     LaunchedEffect(current) {
         if (current == null) return@LaunchedEffect
         lastOpen = current
@@ -304,6 +313,10 @@ fun RvHomePage(
             editing -> editing = false
             settingsOpen && compact -> settingsOpen = false
             selecting -> selecting = false
+            trail.isNotEmpty() && itemId != null -> {
+                itemId = trail.last()
+                trail = trail.dropLast(1)
+            }
             itemId != null -> itemId = null
             searching -> {
                 searching = false
@@ -316,15 +329,17 @@ fun RvHomePage(
     val canGoBack = editing || (compact && (settingsOpen || itemId != null || zoneKind != null)) ||
         selecting || searching
     val screen = screenOf(settingsOpen, itemId != null && current != null, zoneKind != null)
+    val nav = navOf(screen, itemId, trail.size)
     val previous = when {
         !compact || editing -> null
-        settingsOpen -> screenOf(false, itemId != null && current != null, zoneKind != null)
+        settingsOpen -> navOf(screenOf(false, itemId != null && current != null, zoneKind != null), itemId, trail.size)
         selecting -> null
-        itemId != null -> screenOf(false, false, zoneKind != null)
+        trail.isNotEmpty() && itemId != null -> Nav(Screen.Item, trail.last(), trail.size - 1)
+        itemId != null -> navOf(screenOf(false, false, zoneKind != null), null, 0)
         searching -> null
-        zoneKind != null -> Screen.Zones
+        zoneKind != null -> Nav(Screen.Zones)
         else -> null
-    }?.takeIf { it != screen }
+    }?.takeIf { it != nav }
     RvBackHandler(enabled = canGoBack && previous == null, onBack = back)
 
     val zonesPane: @Composable (Modifier) -> Unit = { paneModifier ->
@@ -378,7 +393,10 @@ fun RvHomePage(
             sortAscending = sortAscending,
             onSort = onSort,
             onBack = { zoneKind = null },
-            onOpen = { itemId = it },
+            onOpen = {
+                trail = emptyList()
+                itemId = it
+            },
             onAdd = { creating = true },
             onDeleteSelected = {
                 deleting = null
@@ -392,16 +410,17 @@ fun RvHomePage(
         )
     }
 
-    val detailPane: @Composable (Modifier) -> Unit = { paneModifier ->
+    val detailPane: @Composable (Modifier, RvItem?) -> Unit = { paneModifier, shown ->
+        val focused = shown == null || shown.id == current?.id
         RvDetailPane(
             zone = active,
-            item = if (compact) current ?: lastOpen else current,
+            item = shown ?: if (compact) current ?: lastOpen else current,
             secrets = secrets,
             strings = strings,
             favicon = faviconLarge,
             modifier = paneModifier,
             compact = compact,
-            editing = editing,
+            editing = editing && focused,
             onEditing = { editing = it },
             canEdit = active.kind != RvZoneKind.Deleted && (target != null || passkeyTarget != null),
             draft = draft,
@@ -431,9 +450,14 @@ fun RvHomePage(
                     scope.launch { runCatching { onDeleteMany(withLinked(item), true) }.onSuccess { itemId = null } }
                 }
             },
-            reusedWith = (current as? RvWebItem)?.entry?.reusedWith.orEmpty().mapNotNull { id -> everything.firstOrNull { it.id == id } },
+            reusedWith = ((shown ?: current) as? RvWebItem)?.entry?.reusedWith.orEmpty().mapNotNull { id -> everything.firstOrNull { it.id == id } },
             rowFavicon = favicon,
-            onOpenItem = { itemId = it },
+            onOpenItem = { id ->
+                if (id != itemId) {
+                    itemId?.let { trail = trail + it }
+                    itemId = id
+                }
+            },
             onRestorePassword = { password ->
                 (current as? RvWebItem)?.let { item ->
                     scope.launch {
@@ -495,6 +519,7 @@ fun RvHomePage(
                 zoneKind = RvZoneKind.All
                 query = ""
                 searching = false
+                trail = emptyList()
                 itemId = id
             },
         )
@@ -502,18 +527,22 @@ fun RvHomePage(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (compact) {
-            val navigation = rememberBackTransition(screen, previous, "homeScreen", back)
+            val navigation = rememberBackTransition(nav, previous, "homeScreen", back)
 
             navigation.Content(
                 modifier = Modifier.fillMaxSize(),
                 fraction = 3,
-                forward = { targetState.ordinal > initialState.ordinal },
+                forward = {
+                    val to = targetState
+                    val from = initialState
+                    to.screen.ordinal > from.screen.ordinal || (to.screen == from.screen && to.depth > from.depth)
+                },
             ) { shown ->
                 val fill = Modifier.fillMaxSize()
-                when (shown) {
+                when (shown.screen) {
                     Screen.Zones -> zonesPane(fill)
                     Screen.List -> listPane(fill)
-                    Screen.Item -> detailPane(fill)
+                    Screen.Item -> detailPane(fill, everything.firstOrNull { it.id == shown.item } ?: current ?: lastOpen)
                     Screen.Settings -> settingsPane(fill, false)
                 }
             }
@@ -566,7 +595,7 @@ fun RvHomePage(
                     shape = MaterialTheme.shapes.extraLarge,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    detailPane(Modifier.fillMaxSize())
+                    detailPane(Modifier.fillMaxSize(), null)
                 }
             }
 
