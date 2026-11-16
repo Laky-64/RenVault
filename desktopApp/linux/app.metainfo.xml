@@ -13,6 +13,8 @@
     <p xml:lang="it">Un gestore di password e passkey open source per Android, Windows, Linux e macOS.</p>
     <p>Sign in with your Apple Account to use the same passwords and passkeys you have on iPhone, iPad and Mac, or keep a local vault that syncs directly between your devices, with no account and no server.</p>
     <p xml:lang="it">Accedi con il tuo Account Apple per usare le stesse password e passkey che hai su iPhone, iPad e Mac, oppure tieni un archivio locale che si sincronizza direttamente tra i tuoi dispositivi, senza account e senza server.</p>
+    <p>RenVault is not affiliated with or endorsed by Apple. iCloud and Apple Account are trademarks of Apple Inc.</p>
+    <p xml:lang="it">RenVault non è affiliato con Apple né approvato da Apple. iCloud e Account Apple sono marchi di Apple Inc.</p>
     <ul>
       <li>Passwords, Wi-Fi networks and passkeys, with search and notes</li>
       <li xml:lang="it">Password, reti Wi-Fi e passkey, con ricerca e note</li>

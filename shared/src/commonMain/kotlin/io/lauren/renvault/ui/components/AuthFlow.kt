@@ -605,7 +605,7 @@ fun RvAuthFlow(
                 )
 
                 "entry:${AuthEntry.Credentials.name}" -> AuthPage(
-                    hero = { AuthHero(RvAppleIcon, MaterialShapes.Cookie12Sided) },
+                    hero = { AuthHero(RvPersonIcon, MaterialShapes.Cookie12Sided) },
                     title = strings.authSignInTitle,
                     hint = strings.authSignInHint,
                     body = {

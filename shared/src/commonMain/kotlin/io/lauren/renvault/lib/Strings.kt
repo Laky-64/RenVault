@@ -195,6 +195,7 @@ interface RvStrings {
     val settingsMadeBy: String
     val settingsSourceCode: String
     val settingsAboutTagline: String
+    val settingsAboutDisclaimer: String
     val settingsReportIssue: String
     val settingsSyncedNever: String
     val settingsSignOut: String

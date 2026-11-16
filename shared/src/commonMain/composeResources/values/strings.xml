@@ -1,14 +1,14 @@
 <resources>
     <string name="app_name" translatable="false">RenVault</string>
-    <string name="auth_sign_in_title">Sign in with your Apple ID</string>
+    <string name="auth_sign_in_title">Sign in with your Apple Account</string>
     <string name="auth_sign_in_hint">Sign in with an email or phone number to use RenVault</string>
     <string name="auth_email_placeholder">Email or phone number</string>
     <string name="auth_password_placeholder">Password</string>
     <string name="auth_sign_in_action">Sign in</string>
     <string name="auth_show_password">Show password</string>
     <string name="auth_hide_password">Hide password</string>
-    <string name="auth_privacy_notice">We use your Apple ID to securely sign you in and access your data. Apple may collect information for security purposes. Learn more in the</string>
-    <string name="auth_privacy_link">Apple ID Privacy Policy.</string>
+    <string name="auth_privacy_notice">RenVault signs in directly with Apple, which may collect information for security purposes. RenVault is not affiliated with Apple.</string>
+    <string name="auth_privacy_link">Apple’s Privacy Policy</string>
     <string name="auth_2fa_title">Two-Factor Authentication</string>
     <string name="auth_2fa_hint">A verification code has been sent to your trusted devices. Enter the code to continue.</string>
     <string name="auth_2fa_resend_action">Resend Code</string>
@@ -464,7 +464,7 @@
     <string name="quick_failed">Couldn\'t turn on quick unlock</string>
     <string name="reset_forgot">Forgot your password?</string>
     <string name="reset_title">Reset RenVault?</string>
-    <string name="reset_icloud">Your passwords stay safe in iCloud Keychain. RenVault removes the copy on this device, then you can sign in again with your Apple ID and choose a new master password.</string>
+    <string name="reset_icloud">Your passwords stay safe in iCloud Keychain. RenVault removes the copy on this device, then you can sign in again with your Apple Account and choose a new master password.</string>
     <string name="reset_local">The vault on this device will be deleted. If you linked other devices, you can connect this one again from them; otherwise your passwords can only come back from a backup.</string>
     <string name="reset_action">Reset</string>
     <string name="anisette_default_desc">Tries the public servers automatically</string>
@@ -474,7 +474,7 @@
     <string name="anisette_insecure">Not encrypted</string>
     <string name="anisette_latency">%1$s ms</string>
     <string name="anisette_recommended">Recommended · %1$s ms</string>
-    <string name="anisette_insecure_warning">The connection to this server isn\'t protected: anyone on your network can see or change the anisette data. Your Apple ID password never goes through it.</string>
+    <string name="anisette_insecure_warning">The connection to this server isn\'t protected: anyone on your network can see or change the anisette data. Your Apple Account password never goes through it.</string>
     <string name="settings_autofill">Autofill</string>
     <string name="settings_autofill_desc">RenVault fills passwords in apps and browsers</string>
     <string name="settings_clipboard">Clear copied passwords</string>
@@ -578,4 +578,5 @@
         <item quantity="one">%1$s and %2$d other</item>
         <item quantity="other">%1$s and %2$d others</item>
     </plurals>
+    <string name="settings_about_disclaimer">RenVault is not affiliated with or endorsed by Apple. iCloud and Apple Account are trademarks of Apple Inc.</string>
 </resources>

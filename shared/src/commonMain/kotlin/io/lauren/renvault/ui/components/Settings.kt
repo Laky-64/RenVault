@@ -1082,7 +1082,7 @@ private fun AboutPage(
             }
 
             item {
-                RvSection {
+                RvSection(footer = strings.settingsAboutDisclaimer) {
                     RvSegment(
                         index = 0,
                         count = 4,

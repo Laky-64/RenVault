@@ -156,6 +156,7 @@ import io.lauren.renvault.resources.settings_based_on
 import io.lauren.renvault.resources.settings_made_by
 import io.lauren.renvault.resources.settings_source_code
 import io.lauren.renvault.resources.settings_about_tagline
+import io.lauren.renvault.resources.settings_about_disclaimer
 import io.lauren.renvault.resources.settings_report_issue
 import io.lauren.renvault.resources.settings_channel_stable
 import io.lauren.renvault.resources.quick_credential
@@ -546,6 +547,7 @@ private val TextResources = listOf(
     Res.string.settings_made_by,
     Res.string.settings_source_code,
     Res.string.settings_about_tagline,
+    Res.string.settings_about_disclaimer,
     Res.string.settings_report_issue,
     Res.string.settings_channel_stable,
     Res.string.quick_credential,
@@ -1233,6 +1235,7 @@ private class ResourceStrings(
     override val settingsMadeBy: String get() = text(Res.string.settings_made_by)
     override val settingsSourceCode: String get() = text(Res.string.settings_source_code)
     override val settingsAboutTagline: String get() = text(Res.string.settings_about_tagline)
+    override val settingsAboutDisclaimer: String get() = text(Res.string.settings_about_disclaimer)
     override val settingsReportIssue: String get() = text(Res.string.settings_report_issue)
     override val settingsSyncedNever: String get() = text(Res.string.settings_synced_never)
     override val settingsSignOut: String get() = text(Res.string.settings_sign_out)

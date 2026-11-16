@@ -137,9 +137,9 @@
     <string name="settings_last_sync">Ultima sincronizzazione</string>
     <string name="settings_synced_never">Mai</string>
     <string name="settings_sign_out">Esci</string>
-    <string name="settings_sign_out_note">Uscendo, l\'archivio crittografato viene eliminato da questo dispositivo. Le tue password restano nel tuo Apple Account.</string>
+    <string name="settings_sign_out_note">Uscendo, l\'archivio crittografato viene eliminato da questo dispositivo. Le tue password restano nel tuo Account Apple.</string>
     <string name="settings_sign_out_title">Vuoi uscire da RenVault?</string>
-    <string name="settings_sign_out_desc">L\'archivio crittografato verrà eliminato da questo dispositivo. Per ripristinarlo dovrai accedere di nuovo con il tuo Apple Account, completando l\'autenticazione a due fattori e inserendo il codice di un dispositivo.</string>
+    <string name="settings_sign_out_desc">L\'archivio crittografato verrà eliminato da questo dispositivo. Per ripristinarlo dovrai accedere di nuovo con il tuo Account Apple, completando l\'autenticazione a due fattori e inserendo il codice di un dispositivo.</string>
     <string name="settings_open_label">Account e impostazioni</string>
     <string name="relative_now">adesso</string>
     <plurals name="settings_auto_lock_minutes">
@@ -217,15 +217,15 @@
     <string name="settings_report_issue">Segnala un problema</string>
     <string name="settings_channel_stable">Stabile</string>
 
-    <string name="auth_sign_in_title">Accedi con il tuo Apple ID</string>
+    <string name="auth_sign_in_title">Accedi con il tuo Account Apple</string>
     <string name="auth_sign_in_hint">Accedi con un\'email o un numero di telefono per usare RenVault</string>
     <string name="auth_email_placeholder">Email o numero di telefono</string>
     <string name="auth_password_placeholder">Password</string>
     <string name="auth_sign_in_action">Accedi</string>
     <string name="auth_show_password">Mostra password</string>
     <string name="auth_hide_password">Nascondi password</string>
-    <string name="auth_privacy_notice">Usiamo il tuo Apple ID per farti accedere in modo sicuro ai tuoi dati. Apple può raccogliere informazioni per motivi di sicurezza. Scopri di più nella</string>
-    <string name="auth_privacy_link">Informativa sulla privacy dell\'Apple ID.</string>
+    <string name="auth_privacy_notice">RenVault accede direttamente ad Apple, che può raccogliere informazioni per motivi di sicurezza. RenVault non è affiliato con Apple.</string>
+    <string name="auth_privacy_link">Informativa sulla privacy di Apple</string>
     <string name="auth_2fa_title">Autenticazione a due fattori</string>
     <string name="auth_2fa_hint">Abbiamo inviato un codice di verifica ai tuoi dispositivi attendibili. Inseriscilo per continuare.</string>
     <string name="auth_2fa_resend_action">Invia di nuovo il codice</string>
@@ -262,7 +262,7 @@
     <string name="busy_creating_vault_title">Creazione dell\'archivio</string>
     <string name="busy_creating_vault">Cifratura delle password…</string>
     <string name="failure_generic">Si è verificato un errore. Controlla la connessione e riprova.</string>
-    <string name="failure_bad_credentials">Apple Account o password non corretti.</string>
+    <string name="failure_bad_credentials">Account Apple o password non corretti.</string>
     <string name="failure_account_locked">Questo account è stato bloccato per motivi di sicurezza.</string>
     <string name="failure_wrong_passcode">Il codice non è corretto. Apple limita il numero di tentativi.</string>
     <string name="failure_wrong_master_password">La password principale non è corretta.</string>
@@ -305,7 +305,7 @@
     <string name="names_where_title">Dove compare</string>
     <string name="names_where_empty">Non compare in nessun elemento</string>
     <string name="names_where_footer">Quando puoi, aggiorna questi account: così il nome sparirà anche da lì.</string>
-    <string name="names_note">Salvato cifrato nell’archivio. Prima dello sblocco, la pagina di accesso può ancora mostrare il nome del tuo account Apple.</string>
+    <string name="names_note">Salvato cifrato nell’archivio. Prima dello sblocco, la pagina di accesso può ancora mostrare il nome del tuo Account Apple.</string>
     <string name="item_name_hidden_title">Contiene un nome che hai nascosto</string>
     <string name="item_name_hidden_desc">Stai vedendo il nome che hai scelto. I dati salvati non sono cambiati.</string>
     <string name="item_name_original_desc">Stai vedendo i valori originali salvati in questo elemento.</string>
@@ -459,7 +459,7 @@
     <string name="quick_failed">Impossibile attivare lo sblocco rapido</string>
     <string name="reset_forgot">Password dimenticata?</string>
     <string name="reset_title">Reimpostare RenVault?</string>
-    <string name="reset_icloud">Le tue password restano al sicuro nel Portachiavi iCloud. RenVault cancella la copia su questo dispositivo, poi puoi accedere di nuovo con il tuo Apple ID e scegliere una nuova password principale.</string>
+    <string name="reset_icloud">Le tue password restano al sicuro nel Portachiavi iCloud. RenVault cancella la copia su questo dispositivo, poi puoi accedere di nuovo con il tuo Account Apple e scegliere una nuova password principale.</string>
     <string name="reset_local">L\'archivio su questo dispositivo verrà cancellato. Se hai collegato altri dispositivi puoi ricollegare questo da lì, altrimenti le password si possono recuperare solo da un backup.</string>
     <string name="reset_action">Reimposta</string>
     <string name="anisette_default_desc">Prova in automatico i server pubblici</string>
@@ -469,7 +469,7 @@
     <string name="anisette_insecure">Non cifrato</string>
     <string name="anisette_latency">%1$s ms</string>
     <string name="anisette_recommended">Consigliato · %1$s ms</string>
-    <string name="anisette_insecure_warning">La connessione a questo server non è protetta: chi è sulla tua rete può vedere o alterare i dati anisette. La password dell\'Apple ID non passa mai da qui.</string>
+    <string name="anisette_insecure_warning">La connessione a questo server non è protetta: chi è sulla tua rete può vedere o alterare i dati anisette. La password dell\'Account Apple non passa mai da qui.</string>
     <string name="settings_autofill">Compilazione automatica</string>
     <string name="settings_autofill_desc">RenVault compila le password in app e browser</string>
     <string name="settings_clipboard">Svuota password copiate</string>
@@ -573,4 +573,5 @@
         <item quantity="one">%1$s e un\'altra</item>
         <item quantity="other">%1$s e altre %2$d</item>
     </plurals>
+    <string name="settings_about_disclaimer">RenVault non è affiliato con Apple né approvato da Apple. iCloud e Account Apple sono marchi di Apple Inc.</string>
 </resources>
