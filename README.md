@@ -57,9 +57,30 @@ Then:
 - `androidApp/` – Android entry point, autofill and Credential Manager services
 - `desktopApp/` – desktop entry point and packaging
 
-## Privacy
+## Privacy and security
 
-RenVault has no servers and collects no data. In iCloud mode it talks to Apple; signing in also uses an "anisette" server, which you can choose in the settings. In local mode nothing leaves your devices except the encrypted sync between them.
+RenVault has no servers, no account of its own and no analytics. Your passwords never pass through anyone except Apple (in iCloud mode) and your own devices.
+
+**How your data is protected**
+
+- The vault on each device is encrypted with XChaCha20-Poly1305. The vault key is stored in the system's secure storage (Android Keystore, Windows DPAPI, the Secret Service keyring on Linux) or protected by your master password, derived with Argon2id.
+- Paired devices sync directly over your local network. Pairing uses an X25519 key exchange through a QR code, and the traffic between devices is end-to-end encrypted.
+- Encrypted `.renvault` backups are protected by a password you choose.
+
+**What goes over the internet**
+
+| Where | What is sent | When |
+| --- | --- | --- |
+| Apple | Your Apple Account sign-in and the iCloud Keychain data | iCloud mode only |
+| Anisette server | Device data that Apple requires for sign-in, never your password | Signing in to iCloud; you can pick the server or use your own |
+| Icon provider (DuckDuckGo, Google, Bitwarden or the site itself) | The website addresses of your items | Showing site icons; can be turned off in the settings |
+| Google Play | The package names of linked Android apps | Showing app names and icons; off when site icons are off |
+| Have I Been Pwned | The first 5 characters of the password's SHA-1 hash, never the password | Checking passwords against known breaches |
+| GitHub | Nothing about you: it downloads Apple's public password rules | Checking that a password fits a website's rules |
+
+In local mode nothing reaches Apple or the anisette server.
+
+To report a security problem, see [SECURITY.md](SECURITY.md).
 
 ## License
 
