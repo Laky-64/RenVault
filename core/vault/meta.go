@@ -239,11 +239,21 @@ func webMetas(p payload) []WebMeta {
 			Weak:        checked && passgen.StrengthOf(w.Password).Weak(),
 			HasPassword: len(w.Password) > 0,
 			Created:     w.Created,
-			Modified:    w.Modified,
+			Modified:    lastChange(w),
 			Deleted:     w.DeletedAt,
 		})
 	}
 	return out
+}
+
+func lastChange(w keychain.WebPassword) time.Time {
+	at := w.Modified
+	for _, c := range w.History {
+		if c.At.After(at) {
+			at = c.At
+		}
+	}
+	return at
 }
 
 func accountOf(w keychain.WebPassword) string {
