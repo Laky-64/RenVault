@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.tween
@@ -965,7 +966,7 @@ fun RvAuthFlow(
 
         AnimatedVisibility(
             visible = intro,
-            enter = fadeIn(),
+            enter = EnterTransition.None,
             exit = fadeOut(MaterialTheme.motionScheme.defaultEffectsSpec()) +
                 scaleOut(MaterialTheme.motionScheme.defaultSpatialSpec(), targetScale = 1.08f),
         ) {
