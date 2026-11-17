@@ -537,7 +537,7 @@ private fun DrawScope.devicesScene(u: Float, visible: Float, t: Float, ink: Colo
 }
 
 
-private fun DrawScope.badgeSwap(at: Offset, radius: Float, morph: Float, spin: Float, shape: Morph, ink: Color, alpha: Float, before: DrawScope.(Float) -> Unit, after: DrawScope.(Float) -> Unit) {
+private fun DrawScope.badgeSwap(at: Offset, radius: Float, morph: Float, spin: Float, shape: Morph, ink: Color, alpha: Float, before: DrawScope.(Float) -> Unit, after: DrawScope.(Float) -> Unit, turnBefore: Boolean = true) {
     val outline = shape.toPath(morph, Path())
     outline.transform(Matrix().apply {
         translate(at.x - radius, at.y - radius)
@@ -549,10 +549,14 @@ private fun DrawScope.badgeSwap(at: Offset, radius: Float, morph: Float, spin: F
     val out = 1f - FastOutSlowInEasing.transform((morph / 0.5f).coerceIn(0f, 1f))
     val grow = FastOutSlowInEasing.transform(((morph - 0.5f) / 0.5f).coerceIn(0f, 1f))
     if (out > 0f) {
-        withTransform({
-            rotate(-(1f - out) * 90f, at)
-            scale(out, out, at)
-        }) { before(out) }
+        if (turnBefore) {
+            withTransform({
+                rotate(-(1f - out) * 90f, at)
+                scale(out, out, at)
+            }) { before(out) }
+        } else {
+            before(out)
+        }
     }
     if (grow > 0f) {
         withTransform({
@@ -564,7 +568,7 @@ private fun DrawScope.badgeSwap(at: Offset, radius: Float, morph: Float, spin: F
 
 private fun DrawScope.passkeyScene(u: Float, visible: Float, t: Float, ink: Color, fill: Color, painters: ScenePainters) {
     val c = center
-    val morph = phase(t, 0.26f, 0.22f) * (1f - phase(t, 0.72f, 0.26f))
+    val morph = phase(t, 0.26f, 0.22f) * (1f - phase(t, 0.74f, 0.2f))
     val leave = ((t - 0.16f) / 0.26f).coerceIn(0f, 1f)
     val enter = ((t - 0.74f) / 0.22f).coerceIn(0f, 1f)
     val appearing = enter > 0f
@@ -586,10 +590,14 @@ private fun DrawScope.passkeyScene(u: Float, visible: Float, t: Float, ink: Colo
         alpha = visible,
         before = {
             repeat(3) { index ->
-                drawCircle(fill, radius = 4f * u, center = Offset(badgeAt.x + (index - 1) * 10f * u, badgeAt.y), alpha = visible)
+                val pop = snappy((it - index * 0.15f) / 0.7f)
+                if (pop > 0f) {
+                    drawCircle(fill, radius = 4f * u * pop, center = Offset(badgeAt.x + (index - 1) * 10f * u, badgeAt.y), alpha = visible)
+                }
             }
         },
         after = { icon(painters.passkey, badgeAt, 30f * u, fill, visible) },
+        turnBefore = false,
     )
 
     val name = Offset(c.x, c.y + 18f * u + shift)
