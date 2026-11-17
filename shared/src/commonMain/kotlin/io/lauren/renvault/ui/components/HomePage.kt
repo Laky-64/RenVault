@@ -422,7 +422,7 @@ fun RvHomePage(
             compact = compact,
             editing = editing && focused,
             onEditing = { editing = it },
-            canEdit = active.kind != RvZoneKind.Deleted && (target != null || passkeyTarget != null),
+            canEdit = active.kind != RvZoneKind.Deleted && (shown ?: current).let { editableOf(it) != null || passkeyEditableOf(it) != null },
             draft = draft,
             onDraft = { draft = it },
             canSave = draftOk && !saving,
