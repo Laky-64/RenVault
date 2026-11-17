@@ -231,12 +231,16 @@ interface RvSecretSource {
 data class RvItemDetail(val title: String, val fields: List<RvDetailField>)
 
 private fun websitesOf(item: RvWebItem): List<String> =
-    (listOf(item.entry.domain) + item.entry.domains.filter { it.isNotEmpty() && !isAppLink(it) }).filter { it.isNotEmpty() }.distinct()
+    (listOfNotNull(item.entry.domain.takeIf { item.entry.website }) + item.entry.domains.filter { it != item.entry.domain })
+        .filter { it.isNotEmpty() && !isAppLink(it) }
+        .distinct()
+
+fun webSiteOf(item: RvWebItem): String = websitesOf(item).firstOrNull().orEmpty()
 
 private fun websiteLabel(item: RvWebItem, strings: RvStrings): String {
-    val others = item.entry.domains.filter { it.isNotEmpty() && it != item.entry.domain && !isAppLink(it) }
-    if (others.isEmpty()) return item.entry.domain
-    return strings.fieldWebsiteMore(item.entry.domain, others.size)
+    val sites = websitesOf(item)
+    if (sites.size <= 1) return sites.firstOrNull().orEmpty()
+    return strings.fieldWebsiteMore(sites.first(), sites.size - 1)
 }
 
 private fun MutableList<RvDetailField>.pushNote(note: String, strings: RvStrings) {
@@ -295,7 +299,7 @@ fun detailOf(
             )
         }
         item.passkey?.let { fields.pushPasskeyCreated(it.entry.created, strings) }
-        if (item.entry.website) {
+        if (websitesOf(item).isNotEmpty()) {
             fields += RvDetailField(
                 label = strings.fieldWebsite,
                 value = RvFieldValue.Shown(websiteLabel(item, strings)),
@@ -353,7 +357,7 @@ fun detailOf(
         }
         fields.pushPasskeyCreated(item.entry.created, strings)
         if (linked != null) {
-            if (linked.entry.website) {
+            if (websitesOf(linked).isNotEmpty()) {
                 fields += RvDetailField(
                     label = strings.fieldWebsite,
                     value = RvFieldValue.Shown(websiteLabel(linked, strings)),

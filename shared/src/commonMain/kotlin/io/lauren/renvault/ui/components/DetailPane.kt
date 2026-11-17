@@ -73,7 +73,9 @@ import io.lauren.renvault.lib.labelOf
 import io.lauren.renvault.lib.passkeyEditableOf
 import io.lauren.renvault.lib.plain
 import io.lauren.renvault.lib.secret
-import io.lauren.renvault.lib.siteOf
+import io.lauren.renvault.lib.webSiteOf
+import io.lauren.renvault.lib.appPackageOf
+import io.lauren.renvault.lib.isAppLink
 import io.lauren.renvault.lib.titleOf
 import io.lauren.renvault.lib.viewOf
 import io.lauren.renvault.ui.theme.RvTone
@@ -201,7 +203,7 @@ fun RvDetailPane(
             ) {
                 Header(
                     title = if (editing) titleOf(draft).ifEmpty { "?" } else detail.title,
-                    subtitle = if (editing) null else (item as? RvWebItem)?.let(::siteOf)?.takeIf { it.isNotEmpty() }?.let(shownNames::mask),
+                    subtitle = if (editing) null else (item as? RvWebItem)?.let { web -> subtitleOf(web) }?.takeIf { it.isNotEmpty() }?.let(shownNames::mask),
                     glyph = glyph,
                     favicon = icon,
                     fallback = if (editing) titleOf(draft).ifEmpty { view.title } else view.title,
@@ -334,7 +336,7 @@ private fun ItemView(
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         if (web != null && issue != null) {
-            val site = siteOf(web)
+            val site = webSiteOf(web)
             NoticeCard(
                 icon = RvWarningIcon,
                 tone = RvTone(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer),
@@ -647,6 +649,14 @@ private fun deletedAt(item: RvItem): Long = when (item) {
     is RvWebItem -> item.entry.deleted
     is RvPasskeyItem -> item.entry.deleted
     is RvWifiItem -> 0L
+}
+
+@Composable
+private fun subtitleOf(item: RvWebItem): String {
+    val site = webSiteOf(item)
+    if (site.isNotEmpty()) return site
+    val app = item.entry.domains.firstOrNull(::isAppLink) ?: return ""
+    return rememberAppName(appPackageOf(app))
 }
 
 @Composable
