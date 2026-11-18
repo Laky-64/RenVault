@@ -69,11 +69,16 @@ private val AuthSize = DpSize(480.dp, 740.dp)
 
 private const val DesktopEntry = "$RvAppId-$RvAppName"
 
+private const val PluginActivatedArg = "-PluginActivated"
+
 fun main(args: Array<String>) {
-    val background = RvBackgroundArg in args
+    val asked = RvBackgroundArg in args
+    val background = asked || (args.any { it.equals(PluginActivatedArg, ignoreCase = true) } && RvInstance.takeBackground())
     nameWindowClass()
     if (!RvInstance.claim(wake = !background)) return
+    if (asked) RvInstance.markBackground(true)
     if (runBlocking { runCatching { Vault.winPasskeyHandOff().quit }.getOrDefault(false) }) return
+    if (asked) RvInstance.markBackground(false)
     vaultApplication(background)
 }
 

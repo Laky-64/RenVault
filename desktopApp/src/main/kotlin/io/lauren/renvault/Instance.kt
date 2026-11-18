@@ -46,6 +46,18 @@ internal object RvInstance {
         return true
     }
 
+    fun markBackground(on: Boolean) {
+        val flag = File(folder, BackgroundFlag)
+        if (on) runCatching { flag.writeText(System.currentTimeMillis().toString()) } else flag.delete()
+    }
+
+    fun takeBackground(): Boolean {
+        val flag = File(folder, BackgroundFlag)
+        val stamp = runCatching { flag.readText().trim().toLong() }.getOrNull() ?: return false
+        flag.delete()
+        return System.currentTimeMillis() - stamp in 0..BackgroundWindow
+    }
+
     fun listen(action: (token: String) -> Unit) {
         onShow = action
     }
@@ -60,3 +72,7 @@ internal object RvInstance {
 }
 
 private const val ShowCommand = "show"
+
+private const val BackgroundFlag = "background.flag"
+
+private const val BackgroundWindow = 120_000L
