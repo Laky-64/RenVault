@@ -162,6 +162,35 @@ jobs:
             tar -czf "dist/$name.tar.gz" -C "$binaries/app" .
           fi
 
+      - name: Sign the RPM package
+        if: runner.os == 'Linux'
+        env:
+          LINUX_SIGNING_KEY: ${{ secrets.LINUX_SIGNING_KEY }}
+          LINUX_SIGNING_PASSPHRASE: ${{ secrets.LINUX_SIGNING_PASSPHRASE }}
+        run: |
+          if [ -z "$LINUX_SIGNING_KEY" ]; then
+            echo "::warning::LINUX_SIGNING_KEY is not set, the RPM stays unsigned"
+            exit 0
+          fi
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          mkdir -m 700 -p "$GNUPGHOME"
+          printf '%s\n' "$LINUX_SIGNING_KEY" | gpg --batch --import
+          printf '%s' "$LINUX_SIGNING_PASSPHRASE" > "$GNUPGHOME/passphrase"
+          key=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr/ { print $10; exit }')
+          gpg --armor --export "$key" > "$GNUPGHOME/public.asc"
+          rpmdb="$RUNNER_TEMP/rpmdb"
+          mkdir -p "$rpmdb"
+          rpmkeys --dbpath "$rpmdb" --import "$GNUPGHOME/public.asc"
+          for file in dist/*.rpm; do
+            rpmsign --addsign \
+              --define "_gpg_name $key" \
+              --define "_gpg_digest_algo sha256" \
+              --define "_gpg_sign_cmd_extra_args --batch --pinentry-mode loopback --passphrase-file $GNUPGHOME/passphrase" \
+              "$file"
+            rpmkeys --dbpath "$rpmdb" --checksig -v "$file"
+          done
+          rm -rf "$GNUPGHOME"
+
       - uses: actions/upload-artifact@v7
         with:
           name: desktop-${{ matrix.os }}
