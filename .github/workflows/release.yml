@@ -223,13 +223,35 @@ jobs:
           python .github/scripts/telegram_upload.py notes "${{ steps.version.outputs.name }}" "$GITHUB_REF_NAME" > notes.txt
           python .github/scripts/telegram_upload.py preview "${{ steps.version.outputs.name }}" "$GITHUB_REF_NAME"
 
+      - name: Sign the checksums
+        env:
+          LINUX_SIGNING_KEY: ${{ secrets.LINUX_SIGNING_KEY }}
+          LINUX_SIGNING_PASSPHRASE: ${{ secrets.LINUX_SIGNING_PASSPHRASE }}
+        run: |
+          mkdir -p sums
+          (cd dist && sha256sum -- * > ../sums/SHA256SUMS)
+          if [ -z "$LINUX_SIGNING_KEY" ]; then
+            echo "::warning::LINUX_SIGNING_KEY is not set, in-app updates will refuse this release"
+            exit 0
+          fi
+          export GNUPGHOME="$RUNNER_TEMP/gnupg"
+          mkdir -m 700 -p "$GNUPGHOME"
+          printf '%s\n' "$LINUX_SIGNING_KEY" | gpg --batch --import
+          printf '%s' "$LINUX_SIGNING_PASSPHRASE" > "$GNUPGHOME/passphrase"
+          key=$(gpg --list-secret-keys --with-colons | awk -F: '/^fpr/ { print $10; exit }')
+          gpg --batch --pinentry-mode loopback --passphrase-file "$GNUPGHOME/passphrase" \
+            --local-user "$key" --digest-algo sha256 --armor --detach-sign \
+            --output sums/SHA256SUMS.asc sums/SHA256SUMS
+          gpg --verify sums/SHA256SUMS.asc sums/SHA256SUMS
+          rm -rf "$GNUPGHOME"
+
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           channel=--prerelease
           [[ "$GITHUB_REF_NAME" == *-* ]] || channel=--latest
-          gh release create "$GITHUB_REF_NAME" dist/* \
+          gh release create "$GITHUB_REF_NAME" dist/* sums/* \
             "$channel" \
             --title "RenVault ${{ steps.version.outputs.name }}" \
             --notes-file notes.txt
