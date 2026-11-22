@@ -146,6 +146,60 @@ func associatedSites(domains []string, primary string) []string {
 }
 
 func (v *Vault) EditPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) (string, error) {
+	hosts, previous := v.accountOf(id)
+	next, err := v.editPassword(id, title, website, username, password, note, totpURL, domains, dropTOTP)
+	renamed := strings.TrimSpace(username)
+	if err == nil && renamed != "" && previous != "" && !strings.EqualFold(renamed, previous) {
+		v.renamePasskeys(hosts, previous, renamed)
+	}
+	return next, err
+}
+
+func (v *Vault) accountOf(id string) ([]string, string) {
+	v.mu.Lock()
+	defer v.mu.Unlock()
+	if v.p == nil {
+		return nil, ""
+	}
+	i := webIndex(v.p, id)
+	if i < 0 {
+		return nil, ""
+	}
+	w := v.p.Web[i]
+	var hosts []string
+	for _, d := range append([]string{w.Domain}, w.Domains...) {
+		if d != "" && !isAppLink(d) {
+			hosts = append(hosts, d)
+		}
+	}
+	return hosts, strings.TrimSpace(w.Username)
+}
+
+func (v *Vault) renamePasskeys(hosts []string, previous, renamed string) {
+	type target struct {
+		id, title, note string
+		sites           []string
+	}
+	var targets []target
+	v.mu.Lock()
+	if v.p != nil {
+		for _, k := range v.p.Passkey {
+			if k.IsDeleted || !strings.EqualFold(strings.TrimSpace(k.UserName), previous) {
+				continue
+			}
+			if !slices.ContainsFunc(hosts, func(h string) bool { return sameHost(h, k.RelyingParty) }) {
+				continue
+			}
+			targets = append(targets, target{passkeyID(k), k.CustomTitle, k.Note, slices.Clone(k.Sites)})
+		}
+	}
+	v.mu.Unlock()
+	for _, t := range targets {
+		_, _ = v.EditPasskey(t.id, t.title, renamed, t.note, t.sites)
+	}
+}
+
+func (v *Vault) editPassword(id, title, website, username, password, note, totpURL string, domains []string, dropTOTP bool) (string, error) {
 	title = strings.TrimSpace(title)
 	website = strings.TrimSpace(website)
 	username = strings.TrimSpace(username)
