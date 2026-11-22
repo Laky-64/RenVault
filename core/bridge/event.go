@@ -8,13 +8,14 @@ import (
 )
 
 const (
-	EventSyncChanged   uint32 = 0x0001
-	EventLocked        uint32 = 0x0002
-	EventSignRequested uint32 = 0x0003
-	EventAgentProgress uint32 = 0x0004
-	EventProfile       uint32 = 0x0005
-	EventDevices       uint32 = 0x0006
-	EventTray          uint32 = 0x0007
+	EventSyncChanged    uint32 = 0x0001
+	EventLocked         uint32 = 0x0002
+	EventSignRequested  uint32 = 0x0003
+	EventAgentProgress  uint32 = 0x0004
+	EventProfile        uint32 = 0x0005
+	EventDevices        uint32 = 0x0006
+	EventTray           uint32 = 0x0007
+	EventUpdateProgress uint32 = 0x0008
 )
 
 const queueDepth = 64

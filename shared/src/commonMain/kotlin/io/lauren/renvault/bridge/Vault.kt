@@ -307,6 +307,18 @@ object Vault {
     suspend fun icon(domain: String): ByteArray =
         exchange<DomainRequest, BytesResponse>(Op.ICON_TILE, DomainRequest(domain)).data
 
+    suspend fun checkUpdate(current: String, platform: String, prerelease: Boolean, dir: String): UpdateRelease =
+        exchange(Op.UPDATE_CHECK, UpdateCheckRequest(current, platform, prerelease, dir))
+
+    suspend fun downloadUpdate(release: UpdateRelease, dir: String): String = withToken { token ->
+        exchange<UpdateDownloadRequest, UpdatePath>(Op.UPDATE_DOWNLOAD, UpdateDownloadRequest(release, dir), token).path
+    }
+
+    suspend fun cleanUpdates(dir: String) = send(Op.UPDATE_CLEAN, UpdateDirRequest(dir))
+
+    fun updateProgress(event: Event): UpdateProgress? =
+        if (event.kind == EventKind.UPDATE_PROGRESS) runCatching { cbor.decodeFromByteArray(UpdateProgress.serializer(), event.payload) }.getOrNull() else null
+
     suspend fun appInfo(packageName: String, lang: String): AppInfo =
         exchange(Op.APP_INFO, AppRequest(packageName, lang))
 

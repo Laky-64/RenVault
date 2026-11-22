@@ -42,6 +42,9 @@ compose.desktop {
         javaHome = runtime.get().metadata.installationPath.asFile.absolutePath
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
         jvmArgs += "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
+        listOf("renvault.update.version", "renvault.update.platform").forEach { key ->
+            System.getProperty(key)?.let { jvmArgs += "-D$key=$it" }
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi)

@@ -613,6 +613,8 @@ fun RvHomePage(
         )
     }
 
+    UpdateSheet(strings = strings)
+
     RvNewPasswordSheet(
         open = creating,
         onOpenChange = { creating = it },

@@ -111,6 +111,9 @@ internal object Op {
     const val CHECK_PASSWORD = 0x300E
     const val PASSWORD_STRENGTH = 0x300F
     const val APP_INFO = 0x3010
+    const val UPDATE_CHECK = 0x3011
+    const val UPDATE_DOWNLOAD = 0x3012
+    const val UPDATE_CLEAN = 0x3013
 }
 
 internal object FailureKind {
@@ -137,4 +140,5 @@ object EventKind {
     const val PROFILE = 0x0005
     const val DEVICES = 0x0006
     const val TRAY = 0x0007
+    const val UPDATE_PROGRESS = 0x0008
 }

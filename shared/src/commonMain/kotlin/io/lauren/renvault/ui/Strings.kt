@@ -26,6 +26,38 @@ import io.lauren.renvault.resources.rules_invalid
 import io.lauren.renvault.resources.generator_rule_digits
 import io.lauren.renvault.resources.generator_rule_special
 import io.lauren.renvault.resources.history_changed
+import io.lauren.renvault.resources.updates_title
+import io.lauren.renvault.resources.updates_failed_limited
+import io.lauren.renvault.resources.updates_github
+import io.lauren.renvault.resources.updates_github_note
+import io.lauren.renvault.resources.updates_now
+import io.lauren.renvault.resources.updates_later
+import io.lauren.renvault.resources.updates_current
+import io.lauren.renvault.resources.updates_checked
+import io.lauren.renvault.resources.updates_never
+import io.lauren.renvault.resources.updates_check
+import io.lauren.renvault.resources.updates_checking
+import io.lauren.renvault.resources.updates_available
+import io.lauren.renvault.resources.updates_available_short
+import io.lauren.renvault.resources.updates_download
+import io.lauren.renvault.resources.updates_downloading
+import io.lauren.renvault.resources.updates_installing
+import io.lauren.renvault.resources.updates_cancel
+import io.lauren.renvault.resources.updates_failed_check
+import io.lauren.renvault.resources.updates_failed_download
+import io.lauren.renvault.resources.updates_failed_unsigned
+import io.lauren.renvault.resources.updates_failed_install
+import io.lauren.renvault.resources.updates_retry
+import io.lauren.renvault.resources.updates_whats_new
+import io.lauren.renvault.resources.updates_channel
+import io.lauren.renvault.resources.updates_stable_desc
+import io.lauren.renvault.resources.updates_beta
+import io.lauren.renvault.resources.updates_beta_desc
+import io.lauren.renvault.resources.updates_auto
+import io.lauren.renvault.resources.updates_auto_desc
+import io.lauren.renvault.resources.updates_verified
+import io.lauren.renvault.resources.updates_new
+import io.lauren.renvault.resources.updates_size
 import io.lauren.renvault.resources.history_restore_title
 import io.lauren.renvault.resources.history_restore_desc
 import io.lauren.renvault.resources.history_restore_confirm
@@ -550,6 +582,38 @@ fun rememberStrings(tag: String = LocalLocale.current.current): RvStrings {
 }
 
 private val TextResources = listOf(
+    Res.string.updates_title,
+    Res.string.updates_failed_limited,
+    Res.string.updates_github,
+    Res.string.updates_github_note,
+    Res.string.updates_now,
+    Res.string.updates_later,
+    Res.string.updates_current,
+    Res.string.updates_checked,
+    Res.string.updates_never,
+    Res.string.updates_check,
+    Res.string.updates_checking,
+    Res.string.updates_available,
+    Res.string.updates_available_short,
+    Res.string.updates_download,
+    Res.string.updates_downloading,
+    Res.string.updates_installing,
+    Res.string.updates_cancel,
+    Res.string.updates_failed_check,
+    Res.string.updates_failed_download,
+    Res.string.updates_failed_unsigned,
+    Res.string.updates_failed_install,
+    Res.string.updates_retry,
+    Res.string.updates_whats_new,
+    Res.string.updates_channel,
+    Res.string.updates_stable_desc,
+    Res.string.updates_beta,
+    Res.string.updates_beta_desc,
+    Res.string.updates_auto,
+    Res.string.updates_auto_desc,
+    Res.string.updates_verified,
+    Res.string.updates_new,
+    Res.string.updates_size,
     Res.string.settings_advanced_title,
     Res.string.anisette_title,
     Res.string.anisette_desc,
@@ -1423,6 +1487,38 @@ private class ResourceStrings(
     override val generatorRuleDigits: String get() = text(Res.string.generator_rule_digits)
     override val generatorRuleSpecial: String get() = text(Res.string.generator_rule_special)
     override fun historyChanged(time: String): String = text(Res.string.history_changed, time)
+    override val updatesTitle: String get() = text(Res.string.updates_title)
+    override val updatesCurrent: String get() = text(Res.string.updates_current)
+    override fun updatesChecked(value: String): String = text(Res.string.updates_checked, value)
+    override val updatesNever: String get() = text(Res.string.updates_never)
+    override val updatesCheck: String get() = text(Res.string.updates_check)
+    override val updatesChecking: String get() = text(Res.string.updates_checking)
+    override fun updatesAvailable(value: String): String = text(Res.string.updates_available, value)
+    override fun updatesAvailableShort(value: String): String = text(Res.string.updates_available_short, value)
+    override val updatesDownload: String get() = text(Res.string.updates_download)
+    override val updatesDownloading: String get() = text(Res.string.updates_downloading)
+    override val updatesInstalling: String get() = text(Res.string.updates_installing)
+    override val updatesCancel: String get() = text(Res.string.updates_cancel)
+    override val updatesFailedCheck: String get() = text(Res.string.updates_failed_check)
+    override val updatesFailedDownload: String get() = text(Res.string.updates_failed_download)
+    override val updatesFailedUnsigned: String get() = text(Res.string.updates_failed_unsigned)
+    override val updatesFailedInstall: String get() = text(Res.string.updates_failed_install)
+    override val updatesRetry: String get() = text(Res.string.updates_retry)
+    override fun updatesWhatsNew(value: String): String = text(Res.string.updates_whats_new, value)
+    override val updatesChannel: String get() = text(Res.string.updates_channel)
+    override val updatesStableDesc: String get() = text(Res.string.updates_stable_desc)
+    override val updatesBeta: String get() = text(Res.string.updates_beta)
+    override val updatesBetaDesc: String get() = text(Res.string.updates_beta_desc)
+    override val updatesAuto: String get() = text(Res.string.updates_auto)
+    override val updatesAutoDesc: String get() = text(Res.string.updates_auto_desc)
+    override val updatesVerified: String get() = text(Res.string.updates_verified)
+    override val updatesNew: String get() = text(Res.string.updates_new)
+    override fun updatesSize(value: String): String = text(Res.string.updates_size, value)
+    override val updatesFailedLimited: String get() = text(Res.string.updates_failed_limited)
+    override val updatesGithub: String get() = text(Res.string.updates_github)
+    override val updatesGithubNote: String get() = text(Res.string.updates_github_note)
+    override val updatesNow: String get() = text(Res.string.updates_now)
+    override val updatesLater: String get() = text(Res.string.updates_later)
     override val historyRestoreTitle: String get() = text(Res.string.history_restore_title)
     override val historyRestoreDesc: String get() = text(Res.string.history_restore_desc)
     override val historyRestoreConfirm: String get() = text(Res.string.history_restore_confirm)

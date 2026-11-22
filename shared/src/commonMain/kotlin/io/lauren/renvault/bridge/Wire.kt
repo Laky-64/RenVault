@@ -691,3 +691,51 @@ internal data class ClipboardRequest(
     @SerialName("secret") val secret: Boolean,
     @SerialName("clear_after") val clearAfter: Int,
 )
+
+@Serializable
+internal data class UpdateCheckRequest(
+    @SerialName("current") val current: String,
+    @SerialName("platform") val platform: String,
+    @SerialName("prerelease") val prerelease: Boolean,
+    @SerialName("dir") val dir: String,
+)
+
+@Serializable
+data class UpdateNotes(
+    @SerialName("version") val version: String = "",
+    @SerialName("body") val body: String = "",
+)
+
+@Serializable
+data class UpdateRelease(
+    @SerialName("available") val available: Boolean = false,
+    @SerialName("version") val version: String = "",
+    @SerialName("tag") val tag: String = "",
+    @SerialName("page") val page: String = "",
+    @SerialName("published") val published: Long = 0,
+    @SerialName("asset") val asset: String = "",
+    @SerialName("url") val url: String = "",
+    @SerialName("size") val size: Long = 0,
+    @SerialName("sums") val sums: String = "",
+    @SerialName("signature") val signature: String = "",
+    @SerialName("notes") val notes: List<UpdateNotes> = emptyList(),
+)
+
+@Serializable
+internal data class UpdateDownloadRequest(
+    @SerialName("release") val release: UpdateRelease,
+    @SerialName("dir") val dir: String,
+)
+
+@Serializable
+internal data class UpdateDirRequest(@SerialName("dir") val dir: String)
+
+@Serializable
+internal data class UpdatePath(@SerialName("path") val path: String = "")
+
+@Serializable
+data class UpdateProgress(
+    @SerialName("asset") val asset: String = "",
+    @SerialName("done") val done: Long = 0,
+    @SerialName("total") val total: Long = 0,
+)

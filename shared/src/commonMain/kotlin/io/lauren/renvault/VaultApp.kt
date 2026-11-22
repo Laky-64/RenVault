@@ -29,6 +29,7 @@ import io.lauren.renvault.bridge.ImportResult
 import io.lauren.renvault.bridge.QuickState
 import io.lauren.renvault.bridge.NetInfo
 import io.lauren.renvault.lib.RvFavicons
+import io.lauren.renvault.lib.RvUpdates
 import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
 import io.lauren.renvault.lib.RvHideFromRecents
@@ -252,6 +253,7 @@ fun RvVaultApp(
         anisette = runCatching { Vault.anisetteServer().url }.getOrDefault("")
         unlocked = runCatching { Vault.state().unlocked }.getOrDefault(false)
         ready = true
+        RvUpdates.start()
     }
 
     LaunchedEffect(unlocked, profile.local) {

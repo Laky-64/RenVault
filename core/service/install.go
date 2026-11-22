@@ -28,6 +28,7 @@ func Install() {
 		installHybrid()
 		installLocalKey()
 		installWinPasskeys()
+		installUpdates()
 	})
 }
 

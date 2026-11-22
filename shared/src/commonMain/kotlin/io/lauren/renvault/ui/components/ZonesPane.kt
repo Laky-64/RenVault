@@ -66,8 +66,10 @@ fun RvZonesPane(
                 title = title,
                 scrolled = scrolled,
                 actions = {
-                    IconButton(onClick = onSettings, shapes = IconButtonDefaults.shapes()) {
-                        RvProfileAvatar(size = 32.dp, photo = photo)
+                    UpdateDot(avatar = 32.dp) {
+                        IconButton(onClick = onSettings, shapes = IconButtonDefaults.shapes()) {
+                            RvProfileAvatar(size = 32.dp, photo = photo)
+                        }
                     }
                 },
             )
@@ -188,8 +190,10 @@ private fun ZonesRail(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            IconButton(onClick = onSettings, shapes = IconButtonDefaults.shapes()) {
-                RvProfileAvatar(size = 36.dp, photo = photo)
+            UpdateDot(avatar = 36.dp) {
+                IconButton(onClick = onSettings, shapes = IconButtonDefaults.shapes()) {
+                    RvProfileAvatar(size = 36.dp, photo = photo)
+                }
             }
         }
 

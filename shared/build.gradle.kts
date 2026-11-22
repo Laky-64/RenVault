@@ -26,6 +26,7 @@ val appChannel = providers.gradleProperty("renvault.channel")
             else -> "dev"
         }
     })
+val appUpdates = providers.gradleProperty("renvault.updates").orElse("github")
 val appCommit = providers.environmentVariable("GITHUB_SHA")
     .orElse(providers.exec { commandLine("git", "rev-parse", "HEAD"); isIgnoreExitValue = true }.standardOutput.asText)
     .map { it.trim().take(8) }
@@ -38,6 +39,7 @@ val generateVersion = tasks.register("generateAppVersion") {
     val code = appVersionCode
     val channel = appChannel
     val commit = appCommit
+    val updates = appUpdates
     val mod = goMod
     inputs.property("id", id)
     inputs.property("name", name)
@@ -45,6 +47,7 @@ val generateVersion = tasks.register("generateAppVersion") {
     inputs.property("code", code)
     inputs.property("channel", channel)
     inputs.property("commit", commit)
+    inputs.property("updates", updates)
     inputs.file(mod)
     outputs.dir(out)
     doLast {
@@ -68,6 +71,8 @@ val generateVersion = tasks.register("generateAppVersion") {
             |const val RvAppCommit: String = "${commit.get()}"
             |
             |const val RvAppleServicesVersion: String = "$apple"
+            |
+            |const val RvAppUpdates: Boolean = ${updates.get() == "github"}
             |""".trimMargin(),
         )
     }

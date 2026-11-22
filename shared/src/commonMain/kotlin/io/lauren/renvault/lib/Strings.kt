@@ -494,6 +494,38 @@ interface RvStrings {
     fun devicesRemoveTitle(name: String): String
     fun relativeTime(value: RvRelative): String
     fun zoneText(kind: RvZoneKind, empty: Boolean): RvZoneText
+    val updatesTitle: String
+    val updatesCurrent: String
+    fun updatesChecked(value: String): String
+    val updatesNever: String
+    val updatesCheck: String
+    val updatesChecking: String
+    fun updatesAvailable(value: String): String
+    fun updatesAvailableShort(value: String): String
+    val updatesDownload: String
+    val updatesDownloading: String
+    val updatesInstalling: String
+    val updatesCancel: String
+    val updatesFailedCheck: String
+    val updatesFailedDownload: String
+    val updatesFailedUnsigned: String
+    val updatesFailedInstall: String
+    val updatesRetry: String
+    fun updatesWhatsNew(value: String): String
+    val updatesChannel: String
+    val updatesStableDesc: String
+    val updatesBeta: String
+    val updatesBetaDesc: String
+    val updatesAuto: String
+    val updatesAutoDesc: String
+    val updatesVerified: String
+    val updatesNew: String
+    fun updatesSize(value: String): String
+    val updatesFailedLimited: String
+    val updatesGithub: String
+    val updatesGithubNote: String
+    val updatesNow: String
+    val updatesLater: String
 }
 
 enum class RvZoneKind { All, Passkeys, Codes, Networks, Security, Deleted }

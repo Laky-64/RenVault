@@ -105,6 +105,9 @@ const (
 	OpCheckPassword    uint32 = 0x300E
 	OpPasswordStrength uint32 = 0x300F
 	OpAppInfo          uint32 = 0x3010
+	OpUpdateCheck      uint32 = 0x3011
+	OpUpdateDownload   uint32 = 0x3012
+	OpUpdateClean      uint32 = 0x3013
 )
 
 const (

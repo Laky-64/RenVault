@@ -74,6 +74,8 @@ import io.lauren.renvault.lib.RvBiometricCancelled
 import io.lauren.renvault.lib.ClipboardClearChoices
 import io.lauren.renvault.lib.RvScreenshots
 import io.lauren.renvault.lib.RvFavicons
+import io.lauren.renvault.lib.RvUpdates
+import io.lauren.renvault.lib.release
 import io.lauren.renvault.lib.RvIconProvider
 import io.lauren.renvault.lib.RvLocalKey
 import io.lauren.renvault.lib.RvWinPasskeys
@@ -137,7 +139,7 @@ data class RvSettingsState(
     val devices: List<RvDevice> = emptyList(),
 )
 
-private enum class SettingsPage { Root, Language, Icons, Names, Devices, About, Export, Import }
+private enum class SettingsPage { Root, Language, Icons, Names, Devices, About, Updates, Export, Import }
 
 @Composable
 fun RvSettingsScreen(
@@ -210,6 +212,7 @@ fun RvSettingsScreen(
                     onBack = { page = SettingsPage.Root },
                 )
             }
+            SettingsPage.Updates -> UpdatesPage(strings = strings, dialog = dialog, onBack = { page = SettingsPage.Root })
             SettingsPage.About -> AboutPage(
                 state = state,
                 strings = strings,
@@ -235,6 +238,7 @@ fun RvSettingsScreen(
                 onQuick = onQuick,
                 onQuickCredential = onQuickCredential,
                 onAbout = { page = SettingsPage.About },
+                onUpdates = { page = SettingsPage.Updates },
                 onAutoLock = onAutoLock,
                 onLockNow = onLockNow,
                 onChangeMaster = onChangeMaster,
@@ -286,6 +290,7 @@ private fun RootPage(
     onQuick: suspend (Boolean) -> Unit,
     onQuickCredential: suspend (Boolean) -> Unit,
     onAbout: () -> Unit,
+    onUpdates: () -> Unit,
     onAutoLock: (Int) -> Unit,
     onLockNow: () -> Unit,
     onChangeMaster: suspend (String, String) -> Unit,
@@ -386,6 +391,8 @@ private fun RootPage(
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             item { RvPageTitle(strings.settingsTitle) }
+
+            if (RvUpdates.supported) item { UpdateBanner(strings = strings, onOpen = onUpdates) }
 
             item {
                 Column(
@@ -813,17 +820,37 @@ private fun RootPage(
                     title = strings.settingsAboutTitle,
                     footer = if (state.pending > 0) strings.settingsPending(state.pending) else null,
                 ) {
+                    val about = if (RvUpdates.supported) 3 else 2
                     RvSegment(
                         index = 0,
-                        count = 2,
+                        count = about,
                         leading = { SettingBadge(RvSyncIcon, accents.orange) },
                         supporting = { Text(synced) },
                     ) {
                         Text(strings.settingsLastSync)
                     }
+                    if (RvUpdates.supported) {
+                        val update = RvUpdates.state.release
+                        RvSegment(
+                            index = 1,
+                            count = about,
+                            onClick = onUpdates,
+                            leading = { SettingBadge(RvDownloadIcon, accents.green) },
+                            supporting = {
+                                Text(if (update != null) strings.updatesAvailableShort(update.version) else strings.updatesCurrent)
+                            },
+                            trailing = if (update != null) {
+                                { UpdatePill(strings) }
+                            } else {
+                                null
+                            },
+                        ) {
+                            Text(strings.updatesTitle)
+                        }
+                    }
                     RvSegment(
-                        index = 1,
-                        count = 2,
+                        index = about - 1,
+                        count = about,
                         onClick = onAbout,
                         leading = { SettingBadge(RvInfoIcon, accents.blue) },
                         supporting = {
