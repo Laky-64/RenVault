@@ -333,8 +333,10 @@ fun RvGeneratorSheet(
                                     range = MinWords..MaxWords,
                                     onValue = { prefs.words = it },
                                 )
-                                RvSection {
-                                    Toggle(0, 1, strings.generatorDigits, null, prefs.digits) { prefs.digits = it }
+                                if (result?.needsDigits != true) {
+                                    RvSection {
+                                        Toggle(0, 1, strings.generatorDigits, null, prefs.digits) { prefs.digits = it }
+                                    }
                                 }
                             }
                         }

@@ -73,7 +73,7 @@ func Generate(options Options, rules Rules) (Result, error) {
 			return Result{Password: password, Kind: KindApple, Bits: bits}, nil
 		}
 	case KindWords:
-		if password, bits := words(options); fits(password, rules) {
+		if password, bits := words(options, rules); fits(password, rules) {
 			return Result{Password: password, Kind: KindWords, Bits: bits}, nil
 		}
 	}
@@ -86,7 +86,7 @@ func Blocked(options Options, rules Rules) []string {
 	if password, _ := apple(); !fits(password, rules) {
 		blocked = append(blocked, KindApple)
 	}
-	if password, _ := words(options); !fits(password, rules) {
+	if password, _ := words(options, rules); !fits(password, rules) {
 		blocked = append(blocked, KindWords)
 	}
 	return blocked
@@ -205,7 +205,7 @@ func apple() (string, float64) {
 	return strings.Join(parts, "-"), bits
 }
 
-func words(options Options) (string, float64) {
+func words(options Options, rules Rules) (string, float64) {
 	wordsOnce.Do(func() {
 		wordList = strings.Fields(wordsText)
 	})
@@ -221,7 +221,8 @@ func words(options Options) (string, float64) {
 		parts[i] = string(word)
 	}
 	bits := float64(count) * math.Log2(float64(len(wordList)))
-	if options.Digits {
+	needDigits, _ := Needs(rules)
+	if options.Digits || needDigits {
 		parts[count-1] += string(rune('0' + pick(10)))
 		bits += math.Log2(10)
 	}
