@@ -83,6 +83,19 @@ func (v *Vault) SaveLogin(title, website, app, username, password string) (SaveR
 			}
 		}
 	}
+	renamed := false
+	if found == nil && username != "" {
+		var same []int
+		for i := range live {
+			if live[i].Password == password && matches(live[i]) {
+				same = append(same, i)
+			}
+		}
+		if len(same) == 1 {
+			found = &live[same[0]]
+			renamed = true
+		}
+	}
 
 	if found == nil {
 		if strings.TrimSpace(title) == "" {
@@ -109,16 +122,20 @@ func (v *Vault) SaveLogin(title, website, app, username, password string) (SaveR
 	if link != "" && !slices.Contains(domains, link) {
 		domains = append(domains, link)
 	}
-	if w.Password == password && slices.Equal(domains, w.Domains) {
+	if !renamed && w.Password == password && slices.Equal(domains, w.Domains) {
 		return SaveResult{ID: webID(w)}, nil
 	}
 	site := ""
 	if w.Website {
 		site = w.Domain
 	}
-	id, err := v.EditPassword(webID(w), w.Name, site, w.Username, password, w.Note, "", domains, false)
+	account := w.Username
+	if renamed {
+		account = username
+	}
+	id, err := v.EditPassword(webID(w), w.Name, site, account, password, w.Note, "", domains, false)
 	if err != nil {
 		return SaveResult{}, err
 	}
-	return SaveResult{ID: id, Updated: w.Password != password}, nil
+	return SaveResult{ID: id, Updated: renamed || w.Password != password}, nil
 }
