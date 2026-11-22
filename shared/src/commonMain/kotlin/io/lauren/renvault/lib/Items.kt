@@ -187,7 +187,7 @@ fun viewOf(item: RvItem, strings: RvStrings): RvItemView = when (item) {
         hasTotp = false,
     )
 
-    is RvPasskeyItem -> RvItemView(
+    is RvPasskeyItem -> item.linked?.let { linked -> viewOf(linked, strings).copy(hasTotp = false) } ?: RvItemView(
         title = item.entry.title,
         subtitle = item.entry.username,
         icon = RvItemIcon.Favicon(domain = item.entry.relyingParty, fallback = item.entry.title),
@@ -255,6 +255,18 @@ private fun MutableList<RvDetailField>.pushNote(note: String, strings: RvStrings
     )
 }
 
+private fun MutableList<RvDetailField>.pushApps(apps: List<String>, strings: RvStrings) {
+    if (apps.isEmpty()) return
+    val first = appLabel(apps[0]) ?: apps[0]
+    add(
+        RvDetailField(
+            label = strings.fieldApp,
+            value = RvFieldValue.Shown(if (apps.size == 1) first else strings.fieldAppMore(first, apps.size - 1)),
+            apps = apps,
+        ),
+    )
+}
+
 private fun MutableList<RvDetailField>.pushModified(modified: Long, strings: RvStrings) {
     val shown = formatDate(modified)
     if (shown.isEmpty()) return
@@ -306,15 +318,7 @@ fun detailOf(
                 sites = websitesOf(item),
             )
         }
-        val apps = appsOf(item)
-        if (apps.isNotEmpty()) {
-            val first = appLabel(apps[0]) ?: apps[0]
-            fields += RvDetailField(
-                label = strings.fieldApp,
-                value = RvFieldValue.Shown(if (apps.size == 1) first else strings.fieldAppMore(first, apps.size - 1)),
-                apps = apps,
-            )
-        }
+        fields.pushApps(appsOf(item), strings)
         if (item.entry.hasTotp) {
             fields += RvDetailField(
                 label = strings.fieldVerificationCode,
@@ -344,48 +348,21 @@ fun detailOf(
         RvItemDetail(title = item.entry.ssid, fields = fields)
     }
 
-    is RvPasskeyItem -> {
-        val linked = item.linked
+    is RvPasskeyItem -> item.linked?.let { linked -> detailOf(linked, secrets, strings) } ?: run {
         val fields = mutableListOf<RvDetailField>()
         fields.pushUsername(item.entry.username, strings)
-        if (linked != null) {
-            fields += RvDetailField(
-                label = strings.fieldPassword,
-                value = RvFieldValue.Secret { secrets.password(linked.entry.id) },
-                copyable = true,
-            )
-        }
         fields.pushPasskeyCreated(item.entry.created, strings)
-        if (linked != null) {
-            if (websitesOf(linked).isNotEmpty()) {
-                fields += RvDetailField(
-                    label = strings.fieldWebsite,
-                    value = RvFieldValue.Shown(websiteLabel(linked, strings)),
-                    sites = websitesOf(linked),
-                )
-            }
-            if (linked.entry.hasTotp) {
-                fields += RvDetailField(
-                    label = strings.fieldVerificationCode,
-                    value = RvFieldValue.Code { secrets.totp(linked.entry.id) },
-                    copyable = true,
-                )
-            }
-            fields.pushModified(linked.entry.modified, strings)
-            fields.pushNote(linked.entry.note, strings)
-        } else {
-            val others = item.entry.sites.orEmpty().filter { it.isNotEmpty() && it != item.entry.relyingParty }
-            fields += RvDetailField(
-                label = strings.fieldWebsite,
-                value = RvFieldValue.Shown(
-                    if (others.isEmpty()) item.entry.relyingParty
-                    else strings.fieldWebsiteMore(item.entry.relyingParty, others.size),
-                ),
-                sites = (listOf(item.entry.relyingParty) + others).distinct(),
-            )
-            fields.pushModified(item.entry.modified, strings)
-            fields.pushNote(item.entry.note, strings)
-        }
+        val others = item.entry.sites.orEmpty().filter { it.isNotEmpty() && it != item.entry.relyingParty }
+        fields += RvDetailField(
+            label = strings.fieldWebsite,
+            value = RvFieldValue.Shown(
+                if (others.isEmpty()) item.entry.relyingParty
+                else strings.fieldWebsiteMore(item.entry.relyingParty, others.size),
+            ),
+            sites = (listOf(item.entry.relyingParty) + others).distinct(),
+        )
+        fields.pushModified(item.entry.modified, strings)
+        fields.pushNote(item.entry.note, strings)
         RvItemDetail(title = item.entry.title, fields = fields)
     }
 }
